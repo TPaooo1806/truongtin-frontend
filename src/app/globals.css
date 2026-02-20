@@ -1,42 +1,173 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+.product-card-link {
+    text-decoration: none !important;
+    display: block;
+    height: 100%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.product-card {
+    transition: all 0.3s ease !important;
+    border: 1px solid #dee2e6;
+    overflow: hidden;
 }
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+/* Khi di chuột vào cả thẻ Card */
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(211, 47, 47, 0.15) !important;
+    border-color: #D32F2F !important;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Hiệu ứng phóng to ảnh khi hover card */
+.product-card:hover .product-img {
+    transform: scale(1.1);
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+/* Đổi màu tiêu đề khi hover card */
+.product-card:hover .product-title {
+    color: #D32F2F !important;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* Khung chứa ảnh */
+.product-img-container {
+    aspect-ratio: 1/1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    position: relative;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+.product-img {
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.5s ease;
 }
+
+/* Nút Mua Ngay */
+.buy-btn {
+    background-color: #D32F2F !important;
+    color: white !important;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    padding: 10px 0;
+    transition: all 0.3s ease !important;
+    border: none;
+}
+
+.buy-btn:hover {
+    background-color: #b71c1c !important;
+    box-shadow: 0 4px 10px rgba(183, 28, 28, 0.3);
+    letter-spacing: 0.5px;
+}
+
+.buy-btn:active {
+    transform: scale(0.95);
+}
+
+/* Cắt chữ 2 dòng cho tiêu đề */
+.product-title {
+    font-size: 0.85rem;
+    height: 2.4rem;
+    line-height: 1.2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 0.3s ease;
+}
+
+/* Section Title Style */
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #5D4037;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.section-title::before {
+    content: "";
+    width: 5px;
+    height: 25px;
+    background-color: #D32F2F;
+    display: inline-block;
+}
+
+/* Comment & Review Section */
+.review-card {
+    border: none;
+    border-radius: 15px;
+    background: #fdfdfd;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.avatar-circle {
+    width: 45px;
+    height: 45px;
+    background: #5D4037;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+}
+.star-rating {
+    color: #ffc107;
+}
+.comment-box {
+    border-radius: 12px;
+    border: 1px solid #eee;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: 0.3s;
+}
+.comment-box:hover {
+    background: #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+.comment-input {
+    border-radius: 20px !important;
+    padding-left: 20px !important;
+    border: 1px solid #ddd !important;
+}
+.btn-submit-comment {
+    border-radius: 20px;
+    padding: 8px 25px;
+    background-color: #D32F2F;
+    border: none;
+    font-weight: 600;
+}
+
+.star-rating-input {
+  display: flex;
+  gap: 5px;
+  cursor: pointer;
+}
+.star-rating-input i {
+  font-size: 1.5rem;
+  transition: color 0.2s;
+}
+.star-rating-input i.active {
+  color: #ffc107; /* Vàng */
+}
+.star-rating-input i:hover {
+  transform: scale(1.1);
+}
+.comment-img-preview {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 10px;
+}
+
+.custom-input::placeholder {
+          color: #6c757d;
+          opacity: 0.5;
+        }
+        .custom-input:focus {
+          border-color: #dc3545 !important;
+          background-color: #fff !important;
+        }

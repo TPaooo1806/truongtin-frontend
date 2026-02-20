@@ -1,0 +1,158 @@
+/* Nền tổng thể: Xám xanh nhạt siêu hiện đại */
+.bg-tech-light { background-color: #f4f7fe; }
+.text-dark-tech { color: #2b3674; }
+
+/* Cấu trúc Layout */
+.admin-wrapper {
+  min-height: 100vh;
+  padding: 20px;
+  gap: 20px;
+  background-color: #f4f7fe; /* Nền mượt mà áp dụng riêng cho Admin */
+}
+
+/* --------------------------
+    SIDEBAR: Floating & Modern Tech
+-------------------------- */
+.sidebar-floating {
+  width: 260px;
+  background: linear-gradient(135deg, #111c44 0%, #1a2a6c 100%);
+  border-radius: 20px;
+  height: calc(100vh - 40px);
+  position: sticky;
+  top: 20px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.shadow-soft {
+  box-shadow: 0 10px 30px rgba(17, 28, 68, 0.15);
+}
+
+.sidebar-brand {
+  padding: 30px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.brand-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4);
+}
+
+.tracking-wide { letter-spacing: 2px; }
+
+/* Nút Menu Hover mượt mà */
+.menu-item {
+  color: rgba(255, 255, 255, 0.6) !important;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-icon {
+  font-size: 1.25rem;
+  margin-right: 12px;
+  transition: transform 0.3s ease;
+}
+
+/* Hiệu ứng trượt sang phải khi Hover */
+.menu-item:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateX(6px);
+}
+
+.menu-item:hover .menu-icon {
+  transform: scale(1.1);
+  color: #00f2fe;
+}
+
+/* Menu đang được chọn (Active) */
+.menu-item.active {
+  color: #fff !important;
+  background: linear-gradient(to right, #4318FF 0%, #39B8FF 100%);
+  box-shadow: 0 4px 15px rgba(67, 24, 255, 0.3);
+}
+
+.btn-logout {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+.btn-logout:hover {
+  background: #ff4757;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* --------------------------
+    HEADER: Glassmorphism
+-------------------------- */
+.header-glass {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  padding: 15px 24px;
+  margin-bottom: 20px;
+  position: sticky;
+  top: 20px;
+  z-index: 100;
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.avatar-circle:hover { transform: scale(1.05); }
+
+/* --------------------------
+    CONTENT WRAPPER
+-------------------------- */
+.content-wrapper {
+  flex-grow: 1;
+}
+
+.transition-all { transition: all 0.2s ease-in-out; }
+        .hover-opacity-100:hover { 
+          opacity: 1 !important; 
+          background-color: rgba(255,255,255,0.1); 
+          transform: translateX(4px);
+        }
+        .tracking-wide { letter-spacing: 2px; }
+        
+        /* Ẩn thanh cuộn của Sidebar nhưng vẫn cho cuộn chuột */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 10px;
+        }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.4);
+        }
