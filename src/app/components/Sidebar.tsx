@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import type { Category } from '../type';
+import api from '@/lib/axios';
 
 export default function Sidebar() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -12,7 +13,7 @@ export default function Sidebar() {
     const fetchCategories = async () => {
       try {
         // Gọi API lấy danh sách danh mục đã tạo từ Postman
-        const res = await axios.get('http://localhost:5000/api/categories');
+        const res = await api.get('/api/categories');
         if (res.data.success) {
           setCategories(res.data.data);
         }

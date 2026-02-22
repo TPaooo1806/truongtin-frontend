@@ -1,9 +1,9 @@
 'use client';
 import { useEffect, useState, use } from 'react';
-import axios from 'axios';
 import ProductCard from '../../components/ProductCard'; 
 import Sidebar from '../../components/Sidebar';
 import type { Product } from '../../type';
+import api from '@/lib/axios';
 
 export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -26,7 +26,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/products?category=${slug}`);
+        const res = await api.get(`/api/products?category=${slug}`);
         if (isMounted && res.data.success) {
           const fetchedProducts = res.data.data;
           setProducts(fetchedProducts);

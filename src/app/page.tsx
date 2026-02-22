@@ -4,6 +4,7 @@ import axios from 'axios';
 import type { Product, ApiResponse, Category } from './type';
 import Sidebar from './components/Sidebar';
 import ProductCard from './components/ProductCard';
+import api from '@/lib/axios';
 
 // Component con để hiển thị từng hàng sản phẩm (Slider)
 const ProductSection = ({ title, products }: { title: string, products: Product[] }) => {
@@ -76,8 +77,8 @@ export default function App() {
         // FIX LỖI MẤT SẢN PHẨM: Thêm ?limit=100 để lấy đủ số lượng sản phẩm từ tất cả danh mục, 
         // tránh việc Bóng đèn bị đẩy sang trang 2 không hiện được.
         const [prodRes, catRes] = await Promise.all([
-          axios.get<ApiResponse<Product[]>>('http://localhost:5000/api/products?limit=100'),
-          axios.get<ApiResponse<Category[]>>('http://localhost:5000/api/categories')
+          api.get<ApiResponse<Product[]>>('/api/products?limit=100'),
+          api.get<ApiResponse<Category[]>>('/api/categories')
         ]);
         
         if (prodRes.data.success) setProducts(prodRes.data.data);
@@ -168,7 +169,7 @@ export default function App() {
             );
         })}
 
-     {/* SECTION 5: DANH MỤC NGANG (Đã làm cho bấm được) */}
+     {/* SECTION 5: DANH MỤC NGANG */}
         <section className="mb-5 py-4 py-md-5 bg-white rounded-4 shadow-sm mt-5">
           <h5 className="fw-bold text-center mb-4 text-secondary fs-6">
             KHÁM PHÁ DANH MỤC HÀNG HÓA

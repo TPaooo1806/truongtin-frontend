@@ -6,7 +6,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import './globals.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import { Toaster } from 'react-hot-toast'; // Thêm dòng này
+import { Toaster } from 'react-hot-toast';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   
@@ -27,14 +27,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <title>Điện Nước Trường Tín | Vật Tư Chính Hãng</title>
         <meta name="description" content="Chuyên cung cấp vật tư điện nước chuyên nghiệp" />
       </head>
-      <body className="bg-light" suppressHydrationWarning={true}>
-        {/* Thêm thùng chứa thông báo ở đây */}
+     
+      <body className="br" suppressHydrationWarning={true}>
         <Toaster position="top-right" reverseOrder={false} />
         
         <Header />
-        <main style={{ minHeight: '80vh' }}>
+        
+        
+        <main 
+          className="container br shadow-sm rounded-4 my-4 p-3 p-md-4" 
+          style={{ minHeight: '80vh' }}
+        >
           {children}
         </main>
+
         <Footer />
       </body>
     </html>
