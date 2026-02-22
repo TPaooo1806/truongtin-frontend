@@ -7,6 +7,7 @@ import Sidebar from '../../components/Sidebar';
 import ProductCard from '../../components/ProductCard';
 import toast from 'react-hot-toast'; 
 import type { Product, ApiResponse } from '../../type';
+import api from '@/lib/axios';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -54,16 +55,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await axios.get<ApiResponse<Product>>(`http://localhost:5000/api/products/${slug}`);
+        const res = await api.get<ApiResponse<Product>>(`/api/products/${slug}`);
         if (res.data.success) {
           const data = res.data.data;
           setProduct(data);
           setMainImage(data.images?.[0]?.url || 'https://via.placeholder.com/400');
 
-          const relatedRes = await axios.get<ApiResponse<Product[]>>(`http://localhost:5000/api/products?categoryId=${data.categoryId}`);
+          const relatedRes = await api.get<ApiResponse<Product[]>>(`/api/products?categoryId=${data.categoryId}`);
           setRelatedProducts(relatedRes.data.data.filter(p => p.id !== data.id).slice(0, 6));
 
-          const allRes = await axios.get<ApiResponse<Product[]>>(`http://localhost:5000/api/products`);
+          const allRes = await api.get<ApiResponse<Product[]>>(`/api/products`);
           setBestSellers(allRes.data.data.slice(0, 6));
         }
       } catch (err) {
@@ -84,10 +85,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   }, []);
 
   // Kéo danh sách bình luận từ Database (Nên bỏ vào trong `useEffect` lấy chi tiết sản phẩm ở trên)
-  useEffect(() => {
+useEffect(() => {
     if (product) {
-      // Giả sử Backend của bạn có API này
-      axios.get(`http://localhost:5000/api/products/${product.id}/reviews`)
+      // Đã đổi axios thành api để dùng link Render chính thức
+      api.get(`/api/products/${product.id}/reviews`)
         .then(res => setReviews(res.data.data || []))
         .catch(err => console.error("Chưa có API lấy reviews", err));
     }
@@ -162,8 +163,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     try {
       const token = localStorage.getItem('token');
       // Gọi API thực tế gửi lên Backend
-      const res = await axios.post(
-        'http://localhost:5000/api/reviews', 
+      const res = await api.post(
+        '/api/reviews', 
         { productId: product?.id, rating, comment },
         { headers: { Authorization: `Bearer ${token}` } } // Phải có token mới được post
       );

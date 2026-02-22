@@ -1,8 +1,8 @@
 import axios, { InternalAxiosRequestConfig } from 'axios';
 
 const api = axios.create({
-  // Khi deploy, link này sẽ được lấy từ biến môi trường trên Vercel
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+  // XÓA cái process.env đi, dán cứng link Render vào đây luôn:
+  baseURL: 'https://truongtin-api.onrender.com', 
   headers: {
     'Content-Type': 'application/json',
   },
