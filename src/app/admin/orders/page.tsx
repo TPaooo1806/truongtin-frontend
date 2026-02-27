@@ -17,6 +17,7 @@ interface Variant {
 
 interface OrderItem {
   id: number;
+  name: string;
   variantId: number;
   quantity: number;
   price: number;
@@ -246,7 +247,7 @@ export default function AdminOrdersPage() {
                           <td className="ps-3 py-3">
                             <div className="fw-bold">{item.variant?.product?.name || "Sản phẩm"}</div>
                             <div className="text-muted x-small">
-  Quy cách: {item.variant?.name || 'N/A'}
+  Tên sản phẩm: {item.name || 'N/A'}
 </div>
                           </td>
                           <td className="text-center">x{item.quantity}</td>
