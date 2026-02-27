@@ -1,20 +1,20 @@
-import axios, { InternalAxiosRequestConfig } from 'axios';
+import axios from "axios";
 
 const api = axios.create({
-  // XÓA cái process.env đi, dán cứng link Render vào đây luôn:
-  baseURL: 'https://truongtin-api.onrender.com', 
+  baseURL: "https://truongtin-api.onrender.com",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// Tự động đính kèm Token vào mọi yêu cầu gửi đi
+// Thêm Interceptor để tự động gắn Token vào Request Header
 api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      if (token && config.headers) {
-        // Sử dụng set để đảm bảo Authorization được gán đúng cách trong TS
+  (config) => {
+    // Kiểm tra xem có đang chạy trên trình duyệt không (vì Next.js có SSR)
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (token) {
+        // Gắn token vào header Authorization (chuẩn Bearer Token)
         config.headers.Authorization = `Bearer ${token}`;
       }
     }

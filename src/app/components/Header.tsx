@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import AuthModal from "./AuthModal";
 import api from "@/lib/axios";
 
@@ -205,7 +204,7 @@ export default function Header() {
           <div className="container text-center" style={{ fontSize: "13px" }}>
             <span>
               <b>CỬA HÀNG ĐIỆN NƯỚC TRƯỜNG TÍN</b> |&nbsp;Thời gian làm việc:
-              Thứ 2 - Thứ 7, Từ 6h30 đến 17h30
+              Thứ 2 - Chủ Nhật, Từ 7h30 đến 17h30
             </span>
           </div>
         </div>

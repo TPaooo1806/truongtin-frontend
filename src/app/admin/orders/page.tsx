@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import axios, { AxiosError } from 'axios';
+import  { AxiosError } from 'axios';
 import { toast } from 'react-hot-toast';
 import api from '@/lib/axios';
 
@@ -10,8 +10,8 @@ interface Product {
 }
 
 interface Variant {
-  color?: string;
-  size?: string;
+  name?: string;
+  sku?: string;
   product?: Product;
 }
 
@@ -49,10 +49,7 @@ export default function AdminOrdersPage() {
   // --- 2. HÀM LẤY DỮ LIỆU ---
   const fetchOrders = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await api.get<BackendResponse>('/api/orders/admin/all', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get<BackendResponse>('/api/orders/admin/all');
       
       if (res.data.success) {
         setOrders(res.data.data);
@@ -74,11 +71,9 @@ export default function AdminOrdersPage() {
     if (!confirm(`Bạn có chắc chắn muốn duyệt đơn #${orderCode}? Hệ thống sẽ thực hiện trừ kho.`)) return;
 
     try {
-      const token = localStorage.getItem('token');
       const res = await api.patch<{ success: boolean; message: string }>(
         `/api/orders/approve/${orderId}`, 
-        {}, 
-        { headers: { Authorization: `Bearer ${token}` } }
+        {}
       );
 
       if (res.data.success) {
@@ -91,7 +86,36 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // --- 4. BADGE TRẠNG THÁI ---
+  // --- 4. HÀM HỦY ĐƠN ---
+  const handleCancel = async (orderId: number, orderCode: string) => {
+    if (!confirm(`Huỷ đơn #${orderCode}?`)) return;
+
+    try {
+      const res = await api.patch<{ success: boolean; message: string }>(
+        `/api/orders/cancel/${orderId}`
+      );
+
+      if (res.data.success) {
+        toast.success("Đã huỷ đơn");
+        fetchOrders();
+      }
+    } catch {
+      toast.error("Không thể huỷ đơn");
+    }
+  };
+
+  // --- 5. LẤY PHƯƠNG THỨC THANH TOÁN ---
+  const getPaymentMethod = (status: string) => {
+    if (status.includes("COD"))
+      return "Thanh toán khi nhận hàng (COD)";
+
+    if (status.includes("PAYOS") || status.includes("PAID"))
+      return "Thanh toán QR (PayOS)";
+
+    return "Không xác định";
+  };
+
+  // --- 6. BADGE TRẠNG THÁI ---
   const getStatusBadge = (status: string) => {
     switch(status) {
       case 'PENDING_COD': 
@@ -153,12 +177,21 @@ export default function AdminOrdersPage() {
                   </button>
 
                   {order.status !== 'PAID_AND_CONFIRMED' && order.status !== 'CANCELLED' && (
-                    <button 
-                      className="btn btn-sm btn-success rounded-circle shadow-sm" 
-                      onClick={() => handleApprove(order.id, order.orderCode)}
-                    >
-                      <i className="bi bi-check-lg text-white"></i>
-                    </button>
+                    <>
+                      <button 
+                        className="btn btn-sm btn-success rounded-circle shadow-sm" 
+                        onClick={() => handleApprove(order.id, order.orderCode)}
+                      >
+                        <i className="bi bi-check-lg text-white"></i>
+                      </button>
+
+                      <button
+                        className="btn btn-sm btn-danger rounded-circle shadow-sm ms-2"
+                        onClick={() => handleCancel(order.id, order.orderCode)}
+                      >
+                        <i className="bi bi-x-lg text-white"></i>
+                      </button>
+                    </>
                   )}
                 </td>
               </tr>
@@ -188,7 +221,12 @@ export default function AdminOrdersPage() {
                   <div className="col-md-6 text-md-end">
                     <p className="mb-1 text-muted small text-uppercase fw-bold">Thời gian đặt</p>
                     <p className="mb-1">{new Date(selectedOrder.createdAt).toLocaleString('vi-VN')}</p>
-                    <div>{getStatusBadge(selectedOrder.status)}</div>
+                    <div className="mb-3">{getStatusBadge(selectedOrder.status)}</div>
+                    
+                    <p className="mb-1 text-muted small text-uppercase fw-bold">Phương thức thanh toán</p>
+                    <p className="fw-bold text-primary">
+                      {getPaymentMethod(selectedOrder.status)}
+                    </p>
                   </div>
                 </div>
 
@@ -208,8 +246,8 @@ export default function AdminOrdersPage() {
                           <td className="ps-3 py-3">
                             <div className="fw-bold">{item.variant?.product?.name || "Sản phẩm"}</div>
                             <div className="text-muted x-small">
-                              Màu: {item.variant?.color || 'N/A'} - Size: {item.variant?.size || 'N/A'}
-                            </div>
+  Quy cách: {item.variant?.name || 'N/A'}
+</div>
                           </td>
                           <td className="text-center">x{item.quantity}</td>
                           <td className="text-end pe-3 fw-bold">{(item.price || 0).toLocaleString()}đ</td>
@@ -230,15 +268,27 @@ export default function AdminOrdersPage() {
               <div className="modal-footer border-0 p-3">
                 <button className="btn btn-outline-secondary rounded-pill px-4" onClick={() => setSelectedOrder(null)}>Đóng</button>
                 {selectedOrder.status !== 'PAID_AND_CONFIRMED' && selectedOrder.status !== 'CANCELLED' && (
-                    <button 
-                      className="btn btn-success rounded-pill px-4" 
-                      onClick={() => {
-                        handleApprove(selectedOrder.id, selectedOrder.orderCode);
-                        setSelectedOrder(null);
-                      }}
-                    >
-                      Duyệt ngay
-                    </button>
+                    <>
+                      <button 
+                        className="btn btn-danger rounded-pill px-4" 
+                        onClick={() => {
+                          handleCancel(selectedOrder.id, selectedOrder.orderCode);
+                          setSelectedOrder(null);
+                        }}
+                      >
+                        Hủy đơn
+                      </button>
+
+                      <button 
+                        className="btn btn-success rounded-pill px-4" 
+                        onClick={() => {
+                          handleApprove(selectedOrder.id, selectedOrder.orderCode);
+                          setSelectedOrder(null);
+                        }}
+                      >
+                        Duyệt ngay
+                      </button>
+                    </>
                 )}
               </div>
             </div>

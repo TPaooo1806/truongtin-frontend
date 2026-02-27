@@ -65,6 +65,8 @@ export default function AuthModal() {
         if (isLogin && res.data.token && res.data.data) {
           localStorage.setItem('token', res.data.token);
           localStorage.setItem('user', JSON.stringify(res.data.data));
+          const expiryTime = new Date().getTime() + 60 * 60 * 1000; 
+    localStorage.setItem('expiry', expiryTime.toString());
           setTimeout(() => window.location.reload(), 1000);
         } else {
           setIsLogin(true);
