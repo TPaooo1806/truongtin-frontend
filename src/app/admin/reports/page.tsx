@@ -118,8 +118,8 @@ export default function AdminReportsPage() {
           disabled={loading} // Tránh Admin bấm loạn xạ lúc đang load
         >
           <option value="today">Hôm nay</option>
-          <option value="thisWeek">Tuần này</option>
-          <option value="thisMonth">Tháng này</option>
+          <option value="thisWeek">7 ngày qua</option>
+          <option value="thisMonth">30 ngày qua</option>
           <option value="lastMonth">Tháng trước</option>
           <option value="thisYear">Năm nay</option>
         </select>

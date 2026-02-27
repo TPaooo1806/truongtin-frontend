@@ -22,7 +22,6 @@ export default function Header() {
   const router = useRouter();
 
   const [cartCount, setCartCount] = useState(0);
-  
 
   // State Auth
   const [user, setUser] = useState<UserData | null>(null);
@@ -32,9 +31,10 @@ export default function Header() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
 
-  // --- THÊM STATE CHO GỢI Ý TÌM KIẾM ---
+  // State cho Gợi ý tìm kiếm
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  
   const desktopSearchRef = useRef<HTMLDivElement>(null);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
 
@@ -43,10 +43,9 @@ export default function Header() {
     const updateCartCount = () => {
       try {
         const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-        // FIX LỖI ANY: Định nghĩa rõ item có chứa thuộc tính quantity là number
         const total = cart.reduce(
           (sum: number, item: { quantity: number }) => sum + item.quantity,
-          0,
+          0
         );
         setCartCount(total);
       } catch (error) {
@@ -54,17 +53,14 @@ export default function Header() {
       }
     };
 
-    updateCartCount(); // Chạy lần đầu khi load web
-
+    updateCartCount(); 
     window.addEventListener("cartUpdated", updateCartCount);
-
     return () => {
       window.removeEventListener("cartUpdated", updateCartCount);
     };
   }, []);
 
   useEffect(() => {
-    // 1. Khởi tạo Auth
     const initAuth = async () => {
       try {
         const storedUser = localStorage.getItem("user");
@@ -79,7 +75,6 @@ export default function Header() {
     };
     initAuth();
 
-    // 2. Lấy danh mục cho Menu Mobile
     const fetchCategories = async () => {
       try {
         const res = await api.get("/api/categories");
@@ -93,14 +88,13 @@ export default function Header() {
     fetchCategories();
   }, []);
 
-  // --- LOGIC GỢI Ý TÌM KIẾM (DEBOUNCE 300ms) ---
+  // LOGIC GỢI Ý TÌM KIẾM (DEBOUNCE 300ms)
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (searchTerm.trim().length >= 2) {
         try {
-          // Gọi API Gợi ý (Bạn nhớ tạo Endpoint này ở Backend nhé)
           const res = await api.get(
-            `/api/search/suggest?q=${encodeURIComponent(searchTerm.trim())}`,
+            `/api/search/suggest?q=${encodeURIComponent(searchTerm.trim())}`
           );
           if (Array.isArray(res.data) && res.data.length > 0) {
             setSuggestions(res.data);
@@ -116,20 +110,17 @@ export default function Header() {
         setSuggestions([]);
         setShowSuggestions(false);
       }
-    }, 300); // Chờ khách ngừng gõ 300ms mới gọi API
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // --- LOGIC BẤM RA NGOÀI (CLICK OUTSIDE) ĐỂ ĐÓNG GỢI Ý ---
+  // LOGIC CLICK OUTSIDE ĐỂ ĐÓNG GỢI Ý
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      // Nếu click không nằm trong khung Desktop VÀ không nằm trong khung Mobile -> Đóng
-      const isOutsideDesktop =
-        desktopSearchRef.current && !desktopSearchRef.current.contains(target);
-      const isOutsideMobile =
-        mobileSearchRef.current && !mobileSearchRef.current.contains(target);
+      const isOutsideDesktop = desktopSearchRef.current && !desktopSearchRef.current.contains(target);
+      const isOutsideMobile = mobileSearchRef.current && !mobileSearchRef.current.contains(target);
 
       if (isOutsideDesktop && isOutsideMobile) {
         setShowSuggestions(false);
@@ -163,43 +154,10 @@ export default function Header() {
     router.push(`/search?q=${encodeURIComponent(keyword)}`);
   };
 
-  // COMPONENT RENDER KHỐI DROPDOWN
-  const SuggestionDropdown = () => {
-    if (!showSuggestions || suggestions.length === 0) return null;
-    return (
-      <ul
-        className="position-absolute w-100 bg-white shadow-sm rounded-4 list-unstyled mb-0 overflow-hidden"
-        style={{
-          top: "calc(100% + 8px)",
-          left: 0,
-          zIndex: 1050,
-          border: "1px solid #e0e0e0",
-        }}
-      >
-        {suggestions.map((item, idx) => (
-          <li
-            key={idx}
-            className="px-3 d-flex align-items-center text-dark bg-white border-bottom"
-            style={{
-              minHeight: "48px",
-              cursor: "pointer",
-              fontSize: "15px",
-              padding: "8px 0",
-            }}
-            onClick={() => handleSelectSuggestion(item)}
-          >
-            <i className="bi bi-search text-muted me-3 opacity-75"></i>
-            {item}
-          </li>
-        ))}
-      </ul>
-    );
-  };
-
   return (
     <>
       <header className="sticky-top shadow-sm bg-white">
-        {/* 1. TOP BAR (TIME_HEADER) */}
+        {/* 1. TOP BAR */}
         <div className="time_header bg-primary text-white py-2 d-none d-md-block">
           <div className="container text-center" style={{ fontSize: "13px" }}>
             <span>
@@ -255,27 +213,12 @@ export default function Header() {
 
             {/* Hotline */}
             <div className="d-none d-lg-flex align-items-center ms-3 phone_header">
-              <svg
-                width="34"
-                height="34"
-                viewBox="0 0 34 34"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M25.849 22.4917C24.7383 21.3951 23.3515 21.3951 22.2478 22.4917C21.4059 23.3266 20.564 24.1614 19.7362 25.0104C19.5098 25.2439 19.3187 25.2934 19.0428 25.1378C18.498 24.8406 17.9179 24.6001 17.3943 24.2746C14.9534 22.7393 12.9087 20.7654 11.0975 18.5438C10.199 17.4401 9.39948 16.2586 8.84055 14.9284C8.72735 14.6596 8.74858 14.4827 8.9679 14.2634C9.80984 13.4497 10.6305 12.6149 11.4583 11.78C12.6116 10.6197 12.6116 9.2613 11.4513 8.09391C10.7933 7.42885 10.1353 6.77795 9.47731 6.11289C8.7981 5.43368 8.12597 4.7474 7.43969 4.07527C6.3289 2.99278 4.94219 2.99278 3.83847 4.08234C2.98946 4.9172 2.17583 5.77328 1.31267 6.59399C0.513187 7.35103 0.109907 8.27786 0.0250061 9.36035C-0.10942 11.122 0.322159 12.7847 0.930616 14.4049C2.17583 17.7585 4.07195 20.7371 6.37135 23.4681C9.47731 27.1612 13.1847 30.0833 17.5217 32.1916C19.4744 33.1397 21.4979 33.8684 23.6982 33.9887C25.2123 34.0736 26.5282 33.6915 27.5824 32.51C28.3041 31.7034 29.1177 30.9676 29.8818 30.1965C31.0138 29.0503 31.0209 27.6636 29.896 26.5316C28.5517 25.1802 27.2004 23.836 25.849 22.4917Z"
-                  fill="white"
-                />
+              <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M25.849 22.4917C24.7383 21.3951 23.3515 21.3951 22.2478 22.4917C21.4059 23.3266 20.564 24.1614 19.7362 25.0104C19.5098 25.2439 19.3187 25.2934 19.0428 25.1378C18.498 24.8406 17.9179 24.6001 17.3943 24.2746C14.9534 22.7393 12.9087 20.7654 11.0975 18.5438C10.199 17.4401 9.39948 16.2586 8.84055 14.9284C8.72735 14.6596 8.74858 14.4827 8.9679 14.2634C9.80984 13.4497 10.6305 12.6149 11.4583 11.78C12.6116 10.6197 12.6116 9.2613 11.4513 8.09391C10.7933 7.42885 10.1353 6.77795 9.47731 6.11289C8.7981 5.43368 8.12597 4.7474 7.43969 4.07527C6.3289 2.99278 4.94219 2.99278 3.83847 4.08234C2.98946 4.9172 2.17583 5.77328 1.31267 6.59399C0.513187 7.35103 0.109907 8.27786 0.0250061 9.36035C-0.10942 11.122 0.322159 12.7847 0.930616 14.4049C2.17583 17.7585 4.07195 20.7371 6.37135 23.4681C9.47731 27.1612 13.1847 30.0833 17.5217 32.1916C19.4744 33.1397 21.4979 33.8684 23.6982 33.9887C25.2123 34.0736 26.5282 33.6915 27.5824 32.51C28.3041 31.7034 29.1177 30.9676 29.8818 30.1965C31.0138 29.0503 31.0209 27.6636 29.896 26.5316C28.5517 25.1802 27.2004 23.836 25.849 22.4917Z" fill="white" />
               </svg>
-
               <div className="ct-header ms-2">
                 <span className="d-block small">Hotline</span>
-                <a
-                  href="tel:0903989096"
-                  className="fw-bold text-decoration-none"
-                >
-                  0903 989 096
-                </a>
+                <a href="tel:0903989096" className="fw-bold text-decoration-none">0903 989 096</a>
               </div>
             </div>
 
@@ -285,7 +228,6 @@ export default function Header() {
               className="d-none d-lg-flex flex-grow-1 mx-4"
               style={{ maxWidth: "500px" }}
             >
-              {/* Bọc Ref ở đây để hứng sự kiện Click Outside */}
               <div className="position-relative w-100" ref={desktopSearchRef}>
                 <div
                   className="input-group shadow-sm rounded-pill overflow-hidden border"
@@ -306,8 +248,31 @@ export default function Header() {
                     <i className="bi bi-search text-danger fw-bold"></i>
                   </button>
                 </div>
-                {/* Gắn khối Dropdown Gợi ý */}
-                <SuggestionDropdown />
+                
+                {/* GỢI Ý DROP-DOWN (TRỰC TIẾP KHÔNG QUA COMPONENT LỒNG NHAU) */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul
+                    className="position-absolute w-100 bg-white shadow-sm rounded-4 list-unstyled mb-0 overflow-hidden"
+                    style={{
+                      top: "calc(100% + 8px)",
+                      left: 0,
+                      zIndex: 1050,
+                      border: "1px solid #e0e0e0",
+                    }}
+                  >
+                    {suggestions.map((item, idx) => (
+                      <li
+                        key={idx}
+                        className="px-3 d-flex align-items-center text-dark bg-white border-bottom"
+                        style={{ minHeight: "48px", cursor: "pointer", fontSize: "15px", padding: "8px 0" }}
+                        onClick={() => handleSelectSuggestion(item)}
+                      >
+                        <i className="bi bi-search text-muted me-3 opacity-75"></i>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </form>
 
@@ -322,44 +287,27 @@ export default function Header() {
                       data-bs-toggle="dropdown"
                     >
                       <i className="bi bi-person-circle fs-4 text-danger"></i>
-                      <span
-                        className="d-none d-sm-inline text-uppercase"
-                        style={{ fontSize: "0.8rem" }}
-                      >
+                      <span className="d-none d-sm-inline text-uppercase" style={{ fontSize: "0.8rem" }}>
                         Chào, {user.name}
                       </span>
                     </button>
                     <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-3 rounded-3">
                       {user.role === "ADMIN" && (
                         <li>
-                          <Link
-                            className="dropdown-item py-2 small fw-bold text-primary"
-                            href="/admin/dashboard"
-                          >
-                            <i className="bi bi-speedometer2 me-2"></i> QUẢN TRỊ
-                            VIÊN
+                          <Link className="dropdown-item py-2 small fw-bold text-primary" href="/admin/dashboard">
+                            <i className="bi bi-speedometer2 me-2"></i> QUẢN TRỊ VIÊN
                           </Link>
                         </li>
                       )}
                       <li>
-                        <Link
-                          className="dropdown-item py-2 small"
-                          href="/account"
-                        >
-                          <i className="bi bi-person me-2"></i> Thông tin cá
-                          nhân
+                        <Link className="dropdown-item py-2 small" href="/account">
+                          <i className="bi bi-person me-2"></i> Thông tin cá nhân
                         </Link>
                       </li>
+                      <li><hr className="dropdown-divider" /></li>
                       <li>
-                        <hr className="dropdown-divider" />
-                      </li>
-                      <li>
-                        <button
-                          className="dropdown-item py-2 small text-danger fw-bold"
-                          onClick={handleLogout}
-                        >
-                          <i className="bi bi-box-arrow-right me-2"></i> Đăng
-                          xuất
+                        <button className="dropdown-item py-2 small text-danger fw-bold" onClick={handleLogout}>
+                          <i className="bi bi-box-arrow-right me-2"></i> Đăng xuất
                         </button>
                       </li>
                     </ul>
@@ -371,29 +319,18 @@ export default function Header() {
                     data-bs-target="#authModal"
                   >
                     <i className="bi bi-person fs-4"></i>
-                    <span
-                      className="d-none d-xl-inline text-uppercase"
-                      style={{ fontSize: "0.8rem" }}
-                    >
+                    <span className="d-none d-xl-inline text-uppercase" style={{ fontSize: "0.8rem" }}>
                       ĐĂNG NHẬP
                     </span>
                   </button>
                 )
               ) : (
-                <div
-                  className="spinner-border spinner-border-sm text-secondary"
-                  role="status"
-                ></div>
+                <div className="spinner-border spinner-border-sm text-secondary" role="status"></div>
               )}
 
               {/* GIỎ HÀNG */}
-              <Link
-                href="/cart"
-                className="position-relative text-dark text-decoration-none cursor-pointer"
-              >
+              <Link href="/cart" className="position-relative text-dark text-decoration-none cursor-pointer">
                 <i className="bi bi-cart3 fs-4"></i>
-
-                {/* Badge LUÔN hiển thị */}
                 <span
                   className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm"
                   style={{ fontSize: "0.65rem", minWidth: "18px" }}
@@ -404,10 +341,9 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Ô TÌM KIẾM MOBILE (Nằm dưới Logo) */}
+          {/* Ô TÌM KIẾM MOBILE */}
           <div className="container d-block d-lg-none mt-3">
             <form onSubmit={handleSearch} className="w-100">
-              {/* Bọc Ref thứ 2 cho riêng bản Mobile */}
               <div className="position-relative w-100" ref={mobileSearchRef}>
                 <div
                   className="input-group shadow-sm rounded-pill overflow-hidden border"
@@ -428,8 +364,31 @@ export default function Header() {
                     <i className="bi bi-search text-danger fw-bold"></i>
                   </button>
                 </div>
-                {/* Gọi chung Dropdown */}
-                <SuggestionDropdown />
+                
+                {/* GỢI Ý DROP-DOWN MOBILE */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul
+                    className="position-absolute w-100 bg-white shadow-sm rounded-4 list-unstyled mb-0 overflow-hidden"
+                    style={{
+                      top: "calc(100% + 8px)",
+                      left: 0,
+                      zIndex: 1050,
+                      border: "1px solid #e0e0e0",
+                    }}
+                  >
+                    {suggestions.map((item, idx) => (
+                      <li
+                        key={idx}
+                        className="px-3 d-flex align-items-center text-dark bg-white border-bottom"
+                        style={{ minHeight: "48px", cursor: "pointer", fontSize: "15px", padding: "8px 0" }}
+                        onClick={() => handleSelectSuggestion(item)}
+                      >
+                        <i className="bi bi-search text-muted me-3 opacity-75"></i>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </form>
           </div>
@@ -437,53 +396,24 @@ export default function Header() {
       </header>
 
       {/* 3. MENU MOBILE OFF-CANVAS */}
-      <div
-        className="offcanvas offcanvas-start"
-        tabIndex={-1}
-        id="mobileMenu"
-        aria-labelledby="mobileMenuLabel"
-      >
+      <div className="offcanvas offcanvas-start" tabIndex={-1} id="mobileMenu" aria-labelledby="mobileMenuLabel">
         <div className="offcanvas-header border-bottom bg-light py-3">
-          <h5
-            className="offcanvas-title text-danger fw-bold fs-5"
-            id="mobileMenuLabel"
-          >
+          <h5 className="offcanvas-title text-danger fw-bold fs-5" id="mobileMenuLabel">
             TRƯỜNG TÍN
           </h5>
-          <button
-            type="button"
-            className="btn-close shadow-none"
-            id="closeMobileMenuBtn"
-            data-bs-dismiss="offcanvas"
-            aria-label="Close"
-          ></button>
+          <button type="button" className="btn-close shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
 
         <div className="offcanvas-body p-0">
           <div className="list-group list-group-flush border-bottom mt-2">
-            <Link
-              href="/"
-              className="list-group-item list-group-item-action fw-bold py-3 text-dark border-0"
-              data-bs-dismiss="offcanvas"
-            >
-              <i className="bi bi-house-door text-primary me-2 fs-5 align-middle"></i>{" "}
-              TRANG CHỦ
+            <Link href="/" className="list-group-item list-group-item-action fw-bold py-3 text-dark border-0" data-bs-dismiss="offcanvas">
+              <i className="bi bi-house-door text-primary me-2 fs-5 align-middle"></i> TRANG CHỦ
             </Link>
-            <Link
-              href="/san-pham"
-              className="list-group-item list-group-item-action fw-bold py-3 text-dark border-0"
-              data-bs-dismiss="offcanvas"
-            >
-              <i className="bi bi-grid text-success me-2 fs-5 align-middle"></i>{" "}
-              TẤT CẢ SẢN PHẨM
+            <Link href="/san-pham" className="list-group-item list-group-item-action fw-bold py-3 text-dark border-0" data-bs-dismiss="offcanvas">
+              <i className="bi bi-grid text-success me-2 fs-5 align-middle"></i> TẤT CẢ SẢN PHẨM
             </Link>
-            <Link
-              href="/lien-he"
-              className="list-group-item list-group-item-action fw-bold py-3 text-dark border-0"
-              data-bs-dismiss="offcanvas"
-            >
-              <i className="bi bi-telephone text-info me-2 fs-5 align-middle"></i>{" "}
-              LIÊN HỆ CỬA HÀNG
+            <Link href="/lien-he" className="list-group-item list-group-item-action fw-bold py-3 text-dark border-0" data-bs-dismiss="offcanvas">
+              <i className="bi bi-telephone text-info me-2 fs-5 align-middle"></i> LIÊN HỆ CỬA HÀNG
             </Link>
           </div>
 
