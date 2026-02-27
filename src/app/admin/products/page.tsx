@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import api from "@/lib/axios";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import Image from "next/image";
 
 // --- Interface ---
@@ -70,8 +70,13 @@ export default function AdminProductsPage() {
     totalPages: 1,
   });
 
-  // --- ĐÃ THÊM: State quản lý trạng thái đang upload ảnh ---
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  // ==========================================
+  // ĐÃ THÊM: STATE CHO IMPORT EXCEL
+  // ==========================================
+  const [isImporting, setIsImporting] = useState(false);
+  const [importSummary, setImportSummary] = useState<{success: number, failed: number, errors: {row: number, reason: string}[]} | null>(null);
 
   const initialFormState = {
     name: "",
@@ -79,7 +84,7 @@ export default function AdminProductsPage() {
     categoryId: "",
     description: "",
     unit: "Cái",
-    images: [] as string[], // Đổi thành mảng rỗng mặc định
+    images: [] as string[],
     variants: [
       { sku: "", price: "", stock: "", attributeValue: "" },
     ] as VariantForm[],
@@ -97,7 +102,7 @@ export default function AdminProductsPage() {
       setProducts(prodRes.data.data);
       setPagination(prodRes.data.pagination);
       setCategories(catRes.data.data);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       toast.error("Lỗi tải dữ liệu");
     } finally {
@@ -115,7 +120,7 @@ export default function AdminProductsPage() {
       await api.delete(`/api/products/${id}`);
       toast.success("Đã xóa");
       fetchData(pagination.currentPage);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       toast.error("Lỗi xóa sản phẩm");
     }
@@ -146,7 +151,6 @@ export default function AdminProductsPage() {
     setShowModal(true);
   };
 
-  // --- ĐÃ THÊM: Logic Upload ảnh trực tiếp lên Cloudinary ---
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -154,7 +158,6 @@ export default function AdminProductsPage() {
     setIsUploadingImage(true);
     const uploadedUrls: string[] = [];
 
-    // Lặp qua từng file người dùng chọn để upload
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const data = new FormData();
@@ -164,7 +167,6 @@ export default function AdminProductsPage() {
       data.append("cloud_name", "dwqbfdxpm");
 
       try {
-        // Gọi API của Cloudinary (Nhớ đổi cloud_name trên link)
         const res = await fetch(
           "https://api.cloudinary.com/v1_1/dwqbfdxpm/image/upload",
           {
@@ -183,14 +185,12 @@ export default function AdminProductsPage() {
       }
     }
 
-    // Cập nhật lại state formData, gộp ảnh cũ và ảnh mới upload
     setFormData((prev) => ({
       ...prev,
       images: [...prev.images, ...uploadedUrls],
     }));
 
     setIsUploadingImage(false);
-    // Reset input file để có thể chọn lại file vừa chọn nếu cần
     e.target.value = "";
   };
 
@@ -206,7 +206,6 @@ export default function AdminProductsPage() {
     const payload = { ...formData };
     if (!payload.slug) payload.slug = generateSlug(payload.name);
 
-    // Đảm bảo không gửi mảng rỗng lên nếu bị lỗi
     payload.images = payload.images.filter((url) => url.trim() !== "");
 
     try {
@@ -219,26 +218,122 @@ export default function AdminProductsPage() {
       }
       setShowModal(false);
       fetchData(pagination.currentPage);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
       toast.error("Lỗi lưu sản phẩm");
     }
   };
 
+  // ==========================================
+  // ĐÃ THÊM: HÀM LẤY FORM MẪU VÀ IMPORT EXCEL
+  // ==========================================
+  const handleDownloadTemplate = () => {
+    // Gọi thẳng URL Backend để tải file mẫu
+    window.open(`${process.env.NEXT_PUBLIC_API_URL || 'https://truongtin-api.onrender.com'}/api/products/template`);
+  };
+
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    setImportSummary(null);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await api.post("/api/products/import", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      if (res.data.success) {
+        const { successCount, failedCount, errors } = res.data.data;
+        if (failedCount === 0) {
+          toast.success(`Import thành công ${successCount} sản phẩm!`);
+        } else {
+          toast.success(`Thành công: ${successCount}. Thất bại: ${failedCount}. Xem chi tiết!`);
+          setImportSummary({ success: successCount, failed: failedCount, errors });
+        }
+        fetchData(1);
+      }
+    } catch (error: unknown) {
+      const axiosError = error as {response?: {data?: {message?: string}}};
+      console.error("Lỗi import:", error);
+      toast.error(axiosError.response?.data?.message || "Lỗi khi import file Excel!");
+    } finally {
+      setIsImporting(false);
+      e.target.value = ""; // Reset file input
+    }
+  };
+
   return (
     <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
-      <div className="d-flex justify-content-between mb-4 align-items-center">
+      {/* ĐÃ SỬA: Cụm tiêu đề và các nút thao tác */}
+      <div className="d-flex justify-content-between mb-4 align-items-center flex-wrap gap-3">
         <div>
           <h5 className="fw-bold mb-0">Hàng Hóa Trường Tín</h5>
           <small className="text-muted">Quản lý kho và giá bán</small>
         </div>
-        <button
-          onClick={handleOpenAdd}
-          className="btn btn-primary rounded-pill px-4"
-        >
-          + Thêm Sản Phẩm
-        </button>
+        
+        <div className="d-flex flex-wrap gap-2">
+          {/* NÚT LẤY FORM MẪU */}
+          <button 
+            onClick={handleDownloadTemplate} 
+            className="btn btn-outline-success rounded-pill px-3 shadow-sm d-flex align-items-center"
+          >
+            <i className="bi bi-file-earmark-arrow-down me-2"></i> Lấy form mẫu
+          </button>
+
+          {/* NÚT IMPORT EXCEL */}
+          <div>
+            <input 
+              type="file" 
+              id="import-excel" 
+              accept=".xlsx, .xls" 
+              className="d-none" 
+              onChange={handleImportExcel}
+              disabled={isImporting}
+            />
+            <label 
+              htmlFor="import-excel" 
+              className={`btn btn-success rounded-pill px-3 shadow-sm m-0 d-flex align-items-center ${isImporting ? 'disabled' : ''}`}
+              style={{ cursor: 'pointer', height: '100%' }}
+            >
+              {isImporting ? (
+                <span><span className="spinner-border spinner-border-sm me-2"></span>Đang xử lý...</span>
+              ) : (
+                <><i className="bi bi-file-earmark-arrow-up me-2"></i> Import Excel</>
+              )}
+            </label>
+          </div>
+
+          {/* NÚT THÊM SẢN PHẨM THỦ CÔNG */}
+          <button
+            onClick={handleOpenAdd}
+            className="btn btn-primary rounded-pill px-4 shadow-sm"
+          >
+            + Thêm Sản Phẩm
+          </button>
+        </div>
       </div>
+
+      {/* ĐÃ THÊM: Khu vực hiển thị kết quả Import khi có lỗi */}
+      {importSummary && importSummary.errors.length > 0 && (
+        <div className="alert alert-warning mb-4 rounded-4 shadow-sm border-warning">
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <h6 className="fw-bold mb-0 text-danger">
+              <i className="bi bi-exclamation-triangle me-2"></i>
+              Báo cáo Import (Thành công: {importSummary.success} | Lỗi: {importSummary.failed})
+            </h6>
+            <button className="btn-close" onClick={() => setImportSummary(null)}></button>
+          </div>
+          <ul className="mb-0 text-dark" style={{ fontSize: '14px', maxHeight: '150px', overflowY: 'auto' }}>
+            {importSummary.errors.map((err: {row: number, reason: string}, idx: number) => (
+              <li key={idx}><strong>Dòng {err.row}:</strong> {err.reason}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="table-responsive">
         <table className="table table-hover align-middle">
@@ -270,16 +365,17 @@ export default function AdminProductsPage() {
                   <td>
                     <div className="d-flex align-items-center">
                       <Image
-  src={
-    p.images?.[0]?.url ||
-    "https://placehold.co/40x40?text=No+Img"
-  }
-  alt={p.name}
-  width={40}
-  height={40}
-  className="rounded me-2 object-fit-cover border"
-  style={{ objectFit: "cover" }}
-/>
+                        src={
+                          p.images?.[0]?.url ||
+                          "https://placehold.co/40x40/png?text=No+Img"
+                        }
+                        alt={p.name}
+                        width={40}
+                        height={40}
+                        className="rounded me-2 object-fit-cover border"
+                        style={{ objectFit: "cover" }}
+                        unoptimized
+                      />
                       <div>
                         <div className="fw-bold">{p.name}</div>
                         <div
@@ -551,14 +647,12 @@ export default function AdminProductsPage() {
                     ))}
                   </div>
 
-                  {/* --- ĐÃ SỬA LẠI: Giao diện Upload File & Preview --- */}
                   <div className="col-12 bg-light p-3 rounded-3 mt-3 border">
                     <div className="d-flex justify-content-between mb-3 align-items-center">
                       <span className="fw-bold text-success">
                         Hình ảnh sản phẩm
                       </span>
 
-                      {/* Nút ẩn input file, chỉ hiện label cho đẹp */}
                       <div>
                         <input
                           type="file"
@@ -586,21 +680,21 @@ export default function AdminProductsPage() {
                       </div>
                     </div>
 
-                    {/* Khu vực hiển thị ảnh đã upload */}
                     <div className="d-flex flex-wrap gap-3">
                       {formData.images.map((url, i) => (
                         <div
                           key={i}
                           className="position-relative border p-1 bg-white rounded shadow-sm"
                         >
-                          <img
+                          <Image
                             src={url}
                             alt={`preview-${i}`}
-                            width="80"
-                            height="80"
-                            className="object-fit-cover rounded"
+                            width={80}
+                            height={80}
+                            className="rounded"
+                            style={{ objectFit: "cover" }}
+                            unoptimized
                           />
-                          {/* Nút xóa ảnh */}
                           <button
                             type="button"
                             className="btn btn-sm btn-danger position-absolute top-0 start-100 translate-middle rounded-circle shadow"
@@ -627,7 +721,6 @@ export default function AdminProductsPage() {
                       )}
                     </div>
                   </div>
-                  {/* --- KẾT THÚC PHẦN SỬA --- */}
                 </div>
 
                 <div className="text-end mt-4 pt-3 border-top">
