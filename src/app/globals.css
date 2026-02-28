@@ -207,3 +207,267 @@ main {
   box-shadow: 0 0 0 0.2rem rgba(220,53,69,.15);
 }
 
+/* ========== NEW HEADER DESIGN ========== */
+
+/* Search Bar Styling - Pill Shape */
+.header-search-input {
+  border-radius: 50px !important;
+  background-color: #f8f9fa !important;
+  border: none !important;
+  padding: 12px 20px !important;
+  transition: all 0.25s ease !important;
+  font-size: 0.9rem;
+}
+
+.header-search-input:focus {
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.1) !important;
+  outline: none;
+}
+
+.header-search-wrapper {
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.header-search-wrapper:focus-within {
+  box-shadow: 0 4px 16px rgba(220, 53, 69, 0.15);
+  border-radius: 50px;
+}
+
+/* Hover Scale Effect for Buttons */
+.hover-scale {
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-scale:active {
+  transform: scale(0.98);
+}
+
+/* Pastel Hover Background Colors */
+.hover-bg-danger-light:hover {
+  background-color: #f8d7da !important;
+  transition: background-color 0.25s ease;
+}
+
+.hover-bg-primary-light:hover {
+  background-color: #cfe2ff !important;
+  transition: background-color 0.25s ease;
+}
+
+/* Header Logo Styling */
+.header-logo {
+  font-weight: 900 !important;
+  letter-spacing: -1px;
+  transition: all 0.25s ease;
+}
+
+.header-logo:hover {
+  transform: scale(1.02);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Header Container - Premium Shadow */
+header.sticky-top {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  z-index: 1030;
+}
+
+/* Dropdown & Menu Styling */
+.dropdown-menu {
+  border-radius: 16px !important;
+  border: none !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+  margin-top: 12px !important;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin: 0 6px;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa !important;
+  transform: translateX(4px);
+}
+
+/* Voice within search focus effect */
+.search-input-group {
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.search-input-group:focus-within {
+  box-shadow: 0 4px 16px rgba(220, 53, 69, 0.15);
+}
+
+/* Mobile Hamburger Button */
+.btn-hamburger {
+  border-radius: 10px !important;
+  padding: 8px 12px !important;
+  transition: all 0.25s ease;
+  background-color: #f8f9fa !important;
+  border: 1px solid #dee2e6 !important;
+}
+
+.btn-hamburger:hover {
+  background-color: #e9ecef !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile Menu - Offcanvas */
+.offcanvas {
+  border-radius: 0 16px 16px 0 !important;
+}
+
+.offcanvas-body {
+  padding: 16px 0 !important;
+}
+
+/* Mobile Menu Items - Better Spacing */
+.mobile-menu-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 8px;
+}
+
+.mobile-menu-item {
+  border-radius: 10px !important;
+  padding: 14px 16px !important;
+  transition: all 0.25s ease;
+  margin: 0;
+}
+
+.mobile-menu-item:hover {
+  background-color: #f8f9fa !important;
+  transform: translateX(4px);
+}
+
+/* Action Buttons - Pill Shaped */
+.action-btn {
+  border-radius: 50px !important;
+  padding: 8px 16px !important;
+  transition: all 0.25s ease;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.action-btn:hover {
+  transform: scale(1.05);
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+/* Track Order Button */
+.btn-track-order {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 50px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #000;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-track-order:hover {
+  transform: scale(1.05);
+  background-color: #cfe2ff;
+  color: #0c63e4;
+}
+
+/* Login Button */
+.btn-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 50px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #000;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-login:hover {
+  transform: scale(1.05);
+  background-color: #f8d7da;
+  color: #d32f2f;
+}
+
+/* Hotline Card - Premium Style */
+.hotline-card {
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 16px rgba(211, 47, 47, 0.2);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.hotline-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(211, 47, 47, 0.3);
+}
+
+/* Cart Badge */
+.cart-badge {
+  border-radius: 12px;
+  font-size: 0.65rem;
+  min-width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Smooth Global Transitions */
+* {
+  transition: all 0.25s ease !important;
+}
+
+/* Disable transition for specific properties */
+.no-transition {
+  transition: none !important;
+}
+

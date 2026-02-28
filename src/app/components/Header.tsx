@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AuthModal from "./AuthModal";
 import api from "@/lib/axios";
+import { usePathname } from 'next/navigation';
 
 // --- ĐỊNH NGHĨA KIỂU DỮ LIỆU ---
 interface UserData {
@@ -20,6 +21,7 @@ interface Category {
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
 
   // 💡 BƯỚC 1: Khai báo Ref để giả lập click đóng menu mobile
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -176,7 +178,7 @@ export default function Header() {
             
             {/* NÚT HAMBURGER MOBILE */}
             <button
-              className="btn btn-light border d-lg-none px-2 py-1"
+              className="btn btn-hamburger d-lg-none"
               type="button"
               data-bs-toggle="offcanvas"
               data-bs-target="#mobileMenu"
@@ -186,22 +188,41 @@ export default function Header() {
             </button>
 
             {/* LOGO */}
-            <Link className="navbar-brand fw-bold text-danger fs-3 mx-0 me-lg-4 text-decoration-none" href="/">
+            <Link className="navbar-brand header-logo text-danger fs-3 mx-0 me-lg-4 text-decoration-none" href="/">
               TRƯỜNG TÍN
             </Link>
 
-            {/* MENU PC */}
-            <ul className="nav d-none d-lg-flex fw-bold text-uppercase me-auto align-items-center" style={{ fontSize: "0.85rem" }}>
-              <li className="nav-item">
-                <Link className="nav-link text-dark px-2" href="/">Trang chủ</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link text-dark px-2" href="/gioi-thieu">Giới thiệu</Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link text-dark px-2" href="/lien-he">Liên hệ</Link>
-              </li>
-            </ul>
+{/* MENU PC - Gọn gàng, bo tròn nhẹ, không chiếm diện tích */}
+<ul className="nav d-none d-lg-flex fw-bold text-uppercase me-auto align-items-center mb-0" style={{ fontSize: "0.82rem" }}>
+  {[
+    { name: "Trang chủ", path: "/" },
+    { name: "Giới thiệu", path: "/gioi-thieu" },
+    { name: "Liên hệ", path: "/lien-he" },
+  ].map((item) => {
+    // Để dùng được usePathname, bạn nhớ import { usePathname } from 'next/navigation'; ở trên đầu file nhé
+    const active = pathname === item.path; 
+
+    return (
+      <li className="nav-item" key={item.path}>
+        <Link 
+          href={item.path}
+          className={`nav-link px-2 py-1 rounded-pill transition-all ${active ? 'text-danger' : 'text-dark hover-subtle-bg'}`}
+        >
+          {item.name}
+        </Link>
+      </li>
+    );
+  })}
+</ul>
+
+{/* 💡 Thêm CSS này vào thẻ <style jsx> phía dưới */}
+<style jsx>{`
+  .transition-all { transition: all 0.2s ease; }
+  .hover-subtle-bg:hover { 
+    background-color: #f5f5f5; 
+    color: #dc3545 !important; /* Đổi sang màu đỏ khi hover cho nổi */
+  }
+`}</style>
 
             {/* Hotline PC */}
             <div className="d-none d-lg-flex align-items-center ms-3 phone_header">
@@ -216,26 +237,26 @@ export default function Header() {
 
             {/* Ô TÌM KIẾM PC */}
             <form onSubmit={handleSearch} className="d-none d-lg-flex flex-grow-1 mx-3 mx-xl-4" style={{ maxWidth: "450px" }}>
-              <div className="position-relative w-100" ref={desktopSearchRef}>
-                <div className="input-group shadow-sm rounded-pill overflow-hidden border" style={{ border: "2px solid #eee" }}>
+              <div className="position-relative w-100 header-search-wrapper" ref={desktopSearchRef}>
+                <div className="input-group search-input-group" style={{ borderRadius: "50px" }}>
                   <input
-                    className="form-control border-0 ps-4 shadow-none bg-white"
+                    className="form-control header-search-input border-0 ps-4 shadow-none"
                     type="search"
                     placeholder="Tìm sản phẩm..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                    style={{ height: "40px", fontSize: "0.9rem" }}
+                    style={{ height: "42px", fontSize: "0.9rem" }}
                   />
-                  <button className="btn btn-white border-0 pe-3" type="submit">
+                  <button className="btn btn-link border-0 pe-3 text-decoration-none" type="submit">
                     <i className="bi bi-search text-danger fw-bold"></i>
                   </button>
                 </div>
                 
                 {showSuggestions && suggestions.length > 0 && (
-                  <ul className="position-absolute w-100 bg-white shadow-sm rounded-4 list-unstyled mb-0 overflow-hidden" style={{ top: "calc(100% + 8px)", left: 0, zIndex: 1050, border: "1px solid #e0e0e0" }}>
+                  <ul className="position-absolute w-100 bg-white shadow rounded-4 list-unstyled mb-0 overflow-hidden" style={{ top: "calc(100% + 12px)", left: 0, zIndex: 1050, border: "1px solid #e0e0e0" }}>
                     {suggestions.map((item, idx) => (
-                      <li key={idx} className="px-3 d-flex align-items-center text-dark bg-white border-bottom" style={{ minHeight: "48px", cursor: "pointer", fontSize: "15px", padding: "8px 0" }} onClick={() => handleSelectSuggestion(item)}>
+                      <li key={idx} className="px-3 d-flex align-items-center text-dark bg-white border-bottom" style={{ minHeight: "48px", cursor: "pointer", fontSize: "15px", padding: "12px 0", transition: "all 0.2s ease" }} onClick={() => handleSelectSuggestion(item)}>
                         <i className="bi bi-search text-muted me-3 opacity-75"></i>{item}
                       </li>
                     ))}
@@ -248,7 +269,7 @@ export default function Header() {
             <div className="d-flex align-items-center gap-3 gap-md-4">
               
               {/* 💡 BƯỚC 2: NÚT TRA CỨU ĐƠN HÀNG TRÊN DESKTOP */}
-              <Link href="/track-order" className="btn btn-link text-dark text-decoration-none fw-bold small d-none d-lg-flex align-items-center gap-1 p-0 shadow-none border-0">
+              <Link href="/track-order" className="btn-track-order hover-scale hover-bg-primary-light d-none d-lg-flex">
                 <i className="bi bi-box-seam fs-4 text-primary"></i>
                 <span className="d-none d-xl-inline text-uppercase" style={{ fontSize: "0.8rem" }}>Tra đơn</span>
               </Link>
@@ -257,11 +278,11 @@ export default function Header() {
               {isMounted ? (
                 user ? (
                   <div className="dropdown">
-                    <button className="btn btn-link text-dark text-decoration-none fw-bold small d-flex align-items-center gap-2 p-0 shadow-none dropdown-toggle border-0" type="button" data-bs-toggle="dropdown">
+                    <button className="btn-login hover-scale hover-bg-danger-light" type="button" data-bs-toggle="dropdown">
                       <i className="bi bi-person-circle fs-4 text-danger"></i>
                       <span className="d-none d-sm-inline text-uppercase" style={{ fontSize: "0.8rem" }}>Chào, {user.name}</span>
                     </button>
-                    <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-3 rounded-3">
+                    <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-3">
                       {user.role === "ADMIN" && (
                         <li><Link className="dropdown-item py-2 small fw-bold text-primary" href="/admin/dashboard"><i className="bi bi-speedometer2 me-2"></i> QUẢN TRỊ VIÊN</Link></li>
                       )}
@@ -271,7 +292,7 @@ export default function Header() {
                     </ul>
                   </div>
                 ) : (
-                  <button className="btn btn-link text-dark text-decoration-none fw-bold small d-flex align-items-center gap-1 p-0 shadow-none border-0" data-bs-toggle="modal" data-bs-target="#authModal">
+                  <button className="btn-login hover-scale hover-bg-danger-light" data-bs-toggle="modal" data-bs-target="#authModal">
                     <i className="bi bi-person fs-4"></i>
                     <span className="d-none d-xl-inline text-uppercase" style={{ fontSize: "0.8rem" }}>ĐĂNG NHẬP</span>
                   </button>
@@ -281,9 +302,9 @@ export default function Header() {
               )}
 
               {/* GIỎ HÀNG */}
-              <Link href="/cart" className="position-relative text-dark text-decoration-none cursor-pointer">
+              <Link href="/cart" className="position-relative text-dark text-decoration-none cursor-pointer hover-scale">
                 <i className="bi bi-cart3 fs-4"></i>
-                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm" style={{ fontSize: "0.65rem", minWidth: "18px" }}>
+                <span className="position-absolute top-0 start-100 translate-middle badge cart-badge bg-danger">
                   {cartCount > 99 ? "99+" : cartCount}
                 </span>
               </Link>
@@ -293,26 +314,26 @@ export default function Header() {
           {/* Ô TÌM KIẾM MOBILE */}
           <div className="container d-block d-lg-none mt-3">
             <form onSubmit={handleSearch} className="w-100">
-              <div className="position-relative w-100" ref={mobileSearchRef}>
-                <div className="input-group shadow-sm rounded-pill overflow-hidden border" style={{ border: "1px solid #ddd" }}>
+              <div className="position-relative w-100 header-search-wrapper" ref={mobileSearchRef}>
+                <div className="input-group search-input-group" style={{ borderRadius: "50px" }}>
                   <input
-                    className="form-control border-0 ps-3 shadow-none bg-light"
+                    className="form-control header-search-input border-0 ps-4 shadow-none"
                     type="search"
                     placeholder="Tìm sản phẩm..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                    style={{ height: "40px", fontSize: "0.9rem" }}
+                    style={{ height: "42px", fontSize: "0.9rem" }}
                   />
-                  <button className="btn btn-light border-0 px-3" type="submit">
+                  <button className="btn btn-link border-0 px-3 text-decoration-none" type="submit">
                     <i className="bi bi-search text-danger fw-bold"></i>
                   </button>
                 </div>
                 
                 {showSuggestions && suggestions.length > 0 && (
-                  <ul className="position-absolute w-100 bg-white shadow-sm rounded-4 list-unstyled mb-0 overflow-hidden" style={{ top: "calc(100% + 8px)", left: 0, zIndex: 1050, border: "1px solid #e0e0e0" }}>
+                  <ul className="position-absolute w-100 bg-white shadow rounded-4 list-unstyled mb-0 overflow-hidden" style={{ top: "calc(100% + 12px)", left: 0, zIndex: 1050, border: "1px solid #e0e0e0" }}>
                     {suggestions.map((item, idx) => (
-                      <li key={idx} className="px-3 d-flex align-items-center text-dark bg-white border-bottom" style={{ minHeight: "48px", cursor: "pointer", fontSize: "15px", padding: "8px 0" }} onClick={() => handleSelectSuggestion(item)}>
+                      <li key={idx} className="px-3 d-flex align-items-center text-dark bg-white border-bottom" style={{ minHeight: "48px", cursor: "pointer", fontSize: "15px", padding: "12px 0", transition: "all 0.2s ease" }} onClick={() => handleSelectSuggestion(item)}>
                         <i className="bi bi-search text-muted me-3 opacity-75"></i>{item}
                       </li>
                     ))}
@@ -335,45 +356,49 @@ export default function Header() {
         </div>
 
         <div className="offcanvas-body p-0">
-          <div className="list-group list-group-flush border-bottom mt-2">
+          <div className="mobile-menu-items p-2">
             {/* 💡 SỬA data-bs-dismiss="offcanvas" THÀNH onClick={() => closeBtnRef.current?.click()} */}
-            <Link href="/" className="list-group-item list-group-item-action fw-bold py-3 text-dark border-0" onClick={() => closeBtnRef.current?.click()}>
+            <Link href="/" className="mobile-menu-item list-group-item list-group-item-action fw-bold text-dark" onClick={() => closeBtnRef.current?.click()}>
               <i className="bi bi-house-door text-primary me-2 fs-5 align-middle"></i> TRANG CHỦ
             </Link>
-            <Link href="/san-pham" className="list-group-item list-group-item-action fw-bold py-3 text-dark border-0" onClick={() => closeBtnRef.current?.click()}>
+            <Link href="/san-pham" className="mobile-menu-item list-group-item list-group-item-action fw-bold text-dark" onClick={() => closeBtnRef.current?.click()}>
               <i className="bi bi-grid text-success me-2 fs-5 align-middle"></i> TẤT CẢ SẢN PHẨM
             </Link>
+          </div>
+
+          {/* Hotline Card */}
+          <div className="px-2 my-3">
             <a 
-  href="tel:0903989096" 
-  className="list-group-item list-group-item-action py-2 border-0 mt-2 mb-1"
-  onClick={() => closeBtnRef.current?.click()}
->
-  <div className="d-flex align-items-center bg-danger text-white p-2 rounded-3 shadow-sm">
-    <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M25.849 22.4917C24.7383 21.3951 23.3515 21.3951 22.2478 22.4917C21.4059 23.3266 20.564 24.1614 19.7362 25.0104C19.5098 25.2439 19.3187 25.2934 19.0428 25.1378C18.498 24.8406 17.9179 24.6001 17.3943 24.2746C14.9534 22.7393 12.9087 20.7654 11.0975 18.5438C10.199 17.4401 9.39948 16.2586 8.84055 14.9284C8.72735 14.6596 8.74858 14.4827 8.9679 14.2634C9.80984 13.4497 10.6305 12.6149 11.4583 11.78C12.6116 10.6197 12.6116 9.2613 11.4513 8.09391C10.7933 7.42885 10.1353 6.77795 9.47731 6.11289C8.7981 5.43368 8.12597 4.7474 7.43969 4.07527C6.3289 2.99278 4.94219 2.99278 3.83847 4.08234C2.98946 4.9172 2.17583 5.77328 1.31267 6.59399C0.513187 7.35103 0.109907 8.27786 0.0250061 9.36035C-0.10942 11.122 0.322159 12.7847 0.930616 14.4049C2.17583 17.7585 4.07195 20.7371 6.37135 23.4681C9.47731 27.1612 13.1847 30.0833 17.5217 32.1916C19.4744 33.1397 21.4979 33.8684 23.6982 33.9887C25.2123 34.0736 26.5282 33.6915 27.5824 32.51C28.3041 31.7034 29.1177 30.9676 29.8818 30.1965C31.0138 29.0503 31.0209 27.6636 29.896 26.5316C28.5517 25.1802 27.2004 23.836 25.849 22.4917Z" fill="white" />
-    </svg>
-    <div className="ct-header ms-2">
-      <span className="d-block small text-light" style={{ fontSize: "0.8rem" }}>Hotline gọi ngay</span>
-      <span className="fw-bold fs-5 text-white">0903 989 096</span>
-    </div>
-  </div>
-</a>
+              href="tel:0903989096" 
+              className="hotline-card d-flex align-items-center text-white text-decoration-none"
+              onClick={() => closeBtnRef.current?.click()}
+            >
+              <svg width="32" height="32" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M25.849 22.4917C24.7383 21.3951 23.3515 21.3951 22.2478 22.4917C21.4059 23.3266 20.564 24.1614 19.7362 25.0104C19.5098 25.2439 19.3187 25.2934 19.0428 25.1378C18.498 24.8406 17.9179 24.6001 17.3943 24.2746C14.9534 22.7393 12.9087 20.7654 11.0975 18.5438C10.199 17.4401 9.39948 16.2586 8.84055 14.9284C8.72735 14.6596 8.74858 14.4827 8.9679 14.2634C9.80984 13.4497 10.6305 12.6149 11.4583 11.78C12.6116 10.6197 12.6116 9.2613 11.4513 8.09391C10.7933 7.42885 10.1353 6.77795 9.47731 6.11289C8.7981 5.43368 8.12597 4.7474 7.43969 4.07527C6.3289 2.99278 4.94219 2.99278 3.83847 4.08234C2.98946 4.9172 2.17583 5.77328 1.31267 6.59399C0.513187 7.35103 0.109907 8.27786 0.0250061 9.36035C-0.10942 11.122 0.322159 12.7847 0.930616 14.4049C2.17583 17.7585 4.07195 20.7371 6.37135 23.4681C9.47731 27.1612 13.1847 30.0833 17.5217 32.1916C19.4744 33.1397 21.4979 33.8684 23.6982 33.9887C25.2123 34.0736 26.5282 33.6915 27.5824 32.51C28.3041 31.7034 29.1177 30.9676 29.8818 30.1965C31.0138 29.0503 31.0209 27.6636 29.896 26.5316C28.5517 25.1802 27.2004 23.836 25.849 22.4917Z" fill="white" />
+              </svg>
+              <div className="ms-3">
+                <span className="d-block small fw-normal" style={{ fontSize: "0.8rem" }}>Gọi hỗ trợ ngay</span>
+                <span className="fw-bold fs-5">0903 989 096</span>
+              </div>
+            </a>
+          </div>
             
             {/* 💡 BƯỚC 3: NÚT TRA CỨU ĐƠN HÀNG MOBILE */}
-            <Link href="/track-order" className="list-group-item list-group-item-action fw-bold py-3 text-danger border-0" onClick={() => closeBtnRef.current?.click()}>
-              <i className="bi bi-box-seam text-danger me-2 fs-5 align-middle"></i> TRA CỨU ĐƠN HÀNG
-            </Link>
-          </div>
+            <div className="mobile-menu-items p-2">
+              <Link href="/track-order" className="mobile-menu-item list-group-item list-group-item-action fw-bold text-danger" onClick={() => closeBtnRef.current?.click()}>
+                <i className="bi bi-box-seam text-danger me-2 fs-5 align-middle"></i> TRA CỨU ĐƠN HÀNG
+              </Link>
+            </div>
 
           <div className="px-3 py-2 bg-light text-muted small fw-bold text-uppercase mt-2">
             Danh mục vật tư
           </div>
-          <div className="list-group list-group-flush">
+          <div className="mobile-menu-items p-2">
             {categories.map((category) => (
               <Link
                 key={category.id}
                 href={`/category/${category.slug}`}
-                className="list-group-item list-group-item-action py-3 border-0 d-flex justify-content-between align-items-center"
+                className="mobile-menu-item list-group-item list-group-item-action d-flex justify-content-between align-items-center"
                 onClick={() => closeBtnRef.current?.click()}
               >
                 {category.name}
