@@ -75,6 +75,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => clearInterval(interval);
   }, [isReady]);
 
+  // Hàm xử lý nút "ĐÃ XỬ LÝ XONG" cho Liên hệ
+  const handleResolveContact = async (rawId: string) => {
+    // ID lúc nãy mình gán có dạng "contact_15", giờ mình cắt lấy số 15 thôi
+    const contactId = rawId.replace('contact_', '');
+    
+    try {
+      const res = await api.patch(`/api/contact/resolve/${contactId}`);
+      if (res.data.success) {
+        toast.success("Đã xử lý xong liên hệ!");
+        setSelectedNotif(null); // Đóng pop-up
+        
+        // Cập nhật lại list thông báo ngay lập tức để làm biến mất chấm đỏ
+        setNotifications(prev => prev.filter(n => n.id !== rawId));
+      }
+    } catch (error) {
+      toast.error("Lỗi khi xử lý liên hệ");
+    }
+  };
+
   // Click ra ngoài đóng Dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -310,16 +329,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
               </div>
               
-              <div className="modal-footer border-0 bg-light">
+              <div className="modal-footer border-0 bg-light d-flex justify-content-between">
                 <button type="button" className="btn btn-secondary fw-bold rounded-3 px-4" onClick={() => setSelectedNotif(null)}>
                   ĐÓNG LẠI
                 </button>
+                
+                {/* 💡 NÚT XỬ LÝ DÀNH RIÊNG CHO LIÊN HỆ */}
+                {selectedNotif.type === 'CONTACT' && (
+                  <button 
+                    type="button" 
+                    className="btn btn-primary fw-bold rounded-3 px-4 d-flex align-items-center gap-2 shadow-sm" 
+                    onClick={() => handleResolveContact(selectedNotif.id)}
+                  >
+                    <i className="bi bi-check2-circle fs-5"></i> ĐÃ XỬ LÝ XONG
+                  </button>
+                )}
+
+                {/* 💡 NÚT ĐIỀU HƯỚNG DÀNH RIÊNG CHO ĐƠN HÀNG */}
                 {selectedNotif.type === 'ORDER' && (
-                  <button type="button" className="btn btn-success fw-bold rounded-3 px-4" onClick={() => {
-                    setSelectedNotif(null);
-                    router.push('/admin/orders'); // Dẫn thẳng ra trang quản lý đơn
-                  }}>
-                    XEM ĐƠN HÀNG
+                  <button 
+                    type="button" 
+                    className="btn btn-success fw-bold rounded-3 px-4 d-flex align-items-center gap-2 shadow-sm" 
+                    onClick={() => {
+                      setSelectedNotif(null);
+                      router.push('/admin/orders'); // Dẫn thẳng ra trang quản lý đơn
+                    }}
+                  >
+                    <i className="bi bi-box-seam fs-5"></i> ĐI TỚI XỬ LÝ ĐƠN
                   </button>
                 )}
               </div>
