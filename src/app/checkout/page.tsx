@@ -165,7 +165,7 @@ export default function CheckoutPage() {
         items: cartItems,
       });
 
-      if (res.data.success) {
+    if (res.data.success) {
         if (method === "PAYOS" && res.data.checkoutUrl) {
           // BƯỚC NGOẶT: Chuyển hướng thẳng qua cổng thanh toán PayOS
           window.location.assign(res.data.checkoutUrl);
@@ -173,7 +173,9 @@ export default function CheckoutPage() {
           localStorage.removeItem("cart");
           setCartItems([]);
           toast.success("Đặt hàng thành công!");
-          setTimeout(() => router.push("/order/success"), 1500);
+          setTimeout(() => {
+            router.push(`/order/success?orderCode=${res.data.orderCode}`);
+          }, 1500);
         }
       }
     } catch (error: unknown) {
