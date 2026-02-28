@@ -38,31 +38,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [selectedNotif, setSelectedNotif] = useState<Notification | null>(null);
 
   useEffect(() => {
-    const checkAdminAuth = () => {
-      const userStr = localStorage.getItem('user');
-      const user = userStr ? JSON.parse(userStr) : null;
+    if (typeof window === 'undefined') return;
 
-      if (!user || user.role !== 'ADMIN') {
-        toast.error("Vùng cấm! Vui lòng đăng nhập quyền Admin.");
+    const checkAdminAuth = () => {
+      try {
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+
+        if (!user || user.role !== 'ADMIN') {
+          toast.error("Vùng cấm! Vui lòng đăng nhập quyền Admin.");
+          router.replace('/');
+          return;
+        }
+        requestAnimationFrame(() => setIsReady(true));
+      } catch (error) {
+        console.error("Lỗi parse user data:", error);
+        localStorage.removeItem('user');
         router.replace('/');
-        return;
       }
-      requestAnimationFrame(() => setIsReady(true));
     };
     checkAdminAuth();
   }, [router]);
 
   // ==============================================
-  // 2. LOGIC POLLING: Lấy thông báo mỗi 15 giây
+  // 2. LOGIC POLLING: Lấy thông báo mỗi 15 giây (với leak protection)
   // ==============================================
   useEffect(() => {
     if (!isReady) return;
 
+    let mounted = true;
+
     const fetchNotifications = async () => {
       try {
-        // Gọi API chuyên biệt cho thông báo (Mình sẽ code backend ở phần dưới)
         const res = await api.get('/api/admin/notifications'); 
-        if (res.data.success) {
+        if (mounted && res.data.success) {
           setNotifications(res.data.data);
         }
       } catch (error) {
@@ -70,27 +79,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       }
     };
 
-    fetchNotifications(); // Gọi lần đầu ngay khi load
-    const interval = setInterval(fetchNotifications, 15000); // Cứ 15s gọi lại 1 lần
-    return () => clearInterval(interval);
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 15000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, [isReady]);
 
   // Hàm xử lý nút "ĐÃ XỬ LÝ XONG" cho Liên hệ
   const handleResolveContact = async (rawId: string) => {
-    // ID lúc nãy mình gán có dạng "contact_15", giờ mình cắt lấy số 15 thôi
     const contactId = rawId.replace('contact_', '');
-    
     try {
-      const res = await api.patch(`/api/contact/resolve/${contactId}`);
-      if (res.data.success) {
-        toast.success("Đã xử lý xong liên hệ!");
-        setSelectedNotif(null); // Đóng pop-up
-        
-        // Cập nhật lại list thông báo ngay lập tức để làm biến mất chấm đỏ
-        setNotifications(prev => prev.filter(n => n.id !== rawId));
-      }
-    } catch (error) {
+      await api.patch(`/api/contact/resolve/${contactId}`);
+      toast.success("Đã xử lý xong liên hệ!");
+      setSelectedNotif(null);
+      setNotifications(prev => prev.filter(n => n.id !== rawId));
+    } catch {
       toast.error("Lỗi khi xử lý liên hệ");
+    }
+  };
+
+  // Hàm mark notification as read
+  const handleMarkAsRead = async (notifId: string) => {
+    try {
+      await api.patch(`/api/admin/notifications/${notifId}/read`);
+      setNotifications(prev => 
+        prev.map(n => n.id === notifId ? { ...n, isRead: true } : n)
+      );
+    } catch (error) {
+      console.error("Lỗi đánh dấu đã đọc:", error);
     }
   };
 
@@ -107,8 +125,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Hàm xử lý khi click vào 1 thông báo
   const handleOpenNotification = (notif: Notification) => {
+    if (!notif.isRead) {
+      handleMarkAsRead(notif.id);
+    }
     setSelectedNotif(notif);
-    setShowNotifications(false); // Đóng menu dropdown đi
+    setShowNotifications(false);
   };
 
   if (!isReady) {
@@ -177,7 +198,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* LOGOUT AREA */}
         <div className="p-3 border-top mt-auto" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-           <button onClick={() => { localStorage.clear(); window.location.href = '/'; }} className="btn btn-light w-100 rounded-3 fw-bold text-danger shadow-sm d-flex align-items-center justify-content-center gap-2">
+           <button onClick={() => { localStorage.removeItem('user'); localStorage.removeItem('token'); router.replace('/'); }} className="btn btn-light w-100 rounded-3 fw-bold text-danger shadow-sm d-flex align-items-center justify-content-center gap-2">
              <i className="bi bi-box-arrow-right fs-5"></i> Đăng xuất
            </button>
         </div>
@@ -204,9 +225,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 onClick={() => setShowNotifications(!showNotifications)}
               >
                 <i className="bi bi-bell-fill text-secondary fs-5"></i>
-                {notifications.length > 0 && (
+                {notifications.some(n => !n.isRead) && (
                   <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm border border-light" style={{ fontSize: '0.65rem' }}>
-                    {notifications.length > 99 ? '99+' : notifications.length}
+                    {notifications.filter(n => !n.isRead).length > 99 ? '99+' : notifications.filter(n => !n.isRead).length}
                   </span>
                 )}
               </button>
@@ -300,9 +321,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   
                   <div className="mb-3 border-bottom pb-2">
                     <small className="text-muted fw-bold text-uppercase d-block mb-1">Số điện thoại</small>
-                    <a href={`tel:${selectedNotif.details.phone}`} className="fw-bold text-danger text-decoration-none fs-5 d-flex align-items-center gap-2">
-                      <i className="bi bi-telephone-fill"></i> {selectedNotif.details.phone}
-                    </a>
+                    {selectedNotif.details.phone ? (
+                      <a href={`tel:${selectedNotif.details.phone}`} className="fw-bold text-danger text-decoration-none fs-5 d-flex align-items-center gap-2">
+                        <i className="bi bi-telephone-fill"></i> {selectedNotif.details.phone}
+                      </a>
+                    ) : (
+                      <span className="text-muted small">Không có thông tin</span>
+                    )}
                   </div>
 
                   {selectedNotif.type === 'CONTACT' && (
