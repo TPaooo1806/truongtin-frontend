@@ -53,10 +53,15 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   return (
     <div className="container my-4">
       <div className="row g-4">
-        <div className="col-lg-3"><Sidebar /></div>
+        
+        {/* 💡 SỬA Ở ĐÂY: Thêm d-none d-lg-block để ẩn trên Mobile, hiện trên PC */}
+        <div className="col-lg-3 d-none d-lg-block">
+          <Sidebar />
+        </div>
+
         <div className="col-lg-9">
-          <div className="bg-white p-3 rounded-3 shadow-sm mb-4 border-start border-danger border-5">
-            <h4 className="fw-bold mb-0 text-uppercase text-danger">
+          <div className="bg-white p-3 rounded-3 shadow-sm mb-4 border-start border-danger border-5 d-flex align-items-center gap-2">
+            <h4 className="fw-bold mb-0 text-uppercase text-danger d-flex align-items-center">
               {/* HIỂN THỊ TÊN CÓ DẤU TẠI ĐÂY */}
               Danh mục: {categoryName || slug.replace(/-/g, ' ')}
             </h4>

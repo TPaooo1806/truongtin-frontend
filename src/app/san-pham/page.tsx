@@ -51,7 +51,7 @@ function ShopContent() {
     <div className="container my-4">
       <div className="row g-4">
         
-        {/* CỘT TRÁI: SIDEBAR DANH MỤC (Chỉ hiện trên màn hình lớn) */}
+        {/* CỘT TRÁI: SIDEBAR DANH MỤC (Tự động ẩn trên Mobile, hiện trên Desktop) */}
         <div className="col-lg-3 d-none d-lg-block">
           <Sidebar />
         </div>

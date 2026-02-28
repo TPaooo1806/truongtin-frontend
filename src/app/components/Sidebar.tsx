@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import axios from 'axios';
 import type { Category } from '../type';
 import api from '@/lib/axios';
 
