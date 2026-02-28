@@ -72,7 +72,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       try {
         const res = await api.get('/api/admin/notifications'); 
         if (mounted && res.data.success) {
-          setNotifications(res.data.data);
+          const sorted = [...res.data.data].sort(
+  (a, b) =>
+    new Date(b.time).getTime() -
+    new Date(a.time).getTime()
+);
+
+setNotifications(sorted);
         }
       } catch (error) {
         console.error("Lỗi lấy thông báo:", error);
@@ -125,12 +131,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Hàm xử lý khi click vào 1 thông báo
   const handleOpenNotification = (notif: Notification) => {
-    if (!notif.isRead) {
-      handleMarkAsRead(notif.id);
-    }
-    setSelectedNotif(notif);
-    setShowNotifications(false);
-  };
+
+  if (!notif.isRead) {
+    handleMarkAsRead(notif.id);
+    notif = { ...notif, isRead: true };
+  }
+
+  setSelectedNotif(notif);
+  setShowNotifications(false);
+};
 
   if (!isReady) {
     return (
@@ -227,7 +236,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <i className="bi bi-bell-fill text-secondary fs-5"></i>
                 {notifications.some(n => !n.isRead) && (
                   <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm border border-light" style={{ fontSize: '0.65rem' }}>
-                    {notifications.filter(n => !n.isRead).length > 99 ? '99+' : notifications.filter(n => !n.isRead).length}
+                    {(() => {
+                      const unreadCount = notifications.filter(n => !n.isRead).length;
+                      return unreadCount > 9 ? '9+' : unreadCount;
+                    })()}
                   </span>
                 )}
               </button>
