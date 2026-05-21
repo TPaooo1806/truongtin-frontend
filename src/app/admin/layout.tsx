@@ -200,6 +200,9 @@ setNotifications(sorted);
           <Link href="/admin/reports" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/reports') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
             <i className="bi bi-bar-chart-fill me-3 fs-5"></i> Báo cáo
           </Link>
+          <Link href="/admin/banners" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/banners') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+            <i className="bi bi-images me-3 fs-5"></i> Quản lý Banner
+          </Link>
           <Link href="/admin/settings" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/settings') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
             <i className="bi bi-gear-fill me-3 fs-5"></i> Cài đặt
           </Link>

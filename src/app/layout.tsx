@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css'; 
 import './globals.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { Toaster } from 'react-hot-toast';
+import FloatingContact from '@/components/FloatingContact';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   
@@ -21,6 +23,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     loadBootstrap();
   }, []);
 
+  const pathname = usePathname();
+  const isAdminRoute = pathname?.startsWith('/admin');
+
   return (
     <html lang="vi" suppressHydrationWarning={true}>
       <head>
@@ -31,17 +36,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="br" suppressHydrationWarning={true}>
         <Toaster position="top-right" reverseOrder={false} />
         
-        <Header />
+        {!isAdminRoute && <Header />}
         
-        
-        <main 
-          className="container br shadow-sm rounded-4 my-4 p-3 p-md-4" 
-          style={{ minHeight: '80vh' }}
-        >
-          {children}
-        </main>
+        {isAdminRoute ? (
+          children
+        ) : (
+          <main 
+            className="container br shadow-sm rounded-4 my-4 p-3 p-md-4" 
+            style={{ minHeight: '80vh' }}
+          >
+            {children}
+          </main>
+        )}
 
-        <Footer />
+        {!isAdminRoute && <Footer />}
+        {!isAdminRoute && <FloatingContact />}
       </body>
     </html>
   );

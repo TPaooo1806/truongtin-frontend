@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import axios, { AxiosError } from 'axios';
+import api from '@/lib/axios';
 import toast from 'react-hot-toast';
 
 interface AuthResponse {
@@ -59,13 +60,17 @@ export default function AuthModal() {
     const url = isLogin ? 'login' : 'register';
     
     try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/${url}`, formData);
+      // [AUDIT FIX]: Dùng `api` thay vì `axios` thô để trình duyệt đính kèm cờ `withCredentials = true`. 
+      // Điều này rất quan trọng để Cookie bảo mật (httpOnly) được lưu lại sau khi đăng nhập thành công.
+      const res = await api.post(`/api/auth/${url}`, formData);
       if (res.data.success) {
         toast.success(res.data.message);
         if (isLogin && res.data.data) {
-          // [BM-02] Token nay được lưu trong httpOnly Cookie bởi Backend
-          // Frontend chỉ lưu thông tin user (không nhạy cảm) vào localStorage
-          localStorage.removeItem('token'); // Dọn token cũ nếu có
+          // [AUDIT FIX]: Fallback - Lưu token vào localStorage để axios.ts tự động nhét vào Header Authorization
+          // Điều này giúp vượt qua cơ chế chặn 3rd-party Cookie của trình duyệt (Chrome Ẩn danh, Safari...)
+          if (res.data.token) {
+            localStorage.setItem('token', res.data.token);
+          }
           localStorage.setItem('user', JSON.stringify(res.data.data));
           setTimeout(() => window.location.reload(), 1000);
         } else {

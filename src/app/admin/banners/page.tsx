@@ -11,6 +11,7 @@ interface Banner {
   title: string;
   imageUrl: string;
   link: string;
+  position: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -27,6 +28,7 @@ export default function AdminBannersPage() {
     title: "",
     link: "",
     imageUrl: "",
+    position: "HOME_MAIN",
   };
   const [formData, setFormData] = useState(initialForm);
 
@@ -61,15 +63,27 @@ export default function AdminBannersPage() {
 
     setIsUploading(true);
     try {
-      const res = await api.post("/api/upload", uploadData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // Sử dụng fetch API thay vì axios để trình duyệt tự động quản lý multipart/form-data và boundary
+      const token = localStorage.getItem("token");
+      const baseURL = api.defaults.baseURL || "";
+      const fetchRes = await fetch(`${baseURL}/api/upload`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+          // KHÔNG set Content-Type ở đây, trình duyệt sẽ tự động thêm multipart/form-data; boundary=...
+        },
+        body: uploadData
       });
+      
+      const data = await fetchRes.json();
+      console.log("[Upload Debug] HTTP Status:", fetchRes.status);
+      console.log("[Upload Debug] Server Response:", JSON.stringify(data));
 
-      if (res.data.success && res.data.imageUrl) {
-        setFormData((prev) => ({ ...prev, imageUrl: res.data.imageUrl }));
+      if (data.success && data.imageUrl) {
+        setFormData((prev) => ({ ...prev, imageUrl: data.imageUrl }));
         toast.success("Tải ảnh lên thành công!");
       } else {
-        toast.error("Có lỗi trả về từ máy chủ khi upload ảnh");
+        toast.error(`Lỗi máy chủ: ${data.message || JSON.stringify(data)}`);
       }
     } catch (error) {
       console.error("Lỗi upload ảnh:", error);
@@ -214,8 +228,13 @@ export default function AdminBannersPage() {
 
                 {/* Nội dung Card */}
                 <div className="card-body d-flex flex-column">
-                  <h5 className="card-title fw-bold text-truncate mb-2">
-                    {banner.title}
+                  <h5 className="card-title fw-bold text-truncate mb-2 d-flex justify-content-between align-items-start">
+                    <span>{banner.title}</span>
+                    <span className="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle rounded-pill fs-7 py-1 px-2">
+                      {banner.position === "HOME_MAIN" && "Trang chủ (Chính)"}
+                      {banner.position === "HOME_SUB_LEFT" && "Giữa trang (Trái)"}
+                      {banner.position === "HOME_SUB_RIGHT" && "Giữa trang (Phải)"}
+                    </span>
                   </h5>
                   
                   {banner.link ? (
@@ -305,6 +324,25 @@ export default function AdminBannersPage() {
                       }
                       required
                     />
+                  </div>
+
+                  {/* Vị trí hiển thị */}
+                  <div className="mb-3">
+                    <label className="form-label fw-bold small">
+                      Vị trí hiển thị <span className="text-danger">*</span>
+                    </label>
+                    <select
+                      className="form-select rounded-3"
+                      value={formData.position}
+                      onChange={(e) =>
+                        setFormData({ ...formData, position: e.target.value })
+                      }
+                      required
+                    >
+                      <option value="HOME_MAIN">Trang chủ (Banner Chính to)</option>
+                      <option value="HOME_SUB_LEFT">Banner giữa trang (Trái)</option>
+                      <option value="HOME_SUB_RIGHT">Banner giữa trang (Phải)</option>
+                    </select>
                   </div>
 
                   {/* Link điều hướng */}

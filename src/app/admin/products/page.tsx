@@ -164,12 +164,19 @@ export default function AdminProductsPage() {
       data.append("image", file);
 
       try {
-        const res = await api.post("/api/upload", data, {
-          headers: { "Content-Type": "multipart/form-data" },
+        const token = localStorage.getItem("token");
+        const baseURL = api.defaults.baseURL || "";
+        const fetchRes = await fetch(`${baseURL}/api/upload`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          },
+          body: data
         });
+        const resData = await fetchRes.json();
 
-        if (res.data.success && res.data.imageUrl) {
-          uploadedUrls.push(res.data.imageUrl);
+        if (resData.success && resData.imageUrl) {
+          uploadedUrls.push(resData.imageUrl);
         } else {
           toast.error(`Lỗi upload ảnh: ${file.name}`);
         }

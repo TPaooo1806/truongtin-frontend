@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import api from "@/lib/axios";
 
@@ -11,14 +11,17 @@ interface Banner {
   link: string;
 }
 
-export default function BannerDisplay() {
+type BannerPosition = "HOME_MAIN" | "HOME_SUB_LEFT" | "HOME_SUB_RIGHT";
+
+export default function BannerDisplay({ position }: { position: BannerPosition }) {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const fetchActiveBanners = async () => {
       try {
-        const res = await api.get("/api/banners/active");
+        const res = await api.get(`/api/banners/active?position=${position}`);
         if (res.data.success) {
           setBanners(res.data.data);
         }
@@ -28,17 +31,27 @@ export default function BannerDisplay() {
         setLoading(false);
       }
     };
-
     fetchActiveBanners();
-  }, []);
+  }, [position]);
+
+  // Auto-slide mỗi 3 giây nếu có nhiều hơn 1 banner
+  const goNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % banners.length);
+  }, [banners.length]);
+
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const interval = setInterval(goNext, 3000);
+    return () => clearInterval(interval);
+  }, [banners.length, goNext]);
 
   // 1. Trạng thái Loading: Hiển thị Skeleton
   if (loading) {
     return (
       <div className="container-fluid px-0 mb-4">
-        <div 
+        <div
           className="placeholder-glow rounded-4 shadow-sm w-100"
-          style={{ height: "300px" }} // Default height for skeleton
+          style={{ height: "300px" }}
         >
           <div className="placeholder w-100 h-100 rounded-4"></div>
         </div>
@@ -51,14 +64,17 @@ export default function BannerDisplay() {
     return null;
   }
 
-  // 3. Render Carousel
+  // ID duy nhất cho mỗi position để tránh xung đột Bootstrap
+  const carouselId = `bannerCarousel-${position}`;
+
+  // 3. Render Carousel (giữ nguyên cấu trúc HTML Bootstrap cũ)
   return (
     <div className="container-fluid px-0 mb-4">
-      <div 
-        id="homeBannerCarousel" 
-        className="carousel slide shadow-sm rounded-4 overflow-hidden" 
+      <div
+        id={carouselId}
+        className="carousel slide shadow-sm rounded-4 overflow-hidden"
         data-bs-ride="carousel"
-        data-bs-interval="3000" // Đổi ảnh mỗi 3 giây
+        data-bs-interval="3000"
       >
         {/* Indicators (Các dấu chấm nhảy trang) */}
         {banners.length > 1 && (
@@ -67,11 +83,12 @@ export default function BannerDisplay() {
               <button
                 key={index}
                 type="button"
-                data-bs-target="#homeBannerCarousel"
+                data-bs-target={`#${carouselId}`}
                 data-bs-slide-to={index}
-                className={index === 0 ? "active" : ""}
-                aria-current={index === 0 ? "true" : "false"}
+                className={index === currentIndex ? "active" : ""}
+                aria-current={index === currentIndex ? "true" : "false"}
                 aria-label={`Slide ${index + 1}`}
+                onClick={() => setCurrentIndex(index)}
               ></button>
             ))}
           </div>
@@ -80,21 +97,19 @@ export default function BannerDisplay() {
         {/* Danh sách Hình ảnh */}
         <div className="carousel-inner">
           {banners.map((banner, index) => (
-            <div 
-              key={banner.id} 
-              className={`carousel-item ${index === 0 ? "active" : ""}`}
+            <div
+              key={banner.id}
+              className={`carousel-item ${index === currentIndex ? "active" : ""}`}
             >
               {/* Vùng chứa ảnh với style Responsive */}
-              <div 
-                className="position-relative w-100 banner-container"
-              >
+              <div className="position-relative w-100 banner-container">
                 {banner.link ? (
                   <a href={banner.link} target="_blank" rel="noreferrer" className="d-block w-100 h-100">
                     <Image
                       src={banner.imageUrl}
                       alt={banner.title}
                       fill
-                      priority={index === 0} // Ưu tiên load ảnh đầu tiên
+                      priority={index === 0}
                       className="d-block w-100"
                       style={{ objectFit: "cover" }}
                       unoptimized
@@ -122,8 +137,9 @@ export default function BannerDisplay() {
             <button
               className="carousel-control-prev"
               type="button"
-              data-bs-target="#homeBannerCarousel"
+              data-bs-target={`#${carouselId}`}
               data-bs-slide="prev"
+              onClick={() => setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length)}
             >
               <span className="carousel-control-prev-icon" aria-hidden="true"></span>
               <span className="visually-hidden">Previous</span>
@@ -131,8 +147,9 @@ export default function BannerDisplay() {
             <button
               className="carousel-control-next"
               type="button"
-              data-bs-target="#homeBannerCarousel"
+              data-bs-target={`#${carouselId}`}
               data-bs-slide="next"
+              onClick={() => goNext()}
             >
               <span className="carousel-control-next-icon" aria-hidden="true"></span>
               <span className="visually-hidden">Next</span>
@@ -144,16 +161,16 @@ export default function BannerDisplay() {
       {/* Style tùy chỉnh cho chiều cao Responsive của Banner */}
       <style jsx>{`
         .banner-container {
-          height: 150px;
+          height: ${position.includes('HOME_SUB') ? '120px' : '150px'};
         }
         @media (min-width: 768px) {
           .banner-container {
-            height: 300px;
+            height: ${position.includes('HOME_SUB') ? '180px' : '300px'};
           }
         }
         @media (min-width: 992px) {
           .banner-container {
-            height: 400px;
+            height: ${position.includes('HOME_SUB') ? '220px' : '400px'};
           }
         }
       `}</style>

@@ -111,12 +111,22 @@ export default function App() {
             <Sidebar /> 
           </aside>
           <div className="col-lg-9">
-            <BannerDisplay />
+            <BannerDisplay position="HOME_MAIN" />
           </div>
         </section>
 
         {/* SECTION 2: SẢN PHẨM BÁN CHẠY */}
         <ProductSection title="TOP BÁN CHẠY" products={products} />
+
+        {/* NƠI 2: DOUBLE BANNER (TRÁI / PHẢI) */}
+        <div className="row my-4 g-3">
+          <div className="col-12 col-md-6">
+            <BannerDisplay position="HOME_SUB_LEFT" />
+          </div>
+          <div className="col-12 col-md-6">
+            <BannerDisplay position="HOME_SUB_RIGHT" />
+          </div>
+        </div>
 
 
 
@@ -145,6 +155,7 @@ export default function App() {
                 />
             );
         })}
+
 
      {/* SECTION 5: DANH MỤC NGANG */}
         <section className="mb-5 py-4 py-md-5 bg-white rounded-4 shadow-sm mt-5">

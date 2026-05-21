@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://truongtin-api.onrender.com",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://truongtin-api.onrender.com",
   headers: {
     "Content-Type": "application/json",
   },
