@@ -5,16 +5,18 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  // [BM-02] withCredentials = true: Trình duyệt tự động đính kèm httpOnly Cookie
+  // vào mọi request mà không cần code thủ công, JS không thể đọc cookie này
+  withCredentials: true,
 });
 
-// Thêm Interceptor để tự động gắn Token vào Request Header
+// Interceptor: Vẫn giữ fallback đọc token từ localStorage
+// để tương thích ngược nếu người dùng đã đăng nhập từ trước
 api.interceptors.request.use(
   (config) => {
-    // Kiểm tra xem có đang chạy trên trình duyệt không (vì Next.js có SSR)
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token");
       if (token) {
-        // Gắn token vào header Authorization (chuẩn Bearer Token)
         config.headers.Authorization = `Bearer ${token}`;
       }
     }

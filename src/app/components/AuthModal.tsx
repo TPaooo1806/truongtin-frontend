@@ -62,11 +62,11 @@ export default function AuthModal() {
       const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/${url}`, formData);
       if (res.data.success) {
         toast.success(res.data.message);
-        if (isLogin && res.data.token && res.data.data) {
-          localStorage.setItem('token', res.data.token);
+        if (isLogin && res.data.data) {
+          // [BM-02] Token nay được lưu trong httpOnly Cookie bởi Backend
+          // Frontend chỉ lưu thông tin user (không nhạy cảm) vào localStorage
+          localStorage.removeItem('token'); // Dọn token cũ nếu có
           localStorage.setItem('user', JSON.stringify(res.data.data));
-          const expiryTime = new Date().getTime() + 60 * 60 * 1000; 
-    localStorage.setItem('expiry', expiryTime.toString());
           setTimeout(() => window.location.reload(), 1000);
         } else {
           setIsLogin(true);

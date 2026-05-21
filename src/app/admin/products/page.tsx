@@ -161,23 +161,17 @@ export default function AdminProductsPage() {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const data = new FormData();
-      data.append("file", file);
-
-      data.append("upload_preset", "truongtin_images");
-      data.append("cloud_name", "dwqbfdxpm");
+      data.append("image", file);
 
       try {
-        const res = await fetch(
-          "https://api.cloudinary.com/v1_1/dwqbfdxpm/image/upload",
-          {
-            method: "POST",
-            body: data,
-          },
-        );
-        const result = await res.json();
+        const res = await api.post("/api/upload", data, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
 
-        if (result.secure_url) {
-          uploadedUrls.push(result.secure_url);
+        if (res.data.success && res.data.imageUrl) {
+          uploadedUrls.push(res.data.imageUrl);
+        } else {
+          toast.error(`Lỗi upload ảnh: ${file.name}`);
         }
       } catch (error) {
         console.error("Lỗi upload:", error);
@@ -515,6 +509,18 @@ export default function AdminProductsPage() {
                       }
                       placeholder="Cây, Cuộn, Cái..."
                       required
+                    />
+                  </div>
+
+                  {/* 💡 THÊM Ô NHẬP MÔ TẢ (DESCRIPTION) */}
+                  <div className="col-12 mt-3">
+                    <label className="small fw-bold mb-1">Mô tả sản phẩm (Tùy chọn)</label>
+                    <textarea
+                      className="form-control"
+                      rows={3}
+                      placeholder="Nhập thông số kỹ thuật, hãng sản xuất, chất liệu..."
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     />
                   </div>
 

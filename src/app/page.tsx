@@ -4,6 +4,7 @@ import axios from 'axios';
 import type { Product, ApiResponse, Category } from './type';
 import Sidebar from './components/Sidebar';
 import ProductCard from './components/ProductCard';
+import BannerDisplay from '@/components/BannerDisplay';
 import api from '@/lib/axios';
 
 // Component con để hiển thị từng hàng sản phẩm (Slider)
@@ -110,38 +111,14 @@ export default function App() {
             <Sidebar /> 
           </aside>
           <div className="col-lg-9">
-            <div className="rounded-4 overflow-hidden shadow-sm h-100 d-flex align-items-center p-4 p-md-5 text-white"
-                 style={{ background: 'linear-gradient(45deg, #5D4037, #D32F2F)', minHeight: '300px' }}>
-              <div>
-                <span className="badge bg-warning text-dark mb-2 fw-bold">Khuyến mãi tháng 2</span>
-                <h1 className="fw-black italic display-5">TRƯỜNG TÍN</h1>
-                <p className="lead fw-bold text-uppercase">Giải pháp điện nước toàn diện cho mọi công trình</p>
-                <button className="btn btn-light fw-bold rounded-pill px-4 mt-3 shadow">XEM ƯU ĐÃI NGAY</button>
-              </div>
-            </div>
+            <BannerDisplay />
           </div>
         </section>
 
         {/* SECTION 2: SẢN PHẨM BÁN CHẠY */}
         <ProductSection title="TOP BÁN CHẠY" products={products} />
 
-        {/* SECTION 3: BANNER QUẢNG CÁO PHỤ */}
-        <section className="row g-3 mb-5">
-          <div className="col-md-6">
-            <div className="rounded-4 p-4 text-white shadow-sm d-flex flex-column justify-content-end"
-                 style={{ height: '200px', backgroundColor: '#6c757d', backgroundImage: 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3))' }}>
-              <h3 className="fw-bold">ỐNG NHỰA BÌNH MINH</h3>
-              <p className="mb-0 small">Đầy đủ kích cỡ Φ21 - Φ200</p>
-            </div>
-          </div>
-          <div className="col-md-6">
-            <div className="rounded-4 p-4 text-white shadow-sm d-flex flex-column justify-content-end"
-                 style={{ height: '200px', backgroundColor: '#5D4037', backgroundImage: 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3))' }}>
-              <h3 className="fw-bold">DÂY ĐIỆN CADIVI</h3>
-              <p className="mb-0 small">Chiết khấu cao cho nhà thầu</p>
-            </div>
-          </div>
-        </section>
+
 
        {/* SECTION 4: CHỈ HIỂN THỊ 3 DANH MỤC (Ống nước, Phụ kiện, Bóng đèn) */}
         {categories.map(cat => {

@@ -6,9 +6,16 @@ interface ProductCardProps {
   item: Product;
 }
 
+// [Image Opt] Tối ưu ảnh Cloudinary: Tải ảnh nhỏ 300x300, giảm 95% dung lượng
+const getOptimizedUrl = (url: string): string => {
+  if (!url || !url.includes('res.cloudinary.com')) return url;
+  return url.replace('/upload/', '/upload/c_fill,w_300,h_300,q_auto,f_auto/');
+};
+
 export default function ProductCard({ item }: ProductCardProps) {
   const price = item.variants && item.variants.length > 0 ? item.variants[0].price : 0;
-  const imgUrl = item.images && item.images.length > 0 ? item.images[0].url : 'https://via.placeholder.com/200';
+  const rawUrl = item.images && item.images.length > 0 ? item.images[0].url : '';
+  const imgUrl = rawUrl ? getOptimizedUrl(rawUrl) : 'https://via.placeholder.com/200';
 
   return (
     <Link href={`/product/${item.slug}`} className="text-decoration-none product-card-link h-100 d-block">
