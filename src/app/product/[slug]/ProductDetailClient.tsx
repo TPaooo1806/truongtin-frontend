@@ -229,7 +229,7 @@ useEffect(() => {
                       <div 
                         key={index} 
                         onClick={() => setMainImage(img.url)} 
-                        className={`position-relative border rounded-3 transition-all ${mainImage === img.url ? 'border-danger border-2 shadow-sm' : 'border-light opacity-50'}`} 
+                        className={`position-relative border rounded-3 transition-all ${mainImage === img.url ? 'border-brand border-2 shadow-sm' : 'border-light opacity-50'}`} 
                         style={{ minWidth: '70px', height: '70px', cursor: 'pointer', overflow: 'hidden' }} 
                         onMouseOver={(e) => e.currentTarget.classList.remove('opacity-50')}
                         onMouseOut={(e) => {
@@ -274,7 +274,7 @@ useEffect(() => {
                     <span className="text-muted me-2" style={{ width: '100px' }}>Tình trạng:</span> 
                     {currentVariant?.stock > 0 
                         ? <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-6">Còn hàng</span>
-                        : <span className="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-6">Hết hàng</span>
+                        : <span className="badge bg-brand-subtle text-brand border border-brand-subtle px-2 py-1 fs-6">Hết hàng</span>
                     }
                   </div>
                 </div>
@@ -282,27 +282,60 @@ useEffect(() => {
                 {/* CHỌN SỐ LƯỢNG */}
                 <div className="mb-4 d-flex align-items-center">
                   <div className="text-muted small fw-bold me-3" style={{ width: '85px' }}>Số lượng:</div>
-                  <div className="input-group input-group-sm border rounded-2" style={{ width: '120px' }}>
-                    <button className="btn btn-light border-0" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
-                      <i className="bi bi-dash"></i>
+                  <div className="d-flex align-items-center border rounded-3 overflow-hidden" style={{ height: '44px' }}>
+                    <button 
+                      className="btn btn-light border-0 px-3 h-100 d-flex align-items-center justify-content-center" 
+                      style={{ width: '44px', fontSize: '1.2rem' }}
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    >
+                      <i className="bi bi-dash-lg"></i>
                     </button>
-                    <input type="number" className="form-control text-center border-0 bg-white fw-bold" value={quantity} readOnly />
-                    <button className="btn btn-light border-0" onClick={() => setQuantity(quantity + 1)}>
-                      <i className="bi bi-plus"></i>
+                    <input 
+                      type="number" 
+                      className="form-control text-center border-0 bg-white fw-bold px-1" 
+                      style={{ width: '60px', height: '100%', fontSize: '1.1rem' }}
+                      value={quantity} 
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        if (!isNaN(val) && val >= 1) setQuantity(val);
+                        if (e.target.value === '') setQuantity(1);
+                      }}
+                      min={1}
+                    />
+                    <button 
+                      className="btn btn-light border-0 px-3 h-100 d-flex align-items-center justify-content-center" 
+                      style={{ width: '44px', fontSize: '1.2rem' }}
+                      onClick={() => setQuantity(quantity + 1)}
+                    >
+                      <i className="bi bi-plus-lg"></i>
                     </button>
                   </div>
+                  <span className="ms-2 text-muted small">({product.unit})</span>
                 </div>
 
                 {/* Khối Giá Tiền */}
-                <div className="p-3 mb-4 rounded-3 border border-danger border-opacity-25" style={{ backgroundColor: '#fffafb' }}>
+                <div className="p-3 mb-3 rounded-3 border border-brand border-opacity-25" style={{ backgroundColor: '#fffafb' }}>
                   <div className="text-muted small mb-1">Giá bán tham khảo:</div>
                   <div className="d-flex align-items-baseline gap-2">
-                    <span className="text-danger fw-bold" style={{ fontSize: '2rem' }}>
+                    <span className="text-brand fw-bold" style={{ fontSize: '2rem' }}>
                       {currentVariant?.price ? currentVariant.price.toLocaleString('vi-VN') : 'Liên hệ'}
                     </span>
-                    {currentVariant?.price && <span className="text-danger fw-semibold fs-5">đ</span>}
+                    {currentVariant?.price && <span className="text-brand fw-semibold fs-5">đ</span>}
                   </div>
                 </div>
+                
+                {/* Ghi chú giá thay đổi */}
+                {!currentVariant?.price ? (
+                  <div className="alert alert-warning py-2 px-3 mb-4 d-flex align-items-start gap-2" style={{ fontSize: '0.8rem', borderRadius: '10px' }}>
+                    <i className="bi bi-info-circle-fill text-warning mt-1 flex-shrink-0"></i>
+                    <span>Sản phẩm này cần <strong>báo giá riêng</strong> theo số lượng và thời điểm. Vui lòng liên hệ Zalo hoặc gọi Hotline <strong>0903 989 096</strong> để được báo giá tốt nhất.</span>
+                  </div>
+                ) : (
+                  <div className="text-muted mb-4 d-flex align-items-center gap-1" style={{ fontSize: '0.72rem' }}>
+                    <i className="bi bi-exclamation-circle"></i>
+                    Giá vật tư có thể thay đổi theo thời điểm. Liên hệ để xác nhận giá mới nhất.
+                  </div>
+                )}
 
                 {/* Nút Call To Action */}
                {/* Nút Call To Action */}
@@ -311,7 +344,7 @@ useEffect(() => {
                   {/* 💡 CHỈ HIỂN THỊ NÚT KHI CÒN HÀNG (stock > 0) */}
                   {currentVariant && currentVariant.stock > 0 && (
                     <button 
-                      className="btn btn-danger btn-lg fw-bold flex-grow-1 shadow-sm d-flex align-items-center justify-content-center" 
+                      className="btn btn-brand btn-lg fw-bold flex-grow-1 shadow-sm d-flex align-items-center justify-content-center" 
                       onClick={handleAddToCart}
                     >
                       <i className="bi bi-cart-plus fs-5 me-2"></i> THÊM VÀO GIỎ
@@ -319,7 +352,7 @@ useEffect(() => {
                   )}
 
                   <button 
-                    className="btn btn-outline-primary btn-lg fw-bold flex-grow-1 d-flex align-items-center justify-content-center"
+                    className="btn btn-outline-brand btn-lg fw-bold flex-grow-1 d-flex align-items-center justify-content-center"
                     onClick={handleZaloContact}
                   >
                     <i className="bi bi-chat-dots fs-5 me-2"></i> LIÊN HỆ ZALO
@@ -417,10 +450,10 @@ useEffect(() => {
                   {!isLoggedIn ? (
                     <div className="text-center p-4 border rounded-4 bg-light shadow-sm">
                       <p className="fw-bold mb-2">Đăng nhập để chia sẻ trải nghiệm của bạn</p>
-                      <button className="btn btn-danger px-4 rounded-pill fw-bold btn-sm" onClick={() => setIsLoggedIn(true)}>ĐĂNG NHẬP</button>
+                      <button className="btn btn-brand px-4 rounded-pill fw-bold btn-sm" onClick={() => setIsLoggedIn(true)}>ĐĂNG NHẬP</button>
                     </div>
                   ) : (
-                    <div className="p-4 border rounded-4 bg-white shadow-sm border-danger border-opacity-25">
+                    <div className="p-4 border rounded-4 bg-white shadow-sm border-brand border-opacity-25">
                       <p className="fw-bold mb-2 small text-uppercase text-secondary">Đánh giá của bạn:</p>
                       
                       <div className="star-rating-input mb-3 d-flex gap-2">
@@ -446,7 +479,7 @@ useEffect(() => {
                       ></textarea>
                       
                       <div className="text-end">
-                        <button className="btn btn-danger px-4 py-2 fw-bold rounded-pill btn-sm" onClick={handleSubmitReview}>GỬI ĐÁNH GIÁ</button>
+                        <button className="btn btn-brand px-4 py-2 fw-bold rounded-pill btn-sm" onClick={handleSubmitReview}>GỬI ĐÁNH GIÁ</button>
                       </div>
                     </div>
                   )}

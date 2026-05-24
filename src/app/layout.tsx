@@ -1,56 +1,20 @@
-'use client';
-
-import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { Metadata } from 'next';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css'; 
 import './globals.css';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import { Toaster } from 'react-hot-toast';
-import FloatingContact from '@/components/FloatingContact';
+import ClientLayout from './ClientLayout';
+
+export const metadata: Metadata = {
+  metadataBase: new URL('http://localhost:3000'), // Replace with actual domain when deployed
+  title: 'Điện Nước Trường Tín | Vật Tư Chính Hãng',
+  description: 'Chuyên cung cấp vật tư điện nước chuyên nghiệp',
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  
-  useEffect(() => {
-    const loadBootstrap = async (): Promise<void> => {
-      try {
-        await import('bootstrap' + '/dist/js/bootstrap.bundle.min.js');
-      } catch (error) {
-        console.error("Lỗi nạp Bootstrap:", error);
-      }
-    };
-    loadBootstrap();
-  }, []);
-
-  const pathname = usePathname();
-  const isAdminRoute = pathname?.startsWith('/admin');
-
   return (
     <html lang="vi" suppressHydrationWarning={true}>
-      <head>
-        <title>Điện Nước Trường Tín | Vật Tư Chính Hãng</title>
-        <meta name="description" content="Chuyên cung cấp vật tư điện nước chuyên nghiệp" />
-      </head>
-     
-      <body className="br" suppressHydrationWarning={true}>
-        <Toaster position="top-right" reverseOrder={false} />
-        
-        {!isAdminRoute && <Header />}
-        
-        {isAdminRoute ? (
-          children
-        ) : (
-          <main 
-            className="container br shadow-sm rounded-4 my-4 p-3 p-md-4" 
-            style={{ minHeight: '80vh' }}
-          >
-            {children}
-          </main>
-        )}
-
-        {!isAdminRoute && <Footer />}
-        {!isAdminRoute && <FloatingContact />}
+      <body className="bg-white" suppressHydrationWarning={true}>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

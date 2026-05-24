@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import AIChatbot from "./AIChatbot";
 
 export default function FloatingContact() {
   // 💡 Thay số điện thoại thực tế của cửa hàng vào đây
@@ -37,24 +38,8 @@ export default function FloatingContact() {
           />
         </a>
 
-        {/* Nút Gọi Điện Hotline */}
-        <a
-          href={`tel:${phoneNumber}`}
-          className="d-flex align-items-center justify-content-center shadow-lg position-relative border-0 text-white"
-          style={{
-            width: "55px",
-            height: "55px",
-            backgroundColor: "#dc3545", // Màu đỏ Bootstrap
-            borderRadius: "50%",
-            transition: "all 0.3s ease",
-          }}
-          title="Gọi hotline tư vấn"
-        >
-          {/* Hiệu ứng vòng sóng nhấp nháy */}
-          <span className="position-absolute top-0 start-0 w-100 h-100 rounded-circle animate-ping" 
-                style={{ backgroundColor: "#dc3545", opacity: 0.4, animationDuration: '1.5s' }}></span>
-          <i className="bi bi-telephone-fill fs-4" style={{ zIndex: 1 }}></i>
-        </a>
+        {/* Chatbot AI */}
+        <AIChatbot />
       </div>
 
       {/* CSS Animation nhỏ gọn cho hiệu ứng ping tỏa sóng (nếu project chưa có sẵn Tailwind) */}

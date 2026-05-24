@@ -72,11 +72,11 @@ export default function CartPage() {
   return (
     <div className="container my-4 my-md-5">
       <h3 className="fw-bold mb-4 text-dark text-uppercase">
-        <i className="bi bi-cart3 me-2 text-danger"></i> Giỏ hàng của bạn
+        <i className="bi bi-cart3 me-2 text-brand"></i> Giỏ hàng của bạn
       </h3>
 
       {cart.length === 0 ? (
-        <div className="bg-white p-5 rounded-4 shadow-sm text-center border">
+        <div className="bg-white p-5 rounded-4 shadow-sm text-center border-brand">
           <div className="mb-4 opacity-75">
   <svg
     width="160"
@@ -97,7 +97,7 @@ export default function CartPage() {
 </div>
           <h5 className="fw-bold text-dark">Giỏ hàng của bạn đang trống!</h5>
           <p className="text-muted mb-4">Có vẻ như bạn chưa chọn mua vật tư nào.</p>
-          <Link href="/san-pham" className="btn btn-danger btn-lg px-5 fw-bold rounded-pill shadow-sm">
+          <Link href="/san-pham" className="btn btn-brand btn-lg px-5 fw-bold rounded-pill shadow-sm">
             TIẾP TỤC MUA SẮM
           </Link>
         </div>
@@ -106,7 +106,7 @@ export default function CartPage() {
           
           {/* CỘT TRÁI: DANH SÁCH SẢN PHẨM */}
           <div className="col-lg-8">
-            <div className="bg-white rounded-4 shadow-sm border overflow-hidden">
+            <div className="bg-white rounded-4 shadow-sm border-brand overflow-hidden">
               
               {/* Tiêu đề bảng (Chỉ hiện trên PC) */}
               <div className="row m-0 d-none d-md-flex bg-light p-3 border-bottom text-muted fw-bold small text-uppercase">
@@ -125,7 +125,7 @@ export default function CartPage() {
                     
                     {/* Nút Xóa (Mobile: Nằm góc trên phải) */}
                     <button 
-                      className="btn btn-link text-danger p-0 position-absolute d-md-none" 
+                      className="btn btn-link text-brand p-0 position-absolute d-md-none" 
                       style={{ top: '15px', right: '15px', width: 'auto' }}
                       onClick={() => removeItem(item.variantId)}
                     >
@@ -154,22 +154,36 @@ export default function CartPage() {
 
                     {/* Khối Số lượng */}
                     <div className="col-12 col-md-2 d-flex justify-content-between align-items-center mb-0">
-                      <span className="d-md-none text-danger fw-bold">{item.price > 0 ? item.price.toLocaleString('vi-VN') + ' đ' : 'Liên hệ'}</span>
-                      <div className="input-group input-group-sm border rounded-2 flex-nowrap" style={{ width: '100px' }}>
-                        <button className="btn btn-light border-0 px-2" onClick={() => updateQuantity(item.variantId, item.quantity - 1)}>-</button>
-                        <input type="number" className="form-control text-center border-0 bg-white fw-bold px-1" value={item.quantity} readOnly />
-                        <button className="btn btn-light border-0 px-2" onClick={() => updateQuantity(item.variantId, item.quantity + 1)}>+</button>
+                      <span className="d-md-none text-brand fw-bold">{item.price > 0 ? item.price.toLocaleString('vi-VN') + ' đ' : 'Liên hệ'}</span>
+                      <div className="input-group border rounded-3 flex-nowrap overflow-hidden" style={{ width: '120px', height: '38px' }}>
+                        <button className="btn btn-light border-0 px-2 d-flex align-items-center justify-content-center" style={{ width: '38px' }} onClick={() => updateQuantity(item.variantId, item.quantity - 1)}>
+                          <i className="bi bi-dash-lg"></i>
+                        </button>
+                        <input 
+                          type="number" 
+                          className="form-control text-center border-0 bg-white fw-bold px-1" 
+                          value={item.quantity} 
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (!isNaN(val) && val >= 1) updateQuantity(item.variantId, val);
+                          }}
+                          min={1}
+                          style={{ fontSize: '0.9rem' }}
+                        />
+                        <button className="btn btn-light border-0 px-2 d-flex align-items-center justify-content-center" style={{ width: '38px' }} onClick={() => updateQuantity(item.variantId, item.quantity + 1)}>
+                          <i className="bi bi-plus-lg"></i>
+                        </button>
                       </div>
                     </div>
 
                     {/* Khối Thành tiền (Chỉ hiện PC) */}
-                    <div className="col-md-2 d-none d-md-block text-end fw-bold text-danger">
+                    <div className="col-md-2 d-none d-md-block text-end fw-bold text-brand">
                       {(item.price * item.quantity).toLocaleString('vi-VN')} đ
                     </div>
 
                     {/* Nút Xóa (Chỉ hiện PC) */}
                     <div className="col-md-1 d-none d-md-flex justify-content-end">
-                      <button className="btn btn-light text-danger border-0 rounded-circle" onClick={() => removeItem(item.variantId)}>
+                      <button className="btn btn-light text-brand border-0 rounded-circle" onClick={() => removeItem(item.variantId)}>
                         <i className="bi bi-trash"></i>
                       </button>
                     </div>
@@ -197,10 +211,10 @@ export default function CartPage() {
 
               <div className="d-flex justify-content-between mb-4 align-items-center bg-light p-3 rounded-3 border">
                 <span className="fw-bold text-dark fs-5">TỔNG CỘNG:</span>
-                <span className="fw-bold text-danger fs-4">{calculateTotal().toLocaleString('vi-VN')} đ</span>
+                <span className="fw-bold text-brand fs-4">{calculateTotal().toLocaleString('vi-VN')} đ</span>
               </div>
 
-              <Link href="/checkout" className="btn btn-danger btn-lg w-100 fw-bold shadow-sm" style={{ padding: '12px 0' }}>
+              <Link href="/checkout" className="btn btn-brand btn-lg w-100 fw-bold shadow-sm" style={{ padding: '12px 0' }}>
             THANH TOÁN <i className="bi bi-arrow-right ms-2"></i>
               </Link>
 

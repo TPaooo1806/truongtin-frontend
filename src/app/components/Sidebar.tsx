@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Link from 'next/navigation'; 
+import Link from 'next/link'; 
 import type { Category } from '../type';
 import api from '@/lib/axios';
 
@@ -42,27 +42,39 @@ export default function Sidebar() {
       >
         {loading ? (
           <div className="p-4 text-center">
-            <div className="spinner-border spinner-border-sm text-danger" role="status"></div>
+            <div className="spinner-border spinner-border-sm text-brand" role="status"></div>
           </div>
         ) : categories.length > 0 ? (
-          categories.map((cat) => (
-            <a 
-              key={cat.id} 
-              href={`/category/${cat.slug}`} 
-              className="list-group-item list-group-item-action py-3 fw-semibold border-0 text-decoration-none d-flex justify-content-between align-items-center"
-              style={{ 
-                color: '#5D4037', 
-                fontSize: '0.85rem', 
-                borderBottom: '1px solid #f1f1f1',
-                height: '59px' // 💡 Ép chiều cao cố định để kiểm soát scroll chính xác
+          categories.map((cat) => {
+            const getCategoryIcon = (name: string) => {
+              const n = name.toLowerCase();
+              if (n.includes("ống nước")) return "bi-droplet";
+              if (n.includes("phụ kiện")) return "bi-wrench-adjustable";
+              if (n.includes("bóng đèn")) return "bi-lightbulb";
+              if (n.includes("thiết bị điện") || n.includes("dây điện")) return "bi-lightning-charge";
+              return "bi-tools";
+            };
+            return (
+            <a
+              key={cat.id}
+              href={`/category/${cat.slug}`}
+              className="d-flex align-items-center justify-content-between p-3 border-bottom text-dark text-decoration-none transition-all fw-medium sidebar-item"
+              style={{ fontSize: "0.9rem" }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = "#e8f4fd";
+                e.currentTarget.style.color = "#0078D4";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+                e.currentTarget.style.color = "#212529";
               }}
             >
               <div className="text-truncate me-2">
-                <i className="bi bi-tools me-2 text-danger opacity-75"></i> {cat.name}
+                <i className={`bi ${getCategoryIcon(cat.name)} me-2 text-brand opacity-75`}></i> {cat.name}
               </div>
               <i className="bi bi-chevron-right small opacity-50"></i>
             </a>
-          ))
+          )})
         ) : (
           <div className="p-4 text-center text-muted small italic">Chưa có danh mục nào...</div>
         )}

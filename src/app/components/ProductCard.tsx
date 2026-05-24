@@ -13,9 +13,12 @@ const getOptimizedUrl = (url: string): string => {
 };
 
 export default function ProductCard({ item }: ProductCardProps) {
-  const price = item.variants && item.variants.length > 0 ? item.variants[0].price : 0;
+  const prices = item.variants && item.variants.length > 0 ? item.variants.map(v => v.price) : [0];
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+  const totalStock = item.variants ? item.variants.reduce((sum, v) => sum + v.stock, 0) : 0;
   const rawUrl = item.images && item.images.length > 0 ? item.images[0].url : '';
-  const imgUrl = rawUrl ? getOptimizedUrl(rawUrl) : 'https://via.placeholder.com/200';
+  const imgUrl = rawUrl ? getOptimizedUrl(rawUrl) : '/no-image.png';
 
   return (
     <Link href={`/product/${item.slug}`} className="text-decoration-none product-card-link h-100 d-block">
@@ -37,13 +40,18 @@ export default function ProductCard({ item }: ProductCardProps) {
         
         <div>
           {/* HÌNH ẢNH: Tỷ lệ 1:1, giảm margin dưới để gọn hơn */}
-          <div className="product-img-container mb-2 rounded border border-light overflow-hidden bg-white" style={{ aspectRatio: '1 / 1' }}>
+          <div className="product-img-container mb-2 rounded border border-light overflow-hidden bg-white position-relative" style={{ aspectRatio: '1 / 1' }}>
             <img 
               src={imgUrl} 
               className="product-img w-100 h-100 object-fit-cover" 
               alt={item.name} 
               style={{ objectFit: 'cover' }}
             />
+            {totalStock === 0 && (
+              <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                <span className="badge bg-danger px-3 py-2 fw-bold" style={{ fontSize: '0.75rem' }}>HẾT HÀNG</span>
+              </div>
+            )}
           </div>
 
           {/* TÊN SẢN PHẨM: Giảm font chữ một chút, ép height vừa đủ 2 dòng */}
@@ -66,18 +74,23 @@ export default function ProductCard({ item }: ProductCardProps) {
             <i className="bi bi-box-seam me-1"></i>ĐVT: {item.unit || 'Cái'}
           </div>
 
-          {/* GIÁ TIỀN: Nổi bật nhưng không quá to */}
-          <p className="text-danger fw-bold mb-0" style={{ fontSize: '1rem' }}>
-            {price > 0 ? `${price.toLocaleString('vi-VN')} đ` : 'Liên hệ'}
+          {/* GIÁ TIỀN */}
+          <p className="fw-bold mb-0" style={{ fontSize: '1rem', color: '#0078D4' }}>
+            {minPrice > 0 
+              ? (minPrice === maxPrice 
+                  ? `${minPrice.toLocaleString('vi-VN')} đ` 
+                  : `${minPrice.toLocaleString('vi-VN')} — ${maxPrice.toLocaleString('vi-VN')} đ`)
+              : 'Liên hệ'}
           </p>
         </div>
 
         {/* NÚT MUA NGAY: Dùng btn-sm để nút nhỏ gọn lại, giảm margin top */}
         <button 
-          className="btn btn-outline-danger btn-sm w-100 fw-bold mt-2 buy-btn" 
-          style={{ transition: 'all 0.2s', fontSize: '0.8rem', padding: '0.4rem 0' }}
+          className="btn btn-sm w-100 fw-bold mt-2 text-white" 
+          style={{ transition: 'all 0.2s', fontSize: '0.8rem', padding: '0.4rem 0', borderRadius: '10px', backgroundColor: totalStock === 0 ? '#6c757d' : '#0078D4', border: 'none' }}
+          disabled={totalStock === 0}
         >
-          <i className="bi bi-cart-plus me-1"></i> MUA NGAY
+          <i className="bi bi-cart-plus me-1"></i> {totalStock === 0 ? 'HẾT HÀNG' : 'MUA NGAY'}
         </button>
       </div>
     </Link>

@@ -163,7 +163,7 @@ export default function Header() {
     <>
       <header className="sticky-top shadow-sm bg-white">
         {/* 1. TOP BAR */}
-        <div className="time_header bg-primary text-white py-2 d-none d-md-block">
+        <div className="time_header text-white py-2 d-none d-md-block" style={{ backgroundColor: '#0078D4' }}>
           <div className="container text-center" style={{ fontSize: "13px" }}>
             <span>
               <b>CỬA HÀNG ĐIỆN NƯỚC TRƯỜNG TÍN</b> |&nbsp;Thời gian làm việc:
@@ -188,8 +188,8 @@ export default function Header() {
             </button>
 
             {/* LOGO */}
-            <Link className="navbar-brand header-logo text-danger fs-3 mx-0 me-lg-4 text-decoration-none" href="/">
-              TRƯỜNG TÍN
+            <Link className="navbar-brand header-logo fs-3 mx-0 me-lg-4 text-decoration-none fw-bold" style={{ letterSpacing: '-0.5px', color: '#1a2a3a' }} href="/">
+              <span className="text-brand">TRƯỜNG</span> TÍN
             </Link>
 
 {/* MENU PC - Gọn gàng, bo tròn nhẹ, không chiếm diện tích */}
@@ -219,8 +219,8 @@ export default function Header() {
 <style jsx>{`
   .transition-all { transition: all 0.2s ease; }
   .hover-subtle-bg:hover { 
-    background-color: #f5f5f5; 
-    color: #dc3545 !important; /* Đổi sang màu đỏ khi hover cho nổi */
+    background-color: #e8f4fd; 
+    color: #0078D4 !important;
   }
 `}</style>
 

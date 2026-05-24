@@ -59,11 +59,34 @@ export default function BannerDisplay({ position }: { position: BannerPosition }
     );
   }
 
-  // 2. Nếu không có banner nào hoạt động: Ẩn hoàn toàn component
+  // 2. Nếu không có banner nào hoạt động: Ẩn hoàn toàn component hoặc hiển thị banner cứng mặc định
   if (banners.length === 0) {
+    if (position === "HOME_SUB_LEFT") {
+      return (
+        <div className="rounded-4 p-4 text-white shadow-sm d-flex flex-column justify-content-end position-relative overflow-hidden mb-4 h-100"
+             style={{ minHeight: '200px', backgroundColor: '#0078D4' }}>
+          <div className="position-absolute top-0 start-0 w-100 h-100" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4))', zIndex: 1 }}></div>
+          <div style={{ zIndex: 2 }}>
+            <h3 className="fw-bold mb-1" style={{ letterSpacing: '0.5px' }}>ỐNG NHỰA BÌNH MINH</h3>
+            <p className="mb-0 fw-medium">Đầy đủ kích cỡ Φ21 - Φ200</p>
+          </div>
+        </div>
+      );
+    }
+    if (position === "HOME_SUB_RIGHT") {
+      return (
+        <div className="rounded-4 p-4 text-white shadow-sm d-flex flex-column justify-content-end position-relative overflow-hidden mb-4 h-100"
+             style={{ minHeight: '200px', backgroundColor: '#005a9e' }}>
+          <div className="position-absolute top-0 start-0 w-100 h-100" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4))', zIndex: 1 }}></div>
+          <div style={{ zIndex: 2 }}>
+            <h3 className="fw-bold mb-1" style={{ letterSpacing: '0.5px' }}>DÂY ĐIỆN CADIVI</h3>
+            <p className="mb-0 fw-medium">Chiết khấu cao cho nhà thầu</p>
+          </div>
+        </div>
+      );
+    }
     return null;
   }
-
   // ID duy nhất cho mỗi position để tránh xung đột Bootstrap
   const carouselId = `bannerCarousel-${position}`;
 
