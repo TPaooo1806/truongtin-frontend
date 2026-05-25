@@ -308,21 +308,56 @@ export default function CheckoutPage() {
 
                   {/* Tổng cộng */}
                   <div className="bg-light p-3 rounded-3 mb-4 border">
-                    <div className="d-flex justify-content-between align-items-center">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
                       <span className="h6 mb-0 fw-bold text-secondary">Tổng thanh toán:</span>
-                      <span className="h4 mb-0 fw-bold text-danger">{totalPrice.toLocaleString()}đ</span>
+                      <span className="h4 mb-0 fw-bold text-danger">
+                        {cartItems.some(item => item.price === 0)
+                          ? <span className="fst-italic fs-5">Chờ báo giá</span>
+                          : `${totalPrice.toLocaleString()}đ`
+                        }
+                      </span>
+                    </div>
+                    <div className="text-end text-muted small fst-italic">
+                      *Phí vận chuyển: Cửa hàng sẽ liên hệ báo giá thực tế dựa trên khối lượng vật tư.
                     </div>
                   </div>
 
                   {/* Các nút bấm */}
-                  <button onClick={() => handlePlaceOrder("PAYOS")} disabled={isProcessing} className="btn btn-primary btn-lg w-100 fw-bold mb-3 shadow py-3 d-flex justify-content-center align-items-center" style={{ background: 'linear-gradient(90deg, #1d4ed8, #3b82f6)', border: 'none' }}>
-                    {isProcessing ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-qr-code-scan me-2 fs-5"></i>}
-                    {isProcessing ? "ĐANG XỬ LÝ..." : "THANH TOÁN PAYOS (Quét QR)"}
-                  </button>
+                  {cartItems.some(item => item.price === 0) ? (
+                    <button 
+                      className="btn btn-outline-brand btn-lg w-100 fw-bold mb-3 shadow py-3 d-flex justify-content-center align-items-center" 
+                      onClick={async () => {
+                        const toastId = toast.loading("Đang tạo toa báo giá...");
+                        try {
+                          const res = await api.post('/api/quotes', { 
+                            customerName: customerInfo.fullName,
+                            phone: customerInfo.phone || "Zalo-Customer", 
+                            items: cartItems
+                          });
+                          if (res.data.success) {
+                            toast.success("Đã tạo toa hàng!", { id: toastId });
+                            const message = `Chào Trường Tín, báo giá giúp tôi toa hàng mã: ${res.data.code}`;
+                            window.open(`https://zalo.me/0903989096?text=${encodeURIComponent(message)}`, '_blank');
+                          }
+                        } catch (err) {
+                          toast.error("Lỗi khi tạo báo giá.", { id: toastId });
+                        }
+                      }}
+                    >
+                      <i className="bi bi-chat-dots me-2 fs-5"></i> GỬI YÊU CẦU ZALO BÁO GIÁ
+                    </button>
+                  ) : (
+                    <>
+                      <button onClick={() => handlePlaceOrder("PAYOS")} disabled={isProcessing} className="btn btn-primary btn-lg w-100 fw-bold mb-3 shadow py-3 d-flex justify-content-center align-items-center" style={{ background: 'linear-gradient(90deg, #1d4ed8, #3b82f6)', border: 'none' }}>
+                        {isProcessing ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-qr-code-scan me-2 fs-5"></i>}
+                        {isProcessing ? "ĐANG XỬ LÝ..." : "THANH TOÁN PAYOS (Quét QR)"}
+                      </button>
 
-                  <button onClick={() => handlePlaceOrder("COD")} disabled={isProcessing} className="btn btn-outline-dark w-100 fw-bold py-3 d-flex justify-content-center align-items-center border-2">
-                    {isProcessing ? "ĐANG XỬ LÝ..." : "GIAO HÀNG TẬN NƠI (COD)"}
-                  </button>
+                      <button onClick={() => handlePlaceOrder("COD")} disabled={isProcessing} className="btn btn-outline-dark w-100 fw-bold py-3 d-flex justify-content-center align-items-center border-2">
+                        {isProcessing ? "ĐANG XỬ LÝ..." : "GIAO HÀNG TẬN NƠI (COD)"}
+                      </button>
+                    </>
+                  )}
                 </>
               )}
             </div>

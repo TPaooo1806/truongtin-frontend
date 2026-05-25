@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
 import api from "@/lib/axios";
+import Swal from "sweetalert2";
 
 // --- Interface ---
 interface Banner {
@@ -144,7 +145,17 @@ export default function AdminBannersPage() {
 
   // 5. Xóa Banner
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa banner này?")) return;
+    const result = await Swal.fire({
+      title: 'Xóa banner?',
+      text: "Bạn có chắc chắn muốn xóa banner này?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Có, xóa nó!',
+      cancelButtonText: 'Hủy'
+    });
+    if (!result.isConfirmed) return;
     try {
       const res = await api.delete(`/api/banners/${id}`);
       if (res.data.success) {

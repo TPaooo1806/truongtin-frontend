@@ -108,22 +108,18 @@ const ProductSection = ({
 };
 
 export default function App() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [topSelling, setTopSelling] = useState<Product[]>([]);
+  const [homeCategories, setHomeCategories] = useState<(Category & { products: Product[] })[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // FIX LỖI MẤT SẢN PHẨM: Thêm ?limit=100 để lấy đủ số lượng sản phẩm từ tất cả danh mục,
-        // tránh việc Bóng đèn bị đẩy sang trang 2 không hiện được.
-        const [prodRes, catRes] = await Promise.all([
-          api.get<ApiResponse<Product[]>>("/api/products?limit=100"),
-          api.get<ApiResponse<Category[]>>("/api/categories"),
-        ]);
-
-        if (prodRes.data.success) setProducts(prodRes.data.data);
-        if (catRes.data.success) setCategories(catRes.data.data);
+        const res = await api.get("/api/home-data");
+        if (res.data.success) {
+          setTopSelling(res.data.data.topSelling || []);
+          setHomeCategories(res.data.data.homeCategories || []);
+        }
       } catch (err) {
         console.error("Lỗi tải dữ liệu hệ thống:", err);
       } finally {
@@ -259,7 +255,9 @@ export default function App() {
         </section>
 
         {/* SECTION 2: SẢN PHẨM BÁN CHẠY */}
-        <ProductSection title="TOP BÁN CHẠY" products={products} link="/san-pham" />
+        {topSelling.length > 0 && (
+          <ProductSection title="TOP BÁN CHẠY" products={topSelling} link="/san-pham" />
+        )}
 
         {/* NƠI 2: DOUBLE BANNER (TRÁI / PHẢI) */}
         <div className="row my-4 g-3">
@@ -271,31 +269,14 @@ export default function App() {
           </div>
         </div>
 
-        {/* SECTION 4: CHỈ HIỂN THỊ 3 DANH MỤC (Ống nước, Phụ kiện, Bóng đèn) */}
-        {categories.map((cat) => {
-          const catName = cat.name.toLowerCase();
-
-          // 1. Chỉ cho phép 3 danh mục này được đi tiếp
-          const isTargetCategory =
-            catName.includes("ống nước") ||
-            catName.includes("phụ kiện") ||
-            catName.includes("bóng đèn");
-
-          if (!isTargetCategory) return null; // Nếu danh mục khác -> Bỏ qua
-
-          // 2. Lọc sản phẩm khớp với danh mục
-          const categoryProducts = products.filter(
-            (p) => p.categoryId === cat.id,
-          );
-
-          // 3. Nếu không có sản phẩm nào -> Ẩn luôn
-          if (categoryProducts.length === 0) return null;
-
+        {/* SECTION 4: DANH MỤC ĐỘNG TỪ ADMIN */}
+        {homeCategories.map((cat) => {
+          if (!cat.products || cat.products.length === 0) return null;
           return (
             <ProductSection
               key={cat.id}
               title={cat.name.toUpperCase()}
-              products={categoryProducts}
+              products={cat.products}
               link={`/category/${cat.slug}`}
             />
           );

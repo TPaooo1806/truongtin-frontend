@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Product } from '../type';
 
 interface ProductCardProps {
@@ -41,11 +42,13 @@ export default function ProductCard({ item }: ProductCardProps) {
         <div>
           {/* HÌNH ẢNH: Tỷ lệ 1:1, giảm margin dưới để gọn hơn */}
           <div className="product-img-container mb-2 rounded border border-light overflow-hidden bg-white position-relative" style={{ aspectRatio: '1 / 1' }}>
-            <img 
+            <Image 
               src={imgUrl} 
-              className="product-img w-100 h-100 object-fit-cover" 
               alt={item.name} 
-              style={{ objectFit: 'cover' }}
+              fill
+              className="product-img object-fit-cover" 
+              sizes="(max-width: 768px) 50vw, 300px"
+              unoptimized={!imgUrl.includes('res.cloudinary.com')}
             />
             {totalStock === 0 && (
               <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
@@ -76,11 +79,14 @@ export default function ProductCard({ item }: ProductCardProps) {
 
           {/* GIÁ TIỀN */}
           <p className="fw-bold mb-0" style={{ fontSize: '1rem', color: '#0078D4' }}>
-            {minPrice > 0 
-              ? (minPrice === maxPrice 
-                  ? `${minPrice.toLocaleString('vi-VN')} đ` 
-                  : `${minPrice.toLocaleString('vi-VN')} — ${maxPrice.toLocaleString('vi-VN')} đ`)
-              : 'Liên hệ'}
+            {(() => {
+              const validPrices = (item.variants || []).map(v => v.price).filter(p => p > 0);
+              if (validPrices.length === 0) return <span className="text-brand">Liên hệ báo giá</span>;
+              const min = Math.min(...validPrices);
+              const max = Math.max(...validPrices);
+              if (min === max) return `${min.toLocaleString('vi-VN')} đ`;
+              return <><span className="text-muted fw-normal" style={{ fontSize: '0.75rem' }}>Giá từ: </span>{min.toLocaleString('vi-VN')} đ</>;
+            })()}
           </p>
         </div>
 

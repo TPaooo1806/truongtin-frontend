@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { AxiosError } from "axios";
+import Swal from "sweetalert2";
 import { toast } from "react-hot-toast";
 import api from "@/lib/axios";
 
@@ -69,12 +70,17 @@ export default function AdminOrdersPage() {
 
   // --- 3. HÀM DUYỆT ĐƠN ---
   const handleApprove = async (orderId: number, orderCode: string) => {
-    if (
-      !confirm(
-        `Bạn có chắc chắn muốn duyệt đơn #${orderCode}? Hệ thống sẽ thực hiện trừ kho.`,
-      )
-    )
-      return;
+    const result = await Swal.fire({
+      title: 'Xác nhận duyệt đơn?',
+      text: `Bạn có chắc chắn muốn duyệt đơn #${orderCode}? Hệ thống sẽ thực hiện trừ kho.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Đồng ý',
+      cancelButtonText: 'Hủy'
+    });
+    if (!result.isConfirmed) return;
 
     try {
       const res = await api.patch<{ success: boolean; message: string }>(
@@ -94,7 +100,17 @@ export default function AdminOrdersPage() {
 
   // --- 4. HÀM HỦY ĐƠN ---
   const handleCancel = async (orderId: number, orderCode: string) => {
-    if (!confirm(`Huỷ đơn #${orderCode}?`)) return;
+    const result = await Swal.fire({
+      title: 'Hủy đơn hàng?',
+      text: `Bạn có chắc muốn hủy đơn #${orderCode}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Có, hủy đơn!',
+      cancelButtonText: 'Quay lại'
+    });
+    if (!result.isConfirmed) return;
 
     try {
       const res = await api.patch<{ success: boolean; message: string }>(

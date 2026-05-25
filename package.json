@@ -18,7 +18,8 @@
     "react-chartjs-2": "^5.3.1",
     "react-dom": "19.2.3",
     "react-hot-toast": "^2.6.0",
-    "rss-parser": "^3.13.0"
+    "rss-parser": "^3.13.0",
+    "sweetalert2": "^11.26.25"
   },
   "devDependencies": {
     "@types/bootstrap": "^5.2.10",

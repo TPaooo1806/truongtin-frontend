@@ -2,11 +2,14 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/axios'; 
 import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 interface Category {
   id: number;
   name: string;
   slug: string;
+  showOnHome: boolean;
+  displayOrder: number;
   _count?: {
     products: number;
   };
@@ -27,7 +30,7 @@ export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [newCat, setNewCat] = useState({ name: '', slug: '' });
+  const [newCat, setNewCat] = useState({ name: '', slug: '', showOnHome: false, displayOrder: 0 });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -53,7 +56,7 @@ export default function AdminCategoriesPage() {
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
     const slug = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9 -]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-");
-    setNewCat({ name, slug });
+    setNewCat({ ...newCat, name, slug });
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -68,7 +71,7 @@ export default function AdminCategoriesPage() {
       if (res.data.success) {
         toast.success(res.data.message || "Thành công");
         setShowModal(false);
-        setNewCat({ name: '', slug: '' });
+        setNewCat({ name: '', slug: '', showOnHome: false, displayOrder: 0 });
         setCurrentPage(1);
         fetchCategories(1);
       }
@@ -80,9 +83,33 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const handleUpdateCategory = async (id: number, field: string, value: any) => {
+    // Optimistic UI update
+    setCategories(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
+    try {
+      const res = await api.put(`/api/categories/${id}`, { [field]: value });
+      if (res.data.success) {
+        toast.success("Cập nhật thành công");
+      }
+    } catch (error: unknown) {
+      toast.error("Lỗi cập nhật danh mục");
+      fetchCategories(currentPage); // Revert on error
+    }
+  };
+
   // --- HÀM XÓA MỚI ---
   const handleDelete = async (id: number, name: string) => {
-    if (!window.confirm(`Bạn có chắc muốn xóa danh mục "${name}"?`)) return;
+    const result = await Swal.fire({
+      title: 'Xóa danh mục?',
+      text: `Bạn có chắc muốn xóa danh mục "${name}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Có, xóa nó!',
+      cancelButtonText: 'Hủy'
+    });
+    if (!result.isConfirmed) return;
     try {
       const res = await api.delete(`/api/categories/${id}`);
       if (res.data.success) {
@@ -117,7 +144,8 @@ export default function AdminCategoriesPage() {
             <tr>
               <th className="ps-3 border-0 rounded-start-3">ID</th>
               <th className="border-0">Tên Danh Mục</th>
-              <th className="border-0">Đường Dẫn</th>
+              <th className="border-0 text-center">Hiện Trang Chủ</th>
+              <th className="border-0 text-center">Thứ Tự</th>
               <th className="border-0 text-center">Sản Phẩm</th>
               <th className="text-end pe-3 border-0 rounded-end-3">Thao Tác</th>
             </tr>
@@ -131,8 +159,30 @@ export default function AdminCategoriesPage() {
               categories.map((cat) => (
                 <tr key={cat.id}>
                   <td className="ps-3 text-muted fw-bold">#{cat.id}</td>
-                  <td className="fw-bold text-dark">{cat.name}</td>
-                  <td><span className="badge bg-light text-primary border border-primary-subtle px-2">/{cat.slug}</span></td>
+                  <td className="fw-bold text-dark">
+                    {cat.name}
+                    <div className="text-muted fw-normal" style={{ fontSize: '12px' }}>/{cat.slug}</div>
+                  </td>
+                  <td className="text-center">
+                    <div className="form-check form-switch d-flex justify-content-center">
+                      <input 
+                        className="form-check-input shadow-none cursor-pointer" 
+                        type="checkbox" 
+                        checked={cat.showOnHome} 
+                        onChange={(e) => handleUpdateCategory(cat.id, 'showOnHome', e.target.checked)}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </div>
+                  </td>
+                  <td className="text-center">
+                    <input 
+                      type="number" 
+                      className="form-control form-control-sm text-center mx-auto shadow-none" 
+                      style={{ width: '60px' }}
+                      defaultValue={cat.displayOrder}
+                      onBlur={(e) => handleUpdateCategory(cat.id, 'displayOrder', parseInt(e.target.value) || 0)}
+                    />
+                  </td>
                   <td className="text-center">
                     <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">
                       {cat._count?.products || 0}
@@ -196,6 +246,20 @@ export default function AdminCategoriesPage() {
               <div className="mb-4">
                 <label className="small fw-bold text-muted mb-1">Slug (Tự động)</label>
                 <input type="text" className="form-control rounded-3 shadow-none bg-light text-muted" value={newCat.slug} readOnly />
+              </div>
+              <div className="mb-3 d-flex align-items-center justify-content-between border p-3 rounded-3 bg-light">
+                <div>
+                  <label className="fw-bold mb-0 text-dark">Hiện Trang Chủ</label>
+                  <div className="small text-muted">Bật để hiển thị ở trang chủ</div>
+                </div>
+                <div className="form-check form-switch fs-4 mb-0">
+                  <input className="form-check-input cursor-pointer" type="checkbox" checked={newCat.showOnHome} onChange={(e) => setNewCat({ ...newCat, showOnHome: e.target.checked })} />
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="small fw-bold text-muted mb-1">Thứ Tự Hiển Thị</label>
+                <input type="number" className="form-control rounded-3 shadow-none border-2" value={newCat.displayOrder} onChange={(e) => setNewCat({ ...newCat, displayOrder: parseInt(e.target.value) || 0 })} />
+                <small className="text-muted">Số càng nhỏ càng xếp trên cùng (Mặc định: 0)</small>
               </div>
               <button type="submit" disabled={isSubmitting} className="btn btn-primary w-100 rounded-pill fw-bold py-2 shadow-sm">
                 {isSubmitting ? 'Đang xử lý...' : 'Xác Nhận Thêm'}

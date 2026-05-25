@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import api from '@/lib/axios';
+import toast from 'react-hot-toast';
 
 // --- ĐỊNH NGHĨA KIỂU DỮ LIỆU ---
 interface CartItem {
@@ -19,14 +21,44 @@ interface CartItem {
 export default function CartPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isMounted, setIsMounted] = useState(false);
+  const [guestPhone, setGuestPhone] = useState('');
 
   // FIX LỖI 1: Bọc logic lấy giỏ hàng vào setTimeout để tránh Cascading Renders
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       try {
         const storedCart = localStorage.getItem('cart');
         if (storedCart) {
-          setCart(JSON.parse(storedCart));
+          let parsedCart = JSON.parse(storedCart) as CartItem[];
+          
+          if (parsedCart.length > 0) {
+            try {
+              const variantIds = parsedCart.map(i => i.variantId);
+              const res = await api.post('/api/cart/validate', { variantIds });
+              if (res.data.success) {
+                const latestData = res.data.data;
+                let hasChanges = false;
+                
+                parsedCart = parsedCart.map(item => {
+                  const latest = latestData.find((l: any) => l.id === item.variantId);
+                  if (latest && (latest.price !== item.price)) {
+                    hasChanges = true;
+                    return { ...item, price: latest.price };
+                  }
+                  return item;
+                });
+
+                if (hasChanges) {
+                  toast("Giá hoặc tồn kho của một số vật tư đã được cập nhật mới nhất.", { icon: 'ℹ️' });
+                  localStorage.setItem('cart', JSON.stringify(parsedCart));
+                }
+              }
+            } catch (err) {
+              console.error("Lỗi validate giỏ hàng", err);
+            }
+          }
+          
+          setCart(parsedCart);
         }
       } catch (error) {
         console.error("Lỗi đọc dữ liệu giỏ hàng:", error);
@@ -64,6 +96,35 @@ export default function CartPage() {
   // Tính tổng tiền
   const calculateTotal = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  // Tính năng Guest Cart
+  const saveGuestCart = async () => {
+    if (!guestPhone) return toast.error("Vui lòng nhập số điện thoại.");
+    if (cart.length === 0) return toast.error("Giỏ hàng đang trống.");
+    
+    try {
+      const res = await api.post('/api/guestcart', { phone: guestPhone, cartData: cart });
+      if (res.data.success) {
+        toast.success("Đã lưu toa hàng an toàn.");
+      }
+    } catch (err) {
+      toast.error("Lỗi lưu toa hàng.");
+    }
+  };
+
+  const loadGuestCart = async () => {
+    if (!guestPhone) return toast.error("Vui lòng nhập số điện thoại.");
+    
+    try {
+      const res = await api.get(`/api/guestcart/${guestPhone}`);
+      if (res.data.success && res.data.data.cartData) {
+        setCart(res.data.data.cartData);
+        toast.success("Đã tải lại toa hàng cũ!");
+      }
+    } catch (err) {
+      toast.error("Không tìm thấy toa hàng cho SĐT này.");
+    }
   };
 
   // Tránh lỗi Hydration của Next.js
@@ -125,7 +186,7 @@ export default function CartPage() {
                     
                     {/* Nút Xóa (Mobile: Nằm góc trên phải) */}
                     <button 
-                      className="btn btn-link text-brand p-0 position-absolute d-md-none" 
+                      className="btn btn-link text-danger p-0 position-absolute d-md-none" 
                       style={{ top: '15px', right: '15px', width: 'auto' }}
                       onClick={() => removeItem(item.variantId)}
                     >
@@ -136,7 +197,14 @@ export default function CartPage() {
                     <div className="col-12 col-md-5 d-flex align-items-center mb-3 mb-md-0 pe-5 pe-md-0">
                       <Link href={`/product/${item.slug}`} className="flex-shrink-0">
                         <div className="position-relative border rounded-3 overflow-hidden bg-light" style={{ width: '80px', height: '80px' }}>
-                          <Image src={item.image} alt={item.productName} fill className="object-fit-cover" unoptimized />
+                          <Image 
+                            src={item.image} 
+                            alt={item.productName} 
+                            fill 
+                            className="object-fit-cover" 
+                            sizes="80px"
+                            unoptimized={!item.image.includes('res.cloudinary.com')} 
+                          />
                         </div>
                       </Link>
                       <div className="ms-3">
@@ -183,7 +251,7 @@ export default function CartPage() {
 
                     {/* Nút Xóa (Chỉ hiện PC) */}
                     <div className="col-md-1 d-none d-md-flex justify-content-end">
-                      <button className="btn btn-light text-brand border-0 rounded-circle" onClick={() => removeItem(item.variantId)}>
+                      <button className="btn btn-light text-danger border-0 rounded-circle" onClick={() => removeItem(item.variantId)}>
                         <i className="bi bi-trash"></i>
                       </button>
                     </div>
@@ -211,17 +279,67 @@ export default function CartPage() {
 
               <div className="d-flex justify-content-between mb-4 align-items-center bg-light p-3 rounded-3 border">
                 <span className="fw-bold text-dark fs-5">TỔNG CỘNG:</span>
-                <span className="fw-bold text-brand fs-4">{calculateTotal().toLocaleString('vi-VN')} đ</span>
+                <span className="fw-bold text-brand fs-4">
+                  {cart.some(item => item.price === 0) 
+                    ? <span className="fst-italic fs-5">Chờ báo giá</span>
+                    : `${calculateTotal().toLocaleString('vi-VN')} đ`
+                  }
+                </span>
               </div>
 
-              <Link href="/checkout" className="btn btn-brand btn-lg w-100 fw-bold shadow-sm" style={{ padding: '12px 0' }}>
-            THANH TOÁN <i className="bi bi-arrow-right ms-2"></i>
-              </Link>
+              {cart.some(item => item.price === 0) ? (
+                <button 
+                  className="btn btn-outline-brand btn-lg w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center" 
+                  style={{ padding: '12px 0' }}
+                  onClick={async () => {
+                    const toastId = toast.loading("Đang tạo toa báo giá...");
+                    try {
+                      const res = await api.post('/api/quotes', { 
+                        phone: guestPhone || "Zalo-Customer", 
+                        items: cart
+                      });
+                      if (res.data.success) {
+                        toast.success("Đã tạo toa hàng!", { id: toastId });
+                        const message = `Chào Trường Tín, báo giá giúp tôi toa hàng mã: ${res.data.code}`;
+                        window.open(`https://zalo.me/0903989096?text=${encodeURIComponent(message)}`, '_blank');
+                      }
+                    } catch (err) {
+                      toast.error("Lỗi khi tạo báo giá.", { id: toastId });
+                    }
+                  }}
+                >
+                  <i className="bi bi-chat-dots fs-5 me-2"></i> GỬI YÊU CẦU ZALO BÁO GIÁ
+                </button>
+              ) : (
+                <Link href="/checkout" className="btn btn-brand btn-lg w-100 fw-bold shadow-sm" style={{ padding: '12px 0' }}>
+                  THANH TOÁN <i className="bi bi-arrow-right ms-2"></i>
+                </Link>
+              )}
 
               <div className="text-center mt-3">
                 <Link href="/" className="text-decoration-none text-primary small fw-semibold">
                   <i className="bi bi-arrow-left me-1"></i> Chọn thêm sản phẩm khác
                 </Link>
+              </div>
+
+              {/* LƯU TOA HÀNG VÃNG LAI */}
+              <div className="mt-4 pt-3 border-top">
+                <h6 className="fw-bold text-dark mb-3" style={{ fontSize: '15px' }}>
+                  <i className="bi bi-cloud-arrow-down me-2"></i>Lưu / Tải lại toa hàng bằng SĐT
+                </h6>
+                <div className="input-group mb-2">
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="Nhập số điện thoại..." 
+                    value={guestPhone}
+                    onChange={(e) => setGuestPhone(e.target.value)}
+                  />
+                </div>
+                <div className="d-flex gap-2">
+                  <button className="btn btn-outline-primary btn-sm w-50 fw-bold" onClick={saveGuestCart}>Lưu toa hàng</button>
+                  <button className="btn btn-outline-success btn-sm w-50 fw-bold" onClick={loadGuestCart}>Tải lại toa cũ</button>
+                </div>
               </div>
             </div>
           </div>

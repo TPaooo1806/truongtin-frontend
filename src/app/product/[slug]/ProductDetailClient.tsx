@@ -17,8 +17,14 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const [loadingRelated, setLoadingRelated] = useState(true);
   const [mainImage, setMainImage] = useState(initialProduct.images?.[0]?.url || 'https://via.placeholder.com/400');
 
-  // --- STATE CHỌN SỐ LƯỢNG MUA ---
+  // --- STATE CHỌN SỐ LƯỢNG MUA (cho SP đơn biến thể) ---
   const [quantity, setQuantity] = useState(1);
+  // --- STATE SỐ LƯỢNG TỪNG BIẾN THỂ (cho SP đa biến thể) ---
+  const [variantQuantities, setVariantQuantities] = useState<Record<number, number>>({});
+
+  // Kiểm tra SP có nhiều biến thể thực sự không (loại trừ SP chỉ có 1 variant "Mặc định")
+  const hasMultipleVariants = (initialProduct.variants?.length ?? 0) > 1 || 
+    (initialProduct.variants?.length === 1 && initialProduct.variants[0].name !== 'Mặc định');
 
   // --- STATE ĐÁNH GIÁ THỰC TẾ ---
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -93,52 +99,65 @@ useEffect(() => {
   }, [product]);
 
 
-  // --- LOGIC THÊM VÀO GIỎ HÀNG ---
+  // --- HÀM CẬP NHẬT SỐ LƯỢNG BIẾN THỂ TRONG BẢNG ---
+  const updateVariantQty = (variantId: number, delta: number, maxStock: number) => {
+    setVariantQuantities(prev => {
+      const current = prev[variantId] || 0;
+      const next = Math.min(maxStock, Math.max(0, current + delta));
+      return { ...prev, [variantId]: next };
+    });
+  };
+  const setVariantQty = (variantId: number, val: number, maxStock: number) => {
+    setVariantQuantities(prev => ({ ...prev, [variantId]: Math.min(maxStock, Math.max(0, val)) }));
+  };
+
+  // --- LOGIC THÊM VÀO GIỎ HÀNG (SP ĐƠN BIẾN THỂ) ---
   const handleAddToCart = () => {
     if (!product) return;
+    const v = product.variants?.[0];
+    if (!v) return;
+    addItemsToCart([{ variant: v, qty: quantity }]);
+  };
 
-    const newItem = {
-      productId: product.id,
-      productName: product.name,
-      slug: product.slug,
-      image: product.images?.[0]?.url || 'https://via.placeholder.com/200',
-      variantId: product.variants?.[0]?.id || 0, // Lấy ID phiên bản đầu tiên
-      price: product.variants?.[0]?.price || 0,
-      quantity: quantity, // State số lượng bạn đang lưu ở trang chi tiết
-      unit: product.unit || 'Cái'
-    };
-    
-    const currentVariant = product.variants[0];
-    
-    // Gắn kiểu CartItem[] cho mảng lấy từ localStorage
-    const cart: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]');
-    
-    // Thay 'any' thành 'CartItem'
-    const existingItemIndex = cart.findIndex((item: CartItem) => item.variantId === currentVariant.id);
-    
-    if (existingItemIndex > -1) {
-      cart[existingItemIndex].quantity += quantity;
-    } else {
-      cart.push({
-        productId: product.id,
-        productName: product.name,
-        slug: product.slug,
-        image: mainImage,
-        variantId: currentVariant.id,
-        price: currentVariant.price,
-        quantity: quantity,
-        unit: product.unit
-      });
+  // --- LOGIC THÊM HÀNG LOẠT VÀO GIỎ (BẢNG ĐA BIẾN THỂ) ---
+  const handleBulkAddToCart = () => {
+    if (!product) return;
+    const items = product.variants
+      .filter(v => (variantQuantities[v.id] || 0) > 0)
+      .map(v => ({ variant: v, qty: variantQuantities[v.id] }));
+    if (items.length === 0) { 
+      toast.error('Vui lòng chọn số lượng ít nhất 1 sản phẩm!'); 
+      return; 
     }
-    
-    // 1. Lưu vào Storage
-    localStorage.setItem('cart', JSON.stringify(cart));
-    
-    // 2. BẮN TÍN HIỆU CHO HEADER (CHÍNH LÀ DÒNG NÀY ĐÂY!)
-    window.dispatchEvent(new Event('cartUpdated'));
+    addItemsToCart(items);
+    setVariantQuantities({}); // Reset bảng
+  };
 
-    // 3. Hiện thông báo
-    toast.success('Đã thêm vào giỏ hàng thành công!');
+  // --- HÀM CHUNG: GOM VÀ ĐẨY VÀO GIỎ ---
+  const addItemsToCart = (items: { variant: { id: number; price: number; name: string }; qty: number }[]) => {
+    if (!product) return;
+    const cart: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]');
+    items.forEach(({ variant, qty }) => {
+      const displayName = variant.name !== 'Mặc định' ? `${product.name} - ${variant.name}` : product.name;
+      const idx = cart.findIndex(c => c.variantId === variant.id);
+      if (idx > -1) {
+        cart[idx].quantity += qty;
+      } else {
+        cart.push({
+          productId: product.id,
+          productName: displayName,
+          slug: product.slug,
+          image: mainImage,
+          variantId: variant.id,
+          price: variant.price,
+          quantity: qty,
+          unit: product.unit
+        });
+      }
+    });
+    localStorage.setItem('cart', JSON.stringify(cart));
+    window.dispatchEvent(new Event('cartUpdated'));
+    toast.success(`Đã thêm ${items.length} mục vào giỏ hàng!`);
   };
 
   // --- LOGIC MỞ APP ZALO TỰ ĐỘNG ---
@@ -196,7 +215,8 @@ useEffect(() => {
 
   if (!product) return <div className="text-center py-5">Sản phẩm không tồn tại!</div>;
 
-  const currentVariant = product.variants?.[0]; // Lấy biến thể mặc định để hiển thị giá, kho
+  const currentVariant = product.variants?.[0];
+  const totalStock = product.variants?.reduce((s, v) => s + v.stock, 0) ?? 0;
 
   return (
     <div className="container my-4">
@@ -211,37 +231,28 @@ useEffect(() => {
               
               {/* Cột Trái: Khu vực Hình Ảnh */}
               <div className="col-md-5">
-                {/* KHUNG ẢNH LỚN */}
                 <div className="border rounded-4 p-2 mb-3 bg-white shadow-sm position-relative overflow-hidden" style={{ height: '350px' }}>
                   <Image 
                     src={mainImage || 'https://via.placeholder.com/400'} 
                     alt={product.name} 
-                    fill
-                    unoptimized 
+                    fill 
+                    priority
+                    unoptimized={!(mainImage || '').includes('res.cloudinary.com')} 
                     className="object-fit-contain p-2" 
+                    sizes="(max-width: 768px) 100vw, 50vw"
                   />
                 </div>
-                
-                {/* DANH SÁCH HÌNH NHỎ (THUMBNAILS) */}
                 {product.images && product.images.length > 0 && (
                   <div className="d-flex gap-2 overflow-auto pb-2 hide-scrollbar">
                     {product.images.map((img, index) => (
-                      <div 
-                        key={index} 
-                        onClick={() => setMainImage(img.url)} 
-                        className={`position-relative border rounded-3 transition-all ${mainImage === img.url ? 'border-brand border-2 shadow-sm' : 'border-light opacity-50'}`} 
-                        style={{ minWidth: '70px', height: '70px', cursor: 'pointer', overflow: 'hidden' }} 
-                        onMouseOver={(e) => e.currentTarget.classList.remove('opacity-50')}
-                        onMouseOut={(e) => {
-                          if (mainImage !== img.url) e.currentTarget.classList.add('opacity-50');
-                        }}
-                      >
+                      <div key={index} onClick={() => setMainImage(img.url)} className={`position-relative border rounded-3 transition-all ${mainImage === img.url ? 'border-brand border-2 shadow-sm' : 'border-light opacity-50'}`} style={{ minWidth: '70px', height: '70px', cursor: 'pointer', overflow: 'hidden' }} onMouseOver={(e) => e.currentTarget.classList.remove('opacity-50')} onMouseOut={(e) => { if (mainImage !== img.url) e.currentTarget.classList.add('opacity-50'); }}>
                         <Image 
                           src={img.url} 
                           alt={`thumb-${index}`} 
-                          fill
-                          unoptimized
+                          fill 
+                          unoptimized={!img.url.includes('res.cloudinary.com')} 
                           className="object-fit-cover" 
+                          sizes="70px"
                         />
                       </div>
                     ))}
@@ -249,7 +260,7 @@ useEffect(() => {
                 )}
               </div>
               
-              {/* Cột Phải: Thông tin tóm tắt */}
+              {/* Cột Phải: Thông tin sản phẩm */}
               <div className="col-md-7 d-flex flex-column">
                 <nav aria-label="breadcrumb" className="mb-2">
                   <ol className="breadcrumb mb-0" style={{ fontSize: '14px' }}>
@@ -260,10 +271,8 @@ useEffect(() => {
                 
                 <h1 className="fw-bold fs-4 text-dark mb-3 lh-base">{product.name}</h1>
                 
-                {/* Box thông tin cấu hình (Mã, ĐVT, Tình trạng) */}
+                {/* Box thông tin cấu hình */}
                 <div className="bg-light border rounded-3 p-3 mb-4 d-flex flex-column gap-2" style={{ fontSize: '15px', color: '#444' }}>
-                  <div className="d-flex align-items-center">
-                  </div>
                   <div className="d-flex align-items-center">
                     <i className="bi bi-box-seam me-2 text-muted"></i>
                     <span className="text-muted me-2" style={{ width: '100px' }}>Đơn vị tính:</span> 
@@ -272,92 +281,139 @@ useEffect(() => {
                   <div className="d-flex align-items-center">
                     <i className="bi bi-check-circle me-2 text-muted"></i>
                     <span className="text-muted me-2" style={{ width: '100px' }}>Tình trạng:</span> 
-                    {currentVariant?.stock > 0 
-                        ? <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-6">Còn hàng</span>
-                        : <span className="badge bg-brand-subtle text-brand border border-brand-subtle px-2 py-1 fs-6">Hết hàng</span>
+                    {totalStock > 0 
+                      ? <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-6">Còn hàng</span>
+                      : <span className="badge bg-brand-subtle text-brand border border-brand-subtle px-2 py-1 fs-6">Hết hàng</span>
                     }
                   </div>
                 </div>
 
-                {/* CHỌN SỐ LƯỢNG */}
-                <div className="mb-4 d-flex align-items-center">
-                  <div className="text-muted small fw-bold me-3" style={{ width: '85px' }}>Số lượng:</div>
-                  <div className="d-flex align-items-center border rounded-3 overflow-hidden" style={{ height: '44px' }}>
-                    <button 
-                      className="btn btn-light border-0 px-3 h-100 d-flex align-items-center justify-content-center" 
-                      style={{ width: '44px', fontSize: '1.2rem' }}
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    >
-                      <i className="bi bi-dash-lg"></i>
+                {/* ============================================================ */}
+                {/* TRƯỜNG HỢP 1: SẢN PHẨM CÓ NHIỀU BIẾN THỂ => BẢNG NHẬP LIỆU */}
+                {/* ============================================================ */}
+                {hasMultipleVariants ? (
+                  <div>
+                    {/* BẢNG DẠNG CARD CHO MOBILE & PC */}
+                    <div className="d-flex flex-column gap-2 mb-4 custom-scrollbar" style={{ maxHeight: '380px', overflowY: 'auto' }}>
+                      {product.variants.map((v) => {
+                        const qty = variantQuantities[v.id] || 0;
+                        const isSelected = qty > 0;
+                        return (
+                          <div key={v.id} className={`p-3 border rounded-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 transition-all ${
+                            isSelected ? 'border-brand bg-brand-subtle shadow-sm' : 'bg-white'
+                          }`}>
+                            
+                            {/* Thông tin Biến thể */}
+                            <div className="flex-grow-1">
+                              <div className="fw-bold mb-1 fs-6 text-dark">{v.name}</div>
+                              <div className="d-flex align-items-center gap-3 small">
+                                <div>
+                                  {v.price > 0 
+                                    ? <span className="text-primary fw-bold fs-6">{v.price.toLocaleString('vi-VN')} đ</span>
+                                    : <span className="text-brand fst-italic">Liên hệ</span>
+                                  }
+                                </div>
+                                <div className="text-muted border-start ps-3">
+                                  Kho: {v.stock > 0 
+                                    ? <span className="text-success fw-bold">{v.stock}</span>
+                                    : <span className="text-danger fw-bold">Hết</span>
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Input Số Lượng */}
+                            <div>
+                              {v.stock > 0 ? (
+                                <div className="d-flex align-items-center border rounded-3 overflow-hidden bg-white shadow-sm" style={{ height: '38px', width: '120px' }}>
+                                  <button className="btn btn-light border-0 px-2 h-100 d-flex align-items-center justify-content-center" onClick={() => updateVariantQty(v.id, -1, v.stock)} disabled={qty <= 0} style={{ width: '38px' }}>
+                                    <i className="bi bi-dash"></i>
+                                  </button>
+                                  <input type="text" inputMode="numeric" pattern="[0-9]*" className="form-control text-center border-0 bg-transparent fw-bold p-0 h-100" style={{ width: '44px' }} value={qty} onChange={(e) => setVariantQty(v.id, parseInt(e.target.value) || 0, v.stock)} />
+                                  <button className="btn btn-light border-0 px-2 h-100 d-flex align-items-center justify-content-center" onClick={() => updateVariantQty(v.id, 1, v.stock)} disabled={qty >= v.stock} style={{ width: '38px' }}>
+                                    <i className="bi bi-plus"></i>
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="text-muted small px-3 py-2 bg-light rounded-3 text-center" style={{ width: '120px' }}>Hết hàng</div>
+                              )}
+                            </div>
+                            
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* NÚT THÊM HÀNG LOẠT */}
+                    {(() => {
+                      const totalSelectedQty = Object.values(variantQuantities).reduce((s, q) => s + q, 0);
+                      return (
+                        <button 
+                          className={`btn btn-lg fw-bold w-100 shadow-sm d-flex align-items-center justify-content-center mb-3 transition-all ${
+                            totalSelectedQty > 0 ? 'btn-brand' : 'btn-secondary opacity-50'
+                          }`} 
+                          onClick={handleBulkAddToCart}
+                        >
+                          <i className="bi bi-cart-plus fs-5 me-2"></i> THÊM CÁC MỤC ĐÃ CHỌN VÀO GIỎ
+                        </button>
+                      );
+                    })()}
+                    <button className="btn btn-outline-brand btn-lg fw-bold w-100 d-flex align-items-center justify-content-center" onClick={handleZaloContact}>
+                      <i className="bi bi-chat-dots fs-5 me-2"></i> LIÊN HỆ ZALO BÁO GIÁ
                     </button>
-                    <input 
-                      type="number" 
-                      className="form-control text-center border-0 bg-white fw-bold px-1" 
-                      style={{ width: '60px', height: '100%', fontSize: '1.1rem' }}
-                      value={quantity} 
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value);
-                        if (!isNaN(val) && val >= 1) setQuantity(val);
-                        if (e.target.value === '') setQuantity(1);
-                      }}
-                      min={1}
-                    />
-                    <button 
-                      className="btn btn-light border-0 px-3 h-100 d-flex align-items-center justify-content-center" 
-                      style={{ width: '44px', fontSize: '1.2rem' }}
-                      onClick={() => setQuantity(quantity + 1)}
-                    >
-                      <i className="bi bi-plus-lg"></i>
-                    </button>
-                  </div>
-                  <span className="ms-2 text-muted small">({product.unit})</span>
-                </div>
-
-                {/* Khối Giá Tiền */}
-                <div className="p-3 mb-3 rounded-3 border border-brand border-opacity-25" style={{ backgroundColor: '#fffafb' }}>
-                  <div className="text-muted small mb-1">Giá bán tham khảo:</div>
-                  <div className="d-flex align-items-baseline gap-2">
-                    <span className="text-brand fw-bold" style={{ fontSize: '2rem' }}>
-                      {currentVariant?.price ? currentVariant.price.toLocaleString('vi-VN') : 'Liên hệ'}
-                    </span>
-                    {currentVariant?.price && <span className="text-brand fw-semibold fs-5">đ</span>}
-                  </div>
-                </div>
-                
-                {/* Ghi chú giá thay đổi */}
-                {!currentVariant?.price ? (
-                  <div className="alert alert-warning py-2 px-3 mb-4 d-flex align-items-start gap-2" style={{ fontSize: '0.8rem', borderRadius: '10px' }}>
-                    <i className="bi bi-info-circle-fill text-warning mt-1 flex-shrink-0"></i>
-                    <span>Sản phẩm này cần <strong>báo giá riêng</strong> theo số lượng và thời điểm. Vui lòng liên hệ Zalo hoặc gọi Hotline <strong>0903 989 096</strong> để được báo giá tốt nhất.</span>
                   </div>
                 ) : (
-                  <div className="text-muted mb-4 d-flex align-items-center gap-1" style={{ fontSize: '0.72rem' }}>
-                    <i className="bi bi-exclamation-circle"></i>
-                    Giá vật tư có thể thay đổi theo thời điểm. Liên hệ để xác nhận giá mới nhất.
+                  /* ============================================================ */
+                  /* TRƯỜNG HỢP 2: SP ĐƠN BIẾN THỂ => GIAO DIỆN CƠ BẢN          */
+                  /* ============================================================ */
+                  <div>
+                    {/* Khối Giá Tiền */}
+                    <div className="p-3 mb-3 rounded-3 border border-brand border-opacity-25" style={{ backgroundColor: '#fffafb' }}>
+                      <div className="text-muted small mb-1">Giá bán tham khảo:</div>
+                      <div className="d-flex align-items-baseline gap-2">
+                        <span className="text-brand fw-bold" style={{ fontSize: '2rem' }}>
+                          {currentVariant?.price ? currentVariant.price.toLocaleString('vi-VN') : 'Liên hệ'}
+                        </span>
+                        {(currentVariant?.price ?? 0) > 0 && <span className="text-brand fw-semibold fs-5">đ</span>}
+                      </div>
+                    </div>
+                    
+                    {!currentVariant?.price ? (
+                      <div className="alert alert-warning py-2 px-3 mb-4 d-flex align-items-start gap-2" style={{ fontSize: '0.8rem', borderRadius: '10px' }}>
+                        <i className="bi bi-info-circle-fill text-warning mt-1 flex-shrink-0"></i>
+                        <span>Sản phẩm này cần <strong>báo giá riêng</strong> theo số lượng và thời điểm. Vui lòng liên hệ Zalo hoặc gọi Hotline <strong>0903 989 096</strong> để được báo giá tốt nhất.</span>
+                      </div>
+                    ) : (
+                      <div className="text-muted mb-4 d-flex align-items-center gap-1" style={{ fontSize: '0.72rem' }}>
+                        <i className="bi bi-exclamation-circle"></i>
+                        Giá vật tư có thể thay đổi theo thời điểm. Liên hệ để xác nhận giá mới nhất.
+                      </div>
+                    )}
+
+                    {/* CHỌN SỐ LƯỢNG */}
+                    <div className="mb-4 d-flex align-items-center">
+                      <div className="text-muted small fw-bold me-3" style={{ width: '85px' }}>Số lượng:</div>
+                      <div className="d-flex align-items-center border rounded-3 overflow-hidden" style={{ height: '44px' }}>
+                        <button className="btn btn-light border-0 px-3 h-100" style={{ width: '44px', fontSize: '1.2rem' }} onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={quantity <= 1}><i className="bi bi-dash-lg"></i></button>
+                        <input type="text" inputMode="numeric" pattern="[0-9]*" className="form-control text-center border-0 bg-white fw-bold px-1" style={{ width: '60px', height: '100%', fontSize: '1.1rem' }} value={quantity} onChange={(e) => { const val = parseInt(e.target.value); if (!isNaN(val)) setQuantity(Math.min(currentVariant?.stock || 1, Math.max(1, val))); if (e.target.value === '') setQuantity(1); }} />
+                        <button className="btn btn-light border-0 px-3 h-100" style={{ width: '44px', fontSize: '1.2rem' }} onClick={() => setQuantity(Math.min(currentVariant?.stock || 1, quantity + 1))} disabled={quantity >= (currentVariant?.stock || 1)}><i className="bi bi-plus-lg"></i></button>
+                      </div>
+                      <span className="ms-2 text-muted small">({product.unit})</span>
+                    </div>
+
+                    {/* Nút CTA */}
+                    <div className="mt-auto d-flex flex-column flex-sm-row gap-3">
+                      {currentVariant && currentVariant.stock > 0 && (
+                        <button className="btn btn-brand btn-lg fw-bold flex-grow-1 shadow-sm d-flex align-items-center justify-content-center" onClick={handleAddToCart}>
+                          <i className="bi bi-cart-plus fs-5 me-2"></i> THÊM VÀO GIỎ
+                        </button>
+                      )}
+                      <button className="btn btn-outline-brand btn-lg fw-bold flex-grow-1 d-flex align-items-center justify-content-center" onClick={handleZaloContact}>
+                        <i className="bi bi-chat-dots fs-5 me-2"></i> LIÊN HỆ ZALO
+                      </button>
+                    </div>
                   </div>
                 )}
-
-                {/* Nút Call To Action */}
-               {/* Nút Call To Action */}
-                <div className="mt-auto d-flex flex-column flex-sm-row gap-3">
-                  
-                  {/* 💡 CHỈ HIỂN THỊ NÚT KHI CÒN HÀNG (stock > 0) */}
-                  {currentVariant && currentVariant.stock > 0 && (
-                    <button 
-                      className="btn btn-brand btn-lg fw-bold flex-grow-1 shadow-sm d-flex align-items-center justify-content-center" 
-                      onClick={handleAddToCart}
-                    >
-                      <i className="bi bi-cart-plus fs-5 me-2"></i> THÊM VÀO GIỎ
-                    </button>
-                  )}
-
-                  <button 
-                    className="btn btn-outline-brand btn-lg fw-bold flex-grow-1 d-flex align-items-center justify-content-center"
-                    onClick={handleZaloContact}
-                  >
-                    <i className="bi bi-chat-dots fs-5 me-2"></i> LIÊN HỆ ZALO
-                  </button>
-                </div>
               </div>
             </div>
             
@@ -366,11 +422,7 @@ useEffect(() => {
               <h4 className="fw-bold mb-4" style={{ color: '#5D4037', fontSize: '1.25rem' }}>
                 <i className="bi bi-info-square me-2"></i> THÔNG TIN CHI TIẾT
               </h4>
-              <div 
-                className="lh-lg" 
-                style={{ color: '#333', fontSize: '1.05rem', textAlign: 'justify' }} 
-                dangerouslySetInnerHTML={{ __html: product.description || '<p className="text-muted">Chưa có thông tin mô tả chi tiết cho sản phẩm này.</p>' }} 
-              />
+              <div className="lh-lg" style={{ color: '#333', fontSize: '1.05rem', textAlign: 'justify' }} dangerouslySetInnerHTML={{ __html: product.description || '<p className="text-muted">Chưa có thông tin mô tả chi tiết cho sản phẩm này.</p>' }} />
             </div>
           </div>
         </div>

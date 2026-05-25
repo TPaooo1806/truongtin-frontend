@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import api from "@/lib/axios";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
+import Swal from "sweetalert2";
+import ImportExcelModal from "./components/ImportExcelModal";
 
 // --- Interface ---
 interface Category {
@@ -115,7 +117,19 @@ export default function AdminProductsPage() {
   }, []);
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
+    const result = await Swal.fire({
+      title: 'Bạn có chắc chắn?',
+      text: "Bạn sẽ không thể khôi phục lại sản phẩm này!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Có, xóa nó!',
+      cancelButtonText: 'Hủy'
+    });
+    
+    if (!result.isConfirmed) return;
+
     try {
       await api.delete(`/api/products/${id}`);
       toast.success("Đã xóa");
@@ -233,42 +247,23 @@ export default function AdminProductsPage() {
     window.open(`${process.env.NEXT_PUBLIC_API_URL || 'https://truongtin-api.onrender.com'}/api/products/template`);
   };
 
-  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    setIsImporting(true);
-    setImportSummary(null);
-    const formData = new FormData();
-    formData.append("file", file);
 
-    try {
-      const res = await api.post("/api/products/import", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
+  const [showImportModal, setShowImportModal] = useState(false);
 
-      if (res.data.success) {
-        const { successCount, failedCount, errors } = res.data.data;
-        if (failedCount === 0) {
-          toast.success(`Import thành công ${successCount} sản phẩm!`);
-        } else {
-          toast.success(`Thành công: ${successCount}. Thất bại: ${failedCount}. Xem chi tiết!`);
-          setImportSummary({ success: successCount, failed: failedCount, errors });
-        }
-        fetchData(1);
-      }
-    } catch (error: unknown) {
-      const axiosError = error as {response?: {data?: {message?: string}}};
-      console.error("Lỗi import:", error);
-      toast.error(axiosError.response?.data?.message || "Lỗi khi import file Excel!");
-    } finally {
-      setIsImporting(false);
-      e.target.value = ""; // Reset file input
-    }
-  };
 
   return (
     <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
+      {/* NẾU ĐANG BẬT MODAL IMPORT EXCEL NÂNG CAO */}
+      {showImportModal && (
+        <ImportExcelModal 
+          onClose={() => setShowImportModal(false)}
+          onSuccess={() => {
+            fetchData(1);
+          }}
+        />
+      )}
+
       {/* ĐÃ SỬA: Cụm tiêu đề và các nút thao tác */}
       <div className="d-flex justify-content-between mb-4 align-items-center flex-wrap gap-3">
         <div>
@@ -285,28 +280,13 @@ export default function AdminProductsPage() {
             <i className="bi bi-file-earmark-arrow-down me-2"></i> Lấy form mẫu
           </button>
 
-          {/* NÚT IMPORT EXCEL */}
-          <div>
-            <input 
-              type="file" 
-              id="import-excel" 
-              accept=".xlsx, .xls" 
-              className="d-none" 
-              onChange={handleImportExcel}
-              disabled={isImporting}
-            />
-            <label 
-              htmlFor="import-excel" 
-              className={`btn btn-success rounded-pill px-3 shadow-sm m-0 d-flex align-items-center ${isImporting ? 'disabled' : ''}`}
-              style={{ cursor: 'pointer', height: '100%' }}
-            >
-              {isImporting ? (
-                <span><span className="spinner-border spinner-border-sm me-2"></span>Đang xử lý...</span>
-              ) : (
-                <><i className="bi bi-file-earmark-arrow-up me-2"></i> Import Excel</>
-              )}
-            </label>
-          </div>
+          {/* NÚT IMPORT EXCEL NÂNG CAO */}
+          <button 
+            className="btn btn-success rounded-pill px-3 shadow-sm d-flex align-items-center mb-0"
+            onClick={() => setShowImportModal(true)}
+          >
+            <i className="bi bi-file-earmark-spreadsheet me-2"></i> Nhập Excel (Kèm Ảnh)
+          </button>
 
           {/* NÚT THÊM SẢN PHẨM THỦ CÔNG */}
           <button
