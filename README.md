@@ -29,3 +29,4 @@ To run this project locally, you will need to add the following environment vari
 
 <img width="1907" height="917" alt="ShowWeb" src="https://github.com/user-attachments/assets/904e5d93-8a7c-48c2-a1c3-fa22872c5487" />
 <img width="1905" height="922" alt="ShowWeb2" src="https://github.com/user-attachments/assets/4277b48b-cc09-41b5-8997-aeb58c7872ad" />
+<img width="1903" height="925" alt="image" src="https://github.com/user-attachments/assets/a185e824-0ad5-47b2-8a6c-a454e348b664" />
