@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚡ E-Commerce Platform for Electrical Supplies (AI & PayOS Integrated)
 
-## Getting Started
+A high-performance, full-stack e-commerce platform designed for retail and wholesale electrical supplies. Built with a focus on SEO, automated payment processing, and intelligent customer support.
 
-First, run the development server:
+## 🚀 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Intelligent AI Chatbot:** An integrated AI assistant capable of understanding customer queries, checking real-time inventory status, and providing instant technical solutions or product recommendations.
+- **Automated Payment Gateway:** Seamless integration with PayOS API, utilizing secure webhooks for instant payment verification and real-time order status synchronization.
+- **Dynamic Product Catalog:** Robust management of diverse electrical and plumbing supplies with advanced filtering and search capabilities.
+- **Optimized Performance:** Leverages Next.js 14 Server-Side Rendering (SSR) for lightning-fast page loads and superior SEO ranking.
+- **Responsive UI/UX:** A clean, modern interface built with Tailwind CSS, ensuring a flawless shopping experience across all devices.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend & Framework:** Next.js 14, React, TypeScript.
+- **Styling:** Tailwind CSS.
+- **Payment & Integrations:** PayOS API, RESTful webhooks.
+- **AI Integration:** Generative AI for automated customer service.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ⚙️ Environment Variables
 
-## Learn More
+To run this project locally, you will need to add the following environment variables to your `.env` file (Do not share these keys publicly):
 
-To learn more about Next.js, take a look at the following resources:
+`PAYOS_CLIENT_ID=`
+`PAYOS_API_KEY=`
+`PAYOS_CHECKSUM_KEY=`
+`AI_API_KEY=`
+`DATABASE_URL=`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+<img width="1907" height="917" alt="ShowWeb" src="https://github.com/user-attachments/assets/904e5d93-8a7c-48c2-a1c3-fa22872c5487" />
+<img width="1905" height="922" alt="ShowWeb2" src="https://github.com/user-attachments/assets/4277b48b-cc09-41b5-8997-aeb58c7872ad" />
