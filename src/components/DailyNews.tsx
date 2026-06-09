@@ -103,12 +103,12 @@ export default function DailyNews() {
       <div className="position-relative">
         {currentIndex > 0 && (
           <button
-            className="btn btn-white shadow rounded-circle position-absolute start-0 top-50 translate-middle-y z-3 d-none d-md-flex align-items-center justify-content-center border"
+            className="btn btn-white shadow rounded-circle position-absolute top-50 translate-middle-y z-3 d-flex align-items-center justify-content-center border slider-btn-prev"
             style={{
               width: "42px",
               height: "42px",
-              marginLeft: "-21px",
-              backgroundColor: "white",
+              left: "-15px",
+              backgroundColor: "rgba(255,255,255,0.9)",
             }}
             onClick={prevSlide}
           >
@@ -118,12 +118,12 @@ export default function DailyNews() {
 
         {currentIndex + itemsPerPage < newsList.length && (
           <button
-            className="btn btn-white shadow rounded-circle position-absolute end-0 top-50 translate-middle-y z-3 d-none d-md-flex align-items-center justify-content-center border"
+            className="btn btn-white shadow rounded-circle position-absolute top-50 translate-middle-y z-3 d-flex align-items-center justify-content-center border slider-btn-next"
             style={{
               width: "42px",
               height: "42px",
-              marginRight: "-21px",
-              backgroundColor: "white",
+              right: "-15px",
+              backgroundColor: "rgba(255,255,255,0.9)",
             }}
             onClick={nextSlide}
           >

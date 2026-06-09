@@ -1,7 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import Image from "next/image";
 import api from "@/lib/axios";
@@ -65,8 +65,19 @@ const validateCheckoutForm = (
 // ==========================================
 // 3. MAIN COMPONENT
 // ==========================================
-export default function CheckoutPage() {
+
+// ==========================================
+// 3. MAIN COMPONENT
+// ==========================================
+function CheckoutContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("status") === "cancelled") {
+      toast.error("Bạn đã hủy quá trình thanh toán đơn hàng.");
+    }
+  }, [searchParams]);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingLocations, setIsLoadingLocations] = useState(true); 
@@ -366,5 +377,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="min-vh-100 d-flex justify-content-center align-items-center">Đang tải...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }

@@ -35,6 +35,7 @@ interface Product {
     name: string;
   }[];
   images: { url: string }[];
+  attributes?: any;
 }
 
 // --- Helpers ---
@@ -90,6 +91,7 @@ export default function AdminProductsPage() {
     variants: [
       { sku: "", price: "", stock: "", attributeValue: "" },
     ] as VariantForm[],
+    attributes: [] as { key: string; value: string }[],
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -148,6 +150,11 @@ export default function AdminProductsPage() {
 
   const openEditModal = (p: Product) => {
     setEditId(p.id);
+    let parsedAttributes: { key: string; value: string }[] = [];
+    if (p.attributes && typeof p.attributes === 'object') {
+      parsedAttributes = Object.entries(p.attributes).map(([key, value]) => ({ key, value: String(value) }));
+    }
+
     setFormData({
       name: p.name,
       slug: p.slug,
@@ -161,6 +168,7 @@ export default function AdminProductsPage() {
         stock: v.stock.toString(),
         attributeValue: v.name || "",
       })),
+      attributes: parsedAttributes,
     });
     setShowModal(true);
   };
@@ -223,12 +231,25 @@ export default function AdminProductsPage() {
 
     payload.images = payload.images.filter((url) => url.trim() !== "");
 
+    // Convert attributes array to object
+    const attributesObj: Record<string, string> = {};
+    payload.attributes.forEach(attr => {
+      if (attr.key.trim() && attr.value.trim()) {
+        attributesObj[attr.key.trim()] = attr.value.trim();
+      }
+    });
+    
+    // Using any type to allow deleting attributes field and adding it as object
+    const finalPayload: any = { ...payload };
+    delete finalPayload.attributes;
+    finalPayload.attributes = Object.keys(attributesObj).length > 0 ? attributesObj : null;
+
     try {
       if (editId) {
-        await api.put(`/api/products/${editId}`, payload);
+        await api.put(`/api/products/${editId}`, finalPayload);
         toast.success("Cập nhật thành công");
       } else {
-        await api.post("/api/products", payload);
+        await api.post("/api/products", finalPayload);
         toast.success("Thêm thành công");
       }
       setShowModal(false);
@@ -501,14 +522,88 @@ export default function AdminProductsPage() {
 
                   {/* 💡 THÊM Ô NHẬP MÔ TẢ (DESCRIPTION) */}
                   <div className="col-12 mt-3">
-                    <label className="small fw-bold mb-1">Mô tả sản phẩm (Tùy chọn)</label>
+                    <label className="small fw-bold mb-1">Mô tả chi tiết (Bài viết)</label>
                     <textarea
                       className="form-control"
-                      rows={3}
-                      placeholder="Nhập thông số kỹ thuật, hãng sản xuất, chất liệu..."
+                      rows={4}
+                      placeholder="Nhập giới thiệu chi tiết sản phẩm..."
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     />
+                  </div>
+
+                  {/* 💡 THÊM Ô THÔNG SỐ KỸ THUẬT */}
+                  <div className="col-12 bg-light p-3 rounded-3 mt-4 border">
+                    <div className="d-flex justify-content-between mb-3 align-items-center">
+                      <span className="fw-bold text-dark">
+                        Thông số kỹ thuật (Tùy chọn)
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-dark rounded-pill px-3"
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            attributes: [
+                              ...formData.attributes,
+                              { key: "", value: "" },
+                            ],
+                          })
+                        }
+                      >
+                        + Thêm thông số
+                      </button>
+                    </div>
+
+                    {formData.attributes.map((attr, i) => (
+                      <div
+                        key={i}
+                        className="row g-2 mb-2 align-items-center bg-white p-2 rounded shadow-sm border"
+                      >
+                        <div className="col-md-5">
+                          <input
+                            type="text"
+                            placeholder="Tên thông số (VD: Chất liệu)"
+                            className="form-control form-control-sm"
+                            value={attr.key}
+                            onChange={(e) => {
+                              const newA = [...formData.attributes];
+                              newA[i].key = e.target.value;
+                              setFormData({ ...formData, attributes: newA });
+                            }}
+                          />
+                        </div>
+                        <div className="col-md-5">
+                          <input
+                            type="text"
+                            placeholder="Giá trị (VD: Nhựa PVC)"
+                            className="form-control form-control-sm"
+                            value={attr.value}
+                            onChange={(e) => {
+                              const newA = [...formData.attributes];
+                              newA[i].value = e.target.value;
+                              setFormData({ ...formData, attributes: newA });
+                            }}
+                          />
+                        </div>
+                        <div className="col-md-2 text-end">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() =>
+                              setFormData({
+                                ...formData,
+                                attributes: formData.attributes.filter(
+                                  (_, idx) => idx !== i,
+                                ),
+                              })
+                            }
+                          >
+                            <i className="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
                   <div className="col-12 bg-light p-3 rounded-3 mt-4 border">

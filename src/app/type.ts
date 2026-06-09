@@ -30,6 +30,7 @@ export interface Product {
   category: Category;
   variants: Variant[];
   images: Image[];
+  attributes?: any;
 }
 
 export interface ApiResponse<T> {

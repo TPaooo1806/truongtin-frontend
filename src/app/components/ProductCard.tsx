@@ -22,7 +22,7 @@ export default function ProductCard({ item }: ProductCardProps) {
   const imgUrl = rawUrl ? getOptimizedUrl(rawUrl) : '/no-image.png';
 
   return (
-    <Link href={`/product/${item.slug}`} className="text-decoration-none product-card-link h-100 d-block">
+    <Link href={`/product/${item.slug}`} className="text-decoration-none product-card-link h-100 w-100 d-block">
       <div 
         className="card h-100 shadow-sm border-light transition-all" 
         style={{ cursor: 'pointer' }}
