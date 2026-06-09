@@ -27,7 +27,6 @@ interface Notification {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isReady, setIsReady] = useState(false);
 
   // STATE THÔNG BÁO
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -38,34 +37,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [selectedNotif, setSelectedNotif] = useState<Notification | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const checkAdminAuth = () => {
-      try {
-        const userStr = localStorage.getItem('user');
-        const user = userStr ? JSON.parse(userStr) : null;
-
-        if (!user || user.role !== 'ADMIN') {
-          toast.error("Vùng cấm! Vui lòng đăng nhập quyền Admin.");
-          router.replace('/');
-          return;
-        }
-        requestAnimationFrame(() => setIsReady(true));
-      } catch (error) {
-        console.error("Lỗi parse user data:", error);
-        localStorage.removeItem('user');
-        router.replace('/');
-      }
-    };
-    checkAdminAuth();
   }, [router]);
 
   // ==============================================
   // 2. LOGIC POLLING: Lấy thông báo mỗi 15 giây (với leak protection)
   // ==============================================
   useEffect(() => {
-    if (!isReady) return;
-
     let mounted = true;
 
     const fetchNotifications = async () => {
@@ -91,7 +68,7 @@ setNotifications(sorted);
       mounted = false;
       clearInterval(interval);
     };
-  }, [isReady]);
+  }, []);
 
   // Hàm xử lý nút "ĐÃ XỬ LÝ XONG" cho Liên hệ
   const handleResolveContact = async (rawId: string) => {
@@ -141,14 +118,7 @@ setNotifications(sorted);
   setShowNotifications(false);
 };
 
-  if (!isReady) {
-    return (
-      <div className="vh-100 d-flex flex-column align-items-center justify-content-center" style={{ backgroundColor: '#eef2f5' }}>
-        <div className="spinner-border text-primary mb-3" role="status"></div>
-        <div className="text-muted fw-bold">Đang tải hệ thống quản trị...</div>
-      </div>
-    );
-  }
+
 
   const isActive = (path: string) => {
     if (path === '/admin' && pathname === '/admin') return true;
@@ -210,7 +180,12 @@ setNotifications(sorted);
 
         {/* LOGOUT AREA */}
         <div className="p-3 border-top mt-auto" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-           <button onClick={() => { localStorage.removeItem('user'); localStorage.removeItem('token'); router.replace('/'); }} className="btn btn-light w-100 rounded-3 fw-bold text-danger shadow-sm d-flex align-items-center justify-content-center gap-2">
+           <button onClick={() => { 
+             localStorage.removeItem('user'); 
+             localStorage.removeItem('token'); 
+             document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+             router.replace('/'); 
+           }} className="btn btn-light w-100 rounded-3 fw-bold text-danger shadow-sm d-flex align-items-center justify-content-center gap-2">
              <i className="bi bi-box-arrow-right fs-5"></i> Đăng xuất
            </button>
         </div>

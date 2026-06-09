@@ -70,6 +70,10 @@ export default function AuthModal() {
           // Điều này giúp vượt qua cơ chế chặn 3rd-party Cookie của trình duyệt (Chrome Ẩn danh, Safari...)
           if (res.data.token) {
             localStorage.setItem('token', res.data.token);
+            // Cài thêm Cookie cho Admin để Next.js Middleware chặn route
+            if (res.data.data.role === 'ADMIN') {
+              document.cookie = `admin_token=${res.data.token}; path=/; max-age=604800`;
+            }
           }
           localStorage.setItem('user', JSON.stringify(res.data.data));
           setTimeout(() => window.location.reload(), 1000);

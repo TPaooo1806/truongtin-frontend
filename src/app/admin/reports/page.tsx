@@ -20,6 +20,7 @@ interface DashboardData {
     totalOrdersCount: number;
     approvedOrdersCount: number;
     pendingOrdersCount: number;
+    totalProductsCount: number;
   };
   revenueChart: {
     labels: string[];
@@ -82,16 +83,6 @@ export default function AdminReportsPage() {
     }],
   };
 
-  // Cấu hình Biểu đồ Cột (Top Sản phẩm)
-  const topProductsData = {
-    labels: dashboardData?.topProducts?.labels || [],
-    datasets: [{
-      label: 'Số lượng bán ra',
-      data: dashboardData?.topProducts?.data || [],
-      backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899'],
-      borderRadius: 6,
-    }],
-  };
 
   return (
     <div className="row g-4 position-relative">
@@ -130,45 +121,70 @@ export default function AdminReportsPage() {
         
         {dashboardData && (
           <>
-            {/* THẺ 1: TỔNG DOANH THU */}
-            <div className="col-md-6">
-              <div className="card border-0 shadow-sm p-4 rounded-4 bg-white h-100" style={{ borderLeft: '5px solid #3b82f6' }}>
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h6 className="text-muted fw-bold mb-0">TỔNG DOANH THU (Gồm Pending)</h6>
-                  <div className="bg-primary bg-opacity-10 text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}><i className="bi bi-wallet2 fs-5"></i></div>
-                </div>
-                <h2 className="fw-bold text-dark mb-3">{formatMoney(dashboardData.summary.totalRevenue)}</h2>
-                
-                <div className="d-flex justify-content-between border-top pt-3">
-                  <div>
-                    <small className="text-muted d-block">Đã thanh toán / Duyệt</small>
-                    <span className="fw-bold text-success fs-5">{formatMoney(dashboardData.summary.approvedRevenue)}</span>
+            {/* 4 THẺ TỔNG QUAN (Thay thế 2 thẻ cũ theo yêu cầu) */}
+            <div className="col-md-3">
+              <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden" style={{ borderLeft: '5px solid #10b981' }}>
+                <div className="card-body p-4 position-relative">
+                  <div className="d-flex align-items-center mb-3">
+                    <div className="bg-success bg-opacity-10 text-success p-3 rounded-circle me-3">
+                      <i className="bi bi-cash-stack fs-4"></i>
+                    </div>
+                    <h6 className="text-muted fw-bold mb-0 text-uppercase">Doanh Thu (Đã Duyệt)</h6>
                   </div>
-                  <div className="text-end">
-                    <small className="text-muted d-block">Chờ xử lý (PayOS/COD)</small>
-                    <span className="fw-bold text-warning fs-5">{formatMoney(dashboardData.summary.pendingRevenue)}</span>
+                  <h3 className="fw-bold text-dark mb-0">{formatMoney(dashboardData.summary.approvedRevenue)}</h3>
+                  <div className="position-absolute" style={{ bottom: '-15px', right: '-15px', opacity: 0.05 }}>
+                    <i className="bi bi-cash-stack" style={{ fontSize: '100px' }}></i>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* THẺ 2: SỐ LƯỢNG ĐƠN HÀNG */}
-            <div className="col-md-6">
-              <div className="card border-0 shadow-sm p-4 rounded-4 bg-white h-100" style={{ borderLeft: '5px solid #10b981' }}>
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h6 className="text-muted fw-bold mb-0">SỐ LƯỢNG ĐƠN HÀNG</h6>
-                  <div className="bg-success bg-opacity-10 text-success rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}><i className="bi bi-box-seam fs-5"></i></div>
-                </div>
-                <h2 className="fw-bold text-dark mb-3">{dashboardData.summary.totalOrdersCount} Đơn</h2>
-                
-                <div className="d-flex justify-content-between border-top pt-3">
-                  <div>
-                    <small className="text-muted d-block">Đơn thành công</small>
-                    <span className="fw-bold text-success fs-5">{dashboardData.summary.approvedOrdersCount}</span>
+            <div className="col-md-3">
+              <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden" style={{ borderLeft: '5px solid #3b82f6' }}>
+                <div className="card-body p-4 position-relative">
+                  <div className="d-flex align-items-center mb-3">
+                    <div className="bg-primary bg-opacity-10 text-primary p-3 rounded-circle me-3">
+                      <i className="bi bi-cart-check fs-4"></i>
+                    </div>
+                    <h6 className="text-muted fw-bold mb-0 text-uppercase">Tổng Đơn Hàng</h6>
                   </div>
-                  <div className="text-end">
-                    <small className="text-muted d-block">Đơn đang chờ</small>
-                    <span className="fw-bold text-warning fs-5">{dashboardData.summary.pendingOrdersCount}</span>
+                  <h3 className="fw-bold text-dark mb-0">{dashboardData.summary.totalOrdersCount} <span className="fs-6 text-muted fw-normal">đơn</span></h3>
+                  <div className="position-absolute" style={{ bottom: '-15px', right: '-15px', opacity: 0.05 }}>
+                    <i className="bi bi-cart-check" style={{ fontSize: '100px' }}></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-3">
+              <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden" style={{ borderLeft: '5px solid #f59e0b' }}>
+                <div className="card-body p-4 position-relative">
+                  <div className="d-flex align-items-center mb-3">
+                    <div className="bg-warning bg-opacity-10 text-warning p-3 rounded-circle me-3">
+                      <i className="bi bi-hourglass-split fs-4"></i>
+                    </div>
+                    <h6 className="text-muted fw-bold mb-0 text-uppercase">Đơn Chờ Xử Lý</h6>
+                  </div>
+                  <h3 className="fw-bold text-dark mb-0">{dashboardData.summary.pendingOrdersCount} <span className="fs-6 text-muted fw-normal">đơn</span></h3>
+                  <div className="position-absolute" style={{ bottom: '-15px', right: '-15px', opacity: 0.05 }}>
+                    <i className="bi bi-hourglass-split" style={{ fontSize: '100px' }}></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-3">
+              <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden" style={{ borderLeft: '5px solid #0dcaf0' }}>
+                <div className="card-body p-4 position-relative">
+                  <div className="d-flex align-items-center mb-3">
+                    <div className="bg-info bg-opacity-10 text-info p-3 rounded-circle me-3">
+                      <i className="bi bi-box-seam fs-4"></i>
+                    </div>
+                    <h6 className="text-muted fw-bold mb-0 text-uppercase">Tổng Sản Phẩm</h6>
+                  </div>
+                  <h3 className="fw-bold text-dark mb-0">{dashboardData.summary.totalProductsCount} <span className="fs-6 text-muted fw-normal">SP</span></h3>
+                  <div className="position-absolute" style={{ bottom: '-15px', right: '-15px', opacity: 0.05 }}>
+                    <i className="bi bi-box-seam" style={{ fontSize: '100px' }}></i>
                   </div>
                 </div>
               </div>
@@ -193,12 +209,24 @@ export default function AdminReportsPage() {
 
             <div className="col-lg-4 mt-4">
               <div className="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
-                <h6 className="fw-bold text-dark mb-4">Top 5 Bán Chạy</h6>
-                <div style={{ height: '300px' }}>
+                <h6 className="fw-bold text-dark mb-4"><i className="bi bi-star-fill me-2 text-warning"></i>Top 5 Bán Chạy</h6>
+                <div className="d-flex flex-column gap-3" style={{ overflowY: 'auto' }}>
                   {dashboardData.topProducts.labels.length > 0 ? (
-                    <Bar data={topProductsData} options={{ maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }} />
+                    dashboardData.topProducts.labels.map((label, idx) => (
+                      <div key={idx} className="d-flex align-items-center p-3 rounded-3 bg-light border">
+                        <div className="bg-white rounded-circle d-flex justify-content-center align-items-center fw-bold shadow-sm me-3 text-primary" style={{ width: '40px', height: '40px', fontSize: '1.1rem' }}>
+                          {idx + 1}
+                        </div>
+                        <div className="flex-grow-1">
+                          <h6 className="mb-1 fw-bold text-dark" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {label}
+                          </h6>
+                          <div className="small text-danger fw-bold"><i className="bi bi-cart-check me-1"></i>Đã bán: {dashboardData.topProducts.data[idx]}</div>
+                        </div>
+                      </div>
+                    ))
                   ) : (
-                    <div className="h-100 d-flex flex-column align-items-center justify-content-center text-muted">
+                    <div className="h-100 d-flex flex-column align-items-center justify-content-center text-muted py-5">
                        <i className="bi bi-basket text-secondary opacity-50 mb-2" style={{ fontSize: '3rem' }}></i>
                        <span>Chưa có dữ liệu</span>
                     </div>
