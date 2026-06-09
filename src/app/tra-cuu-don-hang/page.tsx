@@ -27,10 +27,22 @@ interface Order {
   status: string;
   paymentStatus: string;
   paymentUrl?: string | null;
+  trackingCode?: string | null;
   paymentMethod: string;
   createdAt: string;
   items?: OrderItem[];
 }
+
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  PENDING: { label: 'Chờ xử lý', color: 'text-warning' },
+  PENDING_COD: { label: 'Chờ xác nhận', color: 'text-warning' },
+  PENDING_PAYOS: { label: 'Chờ thanh toán', color: 'text-secondary' },
+  PAID_AND_CONFIRMED: { label: 'Đã thanh toán & Chờ giao', color: 'text-primary' },
+  PAID_BUT_OUT_OF_STOCK: { label: 'Đã thanh toán (Hết hàng)', color: 'text-danger' },
+  CANCELLED: { label: 'Đã hủy', color: 'text-danger' },
+  SHIPPING: { label: 'Đang giao hàng', color: 'text-info' },
+  COMPLETED: { label: 'Đã giao thành công', color: 'text-success' },
+};
 
 export default function TrackOrderPage() {
   const [phone, setPhone] = useState("");
@@ -148,6 +160,26 @@ export default function TrackOrderPage() {
                           </div>
                         </div>
 
+                        {/* Vận chuyển */}
+                        <div className="row mb-3 pb-3 border-bottom border-light">
+                          <div className="col-6">
+                            <p className="text-muted small mb-1">Trạng thái đơn hàng</p>
+                            <p className={`fw-bold mb-0 ${STATUS_MAP[order.status]?.color || 'text-dark'}`}>
+                              {STATUS_MAP[order.status]?.label || order.status}
+                            </p>
+                          </div>
+                          <div className="col-6 text-end">
+                            <p className="text-muted small mb-1">Mã vận đơn</p>
+                            <div className="mb-0">
+                              {order.trackingCode ? (
+                                <span className="fw-bold bg-light px-2 py-1 rounded text-primary">{order.trackingCode}</span>
+                              ) : (
+                                <span className="text-secondary small fst-italic">Chưa có</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Sản phẩm */}
                         <div className="bg-light rounded-3 p-3 mb-3">
                           <p className="fw-bold small text-muted mb-2">SẢN PHẨM ĐÃ ĐẶT</p>
@@ -199,9 +231,10 @@ export default function TrackOrderPage() {
                           </div>
                         )}
                         
-                        <div className="mt-3 text-center">
-                          <a href="/track-order" className="btn btn-outline-primary btn-sm rounded-pill px-4">
-                            Xem chi tiết địa chỉ & Vận đơn
+                        <div className="mt-4 text-center border-top pt-3">
+                          <p className="small text-muted mb-2">Vì lý do bảo mật, địa chỉ giao hàng chi tiết đã được ẩn.</p>
+                          <a href="/track-order" className="btn btn-outline-secondary btn-sm rounded-pill px-4">
+                            Xem đầy đủ biên lai bằng Mã Đơn Hàng
                           </a>
                         </div>
                       </div>

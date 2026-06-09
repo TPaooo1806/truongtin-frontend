@@ -34,6 +34,7 @@ interface Order {
   total: number;
   status: string;
   paymentStatus: string;
+  paymentMethod: string;
   createdAt: string;
   items?: OrderItem[];
 }
@@ -149,6 +150,42 @@ export default function AdminOrdersPage() {
       }
     } catch {
       toast.error("Không thể huỷ đơn");
+    }
+  };
+
+  const handleUpdateStatus = async (orderId: number, newStatus: string) => {
+    try {
+      const res = await api.patch<{ success: boolean; message: string }>(
+        `/api/orders/admin/status/${orderId}`,
+        { status: newStatus }
+      );
+      if (res.data.success) {
+        toast.success("Cập nhật trạng thái thành công");
+        if (selectedOrder && selectedOrder.id === orderId) {
+          setSelectedOrder({ ...selectedOrder, status: newStatus });
+        }
+        fetchOrders(currentPage);
+      }
+    } catch {
+      toast.error("Lỗi cập nhật trạng thái");
+    }
+  };
+
+  const handleConfirmPayment = async (orderId: number) => {
+    if (!confirm("Xác nhận đã thu tiền thành công? Hành động này không thể hoàn tác.")) return;
+    try {
+      const res = await api.patch<{ success: boolean; message: string }>(
+        `/api/orders/admin/payment-status/${orderId}`
+      );
+      if (res.data.success) {
+        toast.success("Xác nhận thu tiền thành công");
+        if (selectedOrder && selectedOrder.id === orderId) {
+          setSelectedOrder({ ...selectedOrder, paymentStatus: "PAID" });
+        }
+        fetchOrders(currentPage);
+      }
+    } catch {
+      toast.error("Lỗi xác nhận thu tiền");
     }
   };
 
@@ -424,43 +461,42 @@ export default function AdminOrdersPage() {
                   </table>
                 </div>
               </div>
-              <div className="modal-footer border-0 p-3">
-                <button
-                  className="btn btn-outline-secondary rounded-pill px-4"
-                  onClick={() => setSelectedOrder(null)}
-                >
-                  Đóng
-                </button>
-                {selectedOrder.status !== "PAID_AND_CONFIRMED" &&
-                  selectedOrder.status !== "CANCELLED" && (
-                    <>
-                      <button
-                        className="btn btn-danger rounded-pill px-4"
-                        onClick={() => {
-                          handleCancel(
-                            selectedOrder.id,
-                            selectedOrder.orderCode,
-                          );
-                          setSelectedOrder(null);
-                        }}
-                      >
-                        Hủy đơn
-                      </button>
-
-                      <button
-                        className="btn btn-success rounded-pill px-4"
-                        onClick={() => {
-                          handleApprove(
-                            selectedOrder.id,
-                            selectedOrder.orderCode,
-                          );
-                          setSelectedOrder(null);
-                        }}
-                      >
-                        Duyệt ngay
-                      </button>
-                    </>
+              <div className="modal-footer border-0 p-3 d-flex justify-content-between align-items-center bg-light rounded-bottom-4">
+                <div className="d-flex align-items-center gap-2">
+                  <span className="fw-bold small text-muted text-uppercase">Cập nhật tiến độ:</span>
+                  <select 
+                    className="form-select form-select-sm w-auto fw-semibold border-primary text-primary"
+                    value={selectedOrder.status}
+                    onChange={(e) => handleUpdateStatus(selectedOrder.id, e.target.value)}
+                  >
+                    <option value="PENDING_COD">Chờ duyệt (COD)</option>
+                    <option value="PENDING_PAYOS">Chờ duyệt (PayOS)</option>
+                    <option value="PAID_PENDING_CONFIRM">Đã TT (Chờ duyệt)</option>
+                    <option value="PAID_AND_CONFIRMED">Đã duyệt & Trừ kho</option>
+                    <option value="PROCESSING">Đang soạn hàng</option>
+                    <option value="SHIPPING">Đang giao hàng</option>
+                    <option value="DELIVERED">Đã giao hàng</option>
+                    <option value="RETURNED">Đã hoàn trả</option>
+                    <option value="CANCELLED">Đã hủy</option>
+                  </select>
+                </div>
+                
+                <div className="d-flex gap-2">
+                  {selectedOrder.paymentMethod === "COD" && selectedOrder.paymentStatus === "UNPAID" && (
+                    <button
+                      className="btn btn-warning rounded-pill px-4 fw-bold shadow-sm"
+                      onClick={() => handleConfirmPayment(selectedOrder.id)}
+                    >
+                      <i className="bi bi-cash-coin me-1"></i> Xác nhận đã thu tiền
+                    </button>
                   )}
+                  <button
+                    className="btn btn-outline-secondary rounded-pill px-4"
+                    onClick={() => setSelectedOrder(null)}
+                  >
+                    Đóng
+                  </button>
+                </div>
               </div>
             </div>
           </div>
