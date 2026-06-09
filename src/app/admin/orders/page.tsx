@@ -65,13 +65,15 @@ export default function AdminOrdersPage() {
     }
 
     try {
-      const res = await api.get<BackendResponse>(`/api/orders/admin/all?page=${page}&limit=10`);
+      const res = await api.get<BackendResponse>(
+        `/api/orders/admin/all?page=${page}&limit=10`,
+      );
 
       if (res.data.success) {
         if (page === 1) {
           setOrders(res.data.data);
         } else {
-          setOrders(prev => [...prev, ...res.data.data]);
+          setOrders((prev) => [...prev, ...res.data.data]);
         }
         setCurrentPage(res.data.currentPage);
         setTotalPages(res.data.totalPages);
@@ -98,14 +100,14 @@ export default function AdminOrdersPage() {
   // --- 3. HÀM DUYỆT ĐƠN ---
   const handleApprove = async (orderId: number, orderCode: string) => {
     const result = await Swal.fire({
-      title: 'Xác nhận duyệt đơn?',
+      title: "Xác nhận duyệt đơn?",
       text: `Bạn có chắc chắn muốn duyệt đơn #${orderCode}? Hệ thống sẽ thực hiện trừ kho.`,
-      icon: 'question',
+      icon: "question",
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Đồng ý',
-      cancelButtonText: 'Hủy'
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Đồng ý",
+      cancelButtonText: "Hủy",
     });
     if (!result.isConfirmed) return;
 
@@ -128,14 +130,14 @@ export default function AdminOrdersPage() {
   // --- 4. HÀM HỦY ĐƠN ---
   const handleCancel = async (orderId: number, orderCode: string) => {
     const result = await Swal.fire({
-      title: 'Hủy đơn hàng?',
+      title: "Hủy đơn hàng?",
       text: `Bạn có chắc muốn hủy đơn #${orderCode}?`,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Có, hủy đơn!',
-      cancelButtonText: 'Quay lại'
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Có, hủy đơn!",
+      cancelButtonText: "Quay lại",
     });
     if (!result.isConfirmed) return;
 
@@ -157,7 +159,7 @@ export default function AdminOrdersPage() {
     try {
       const res = await api.patch<{ success: boolean; message: string }>(
         `/api/orders/admin/status/${orderId}`,
-        { status: newStatus }
+        { status: newStatus },
       );
       if (res.data.success) {
         toast.success("Cập nhật trạng thái thành công");
@@ -172,10 +174,15 @@ export default function AdminOrdersPage() {
   };
 
   const handleConfirmPayment = async (orderId: number) => {
-    if (!confirm("Xác nhận đã thu tiền thành công? Hành động này không thể hoàn tác.")) return;
+    if (
+      !confirm(
+        "Xác nhận đã thu tiền thành công? Hành động này không thể hoàn tác.",
+      )
+    )
+      return;
     try {
       const res = await api.patch<{ success: boolean; message: string }>(
-        `/api/orders/admin/payment-status/${orderId}`
+        `/api/orders/admin/payment-status/${orderId}`,
       );
       if (res.data.success) {
         toast.success("Xác nhận thu tiền thành công");
@@ -190,12 +197,9 @@ export default function AdminOrdersPage() {
   };
 
   // --- 5. LẤY PHƯƠNG THỨC THANH TOÁN ---
-  const getPaymentMethod = (status: string) => {
-    if (status.includes("COD")) return "Thanh toán khi nhận hàng (COD)";
-
-    if (status.includes("PAYOS") || status.includes("PAID"))
-      return "Thanh toán QR (PayOS)";
-
+  const getPaymentMethod = (paymentMethod: string) => {
+    if (paymentMethod === "PAYOS") return "Thanh toán QR (PayOS)";
+    if (paymentMethod === "COD") return "Thanh toán khi nhận hàng (COD)";
     return "Không xác định";
   };
 
@@ -203,14 +207,30 @@ export default function AdminOrdersPage() {
   const getPaymentStatusBadge = (paymentStatus: string) => {
     switch (paymentStatus) {
       case "UNPAID":
-        return <span className="badge bg-secondary text-white px-2 py-1 rounded-pill">Chưa thanh toán</span>;
+        return (
+          <span className="badge bg-secondary text-white px-2 py-1 rounded-pill">
+            Chưa thanh toán
+          </span>
+        );
       case "PAID":
-        return <span className="badge bg-success text-white px-2 py-1 rounded-pill">Đã thanh toán</span>;
+        return (
+          <span className="badge bg-success text-white px-2 py-1 rounded-pill">
+            Đã thanh toán
+          </span>
+        );
       case "CANCELLED":
       case "EXPIRED":
-        return <span className="badge bg-danger text-white px-2 py-1 rounded-pill">Đã hủy/Hết hạn</span>;
+        return (
+          <span className="badge bg-danger text-white px-2 py-1 rounded-pill">
+            Đã hủy/Hết hạn
+          </span>
+        );
       default:
-        return <span className="badge bg-secondary text-white px-2 py-1 rounded-pill">{paymentStatus}</span>;
+        return (
+          <span className="badge bg-secondary text-white px-2 py-1 rounded-pill">
+            {paymentStatus}
+          </span>
+        );
     }
   };
 
@@ -343,13 +363,16 @@ export default function AdminOrdersPage() {
       {/* LOAD MORE BUTTON */}
       {currentPage < totalPages && (
         <div className="text-center mt-4">
-          <button 
-            className="btn btn-outline-primary rounded-pill px-4" 
+          <button
+            className="btn btn-outline-primary rounded-pill px-4"
             onClick={handleLoadMore}
             disabled={loadingMore}
           >
             {loadingMore ? (
-              <><span className="spinner-border spinner-border-sm me-2"></span> Đang tải...</>
+              <>
+                <span className="spinner-border spinner-border-sm me-2"></span>{" "}
+                Đang tải...
+              </>
             ) : (
               "Xem thêm đơn hàng"
             )}
@@ -413,7 +436,7 @@ export default function AdminOrdersPage() {
                       Phương thức thanh toán
                     </p>
                     <p className="fw-bold text-primary">
-                      {getPaymentMethod(selectedOrder.status)}
+                      {getPaymentMethod(selectedOrder.paymentMethod)}
                     </p>
                   </div>
                 </div>
@@ -463,16 +486,24 @@ export default function AdminOrdersPage() {
               </div>
               <div className="modal-footer border-0 p-3 d-flex justify-content-between align-items-center bg-light rounded-bottom-4">
                 <div className="d-flex align-items-center gap-2">
-                  <span className="fw-bold small text-muted text-uppercase">Cập nhật tiến độ:</span>
-                  <select 
+                  <span className="fw-bold small text-muted text-uppercase">
+                    Cập nhật tiến độ:
+                  </span>
+                  <select
                     className="form-select form-select-sm w-auto fw-semibold border-primary text-primary"
                     value={selectedOrder.status}
-                    onChange={(e) => handleUpdateStatus(selectedOrder.id, e.target.value)}
+                    onChange={(e) =>
+                      handleUpdateStatus(selectedOrder.id, e.target.value)
+                    }
                   >
                     <option value="PENDING_COD">Chờ duyệt (COD)</option>
                     <option value="PENDING_PAYOS">Chờ duyệt (PayOS)</option>
-                    <option value="PAID_PENDING_CONFIRM">Đã TT (Chờ duyệt)</option>
-                    <option value="PAID_AND_CONFIRMED">Đã duyệt & Trừ kho</option>
+                    <option value="PAID_PENDING_CONFIRM">
+                      Đã TT (Chờ duyệt)
+                    </option>
+                    <option value="PAID_AND_CONFIRMED">
+                      Đã duyệt & Trừ kho
+                    </option>
                     <option value="PROCESSING">Đang soạn hàng</option>
                     <option value="SHIPPING">Đang giao hàng</option>
                     <option value="DELIVERED">Đã giao hàng</option>
@@ -480,16 +511,18 @@ export default function AdminOrdersPage() {
                     <option value="CANCELLED">Đã hủy</option>
                   </select>
                 </div>
-                
+
                 <div className="d-flex gap-2">
-                  {selectedOrder.paymentMethod === "COD" && selectedOrder.paymentStatus === "UNPAID" && (
-                    <button
-                      className="btn btn-warning rounded-pill px-4 fw-bold shadow-sm"
-                      onClick={() => handleConfirmPayment(selectedOrder.id)}
-                    >
-                      <i className="bi bi-cash-coin me-1"></i> Xác nhận đã thu tiền
-                    </button>
-                  )}
+                  {selectedOrder.paymentMethod === "COD" &&
+                    selectedOrder.paymentStatus === "UNPAID" && (
+                      <button
+                        className="btn btn-warning rounded-pill px-4 fw-bold shadow-sm"
+                        onClick={() => handleConfirmPayment(selectedOrder.id)}
+                      >
+                        <i className="bi bi-cash-coin me-1"></i> Xác nhận đã thu
+                        tiền
+                      </button>
+                    )}
                   <button
                     className="btn btn-outline-secondary rounded-pill px-4"
                     onClick={() => setSelectedOrder(null)}
