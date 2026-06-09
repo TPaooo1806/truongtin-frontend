@@ -33,6 +33,7 @@ interface Order {
   address: string;
   total: number;
   status: string;
+  paymentStatus: string;
   createdAt: string;
   items?: OrderItem[];
 }
@@ -136,7 +137,22 @@ export default function AdminOrdersPage() {
     return "Không xác định";
   };
 
-  // --- 6. BADGE TRẠNG THÁI ---
+  // --- 6. BADGE TRẠNG THÁI THANH TOÁN ---
+  const getPaymentStatusBadge = (paymentStatus: string) => {
+    switch (paymentStatus) {
+      case "UNPAID":
+        return <span className="badge bg-secondary text-white px-2 py-1 rounded-pill">Chưa thanh toán</span>;
+      case "PAID":
+        return <span className="badge bg-success text-white px-2 py-1 rounded-pill">Đã thanh toán</span>;
+      case "CANCELLED":
+      case "EXPIRED":
+        return <span className="badge bg-danger text-white px-2 py-1 rounded-pill">Đã hủy/Hết hạn</span>;
+      default:
+        return <span className="badge bg-secondary text-white px-2 py-1 rounded-pill">{paymentStatus}</span>;
+    }
+  };
+
+  // --- 7. BADGE TRẠNG THÁI ĐƠN HÀNG ---
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING_COD":
@@ -197,6 +213,7 @@ export default function AdminOrdersPage() {
               <th className="border-0">Khách Hàng</th>
               <th className="border-0">Ngày Đặt</th>
               <th className="border-0">Tổng Tiền</th>
+              <th className="border-0">Thanh Toán</th>
               <th className="border-0">Trạng Thái</th>
               <th className="text-end pe-3 border-0 rounded-end-3">Thao Tác</th>
             </tr>
@@ -217,6 +234,7 @@ export default function AdminOrdersPage() {
                 <td className="fw-bold text-danger">
                   {order.total.toLocaleString()}đ
                 </td>
+                <td>{getPaymentStatusBadge(order.paymentStatus)}</td>
                 <td>{getStatusBadge(order.status)}</td>
                 <td className="text-end pe-3">
                   <button
@@ -303,6 +321,13 @@ export default function AdminOrdersPage() {
                     </p>
                     <div className="mb-3">
                       {getStatusBadge(selectedOrder.status)}
+                    </div>
+
+                    <p className="mb-1 text-muted small text-uppercase fw-bold">
+                      Trạng thái thanh toán
+                    </p>
+                    <div className="mb-3">
+                      {getPaymentStatusBadge(selectedOrder.paymentStatus)}
                     </div>
 
                     <p className="mb-1 text-muted small text-uppercase fw-bold">

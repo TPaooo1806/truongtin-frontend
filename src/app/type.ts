@@ -26,6 +26,7 @@ export interface Product {
   description: string;
   unit: string;
   isVisible: boolean;
+  isBulky?: boolean;
   createdAt: string;
   category: Category;
   variants: Variant[];

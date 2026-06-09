@@ -22,6 +22,7 @@ interface CartItem {
   price: number;
   quantity: number;
   unit: string;
+  isBulky?: boolean;
 }
 interface AddressState {
   provinceId: string;
@@ -95,8 +96,12 @@ function CheckoutContent() {
     provinceId: "", provinceName: "", districtId: "", districtName: "", wardId: "", wardName: "", detail: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [shippingFee, setShippingFee] = useState<number | null | undefined>(undefined); // undefined = chưa tính, null = cồng kềnh
+  const [shippingMessage, setShippingMessage] = useState<string>("");
+  const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
 
-  const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  const totalPrice = subtotal + (shippingFee ?? 0);
 
   const clearError = (field: keyof FormErrors) => {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -125,6 +130,7 @@ function CheckoutContent() {
 
     setSelectedAddress((prev) => ({ ...prev, provinceId: id, provinceName: name, districtId: "", districtName: "", wardId: "", wardName: "" }));
     setDistricts([]); setWards([]); clearError("provinceId");
+    setShippingFee(undefined); setShippingMessage(""); // reset phí ship khi đổi tỉnh
 
     if (id) {
       const res = await axios.get(`https://esgoo.net/api-tinhthanh/2/${id}.htm`);
@@ -136,12 +142,31 @@ function CheckoutContent() {
     const id = e.target.value;
     const name = e.target.options[e.target.selectedIndex].text;
 
-    setSelectedAddress((prev) => ({ ...prev, districtId: id, districtName: name, wardId: "", wardName: "" }));
+    const updatedAddress = { ...selectedAddress, districtId: id, districtName: name, wardId: "", wardName: "" };
+    setSelectedAddress(updatedAddress);
     setWards([]); clearError("districtId");
 
     if (id) {
       const res = await axios.get(`https://esgoo.net/api-tinhthanh/3/${id}.htm`);
       if (res.data?.error === 0) setWards(res.data.data);
+    }
+
+    // Tự động tính phí ship sau khi chọn Quận/Huyện
+    if (selectedAddress.provinceName && cartItems.length > 0) {
+      setIsCalculatingShipping(true);
+      try {
+        const shippingRes = await api.post('/api/shipping/calculate', {
+          items: cartItems.map(item => ({ isBulky: item.isBulky ?? false })),
+          province: selectedAddress.provinceName,
+          district: name,
+        });
+        setShippingFee(shippingRes.data.fee);
+        setShippingMessage(shippingRes.data.message || "");
+      } catch {
+        setShippingFee(undefined);
+      } finally {
+        setIsCalculatingShipping(false);
+      }
     }
   };
 
@@ -174,6 +199,7 @@ function CheckoutContent() {
         address: fullAddress,
         paymentMethod: method,
         items: cartItems,
+        shippingFee: shippingFee ?? 0, // Gửi kèm phí ship lên Backend (Backend sẽ cộng vào total)
       });
 
     if (res.data.success) {
@@ -319,7 +345,42 @@ function CheckoutContent() {
 
                   {/* Tổng cộng */}
                   <div className="bg-light p-3 rounded-3 mb-4 border">
+                    {/* Tiền hàng */}
                     <div className="d-flex justify-content-between align-items-center mb-2">
+                      <span className="small text-secondary">Tiền hàng:</span>
+                      <span className="fw-semibold">
+                        {cartItems.some(item => item.price === 0)
+                          ? <span className="fst-italic text-muted">Chờ báo giá</span>
+                          : `${subtotal.toLocaleString()}đ`
+                        }
+                      </span>
+                    </div>
+
+                    {/* Phí vận chuyển */}
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <span className="small text-secondary">Phí vận chuyển:</span>
+                      <span className="fw-semibold">
+                        {isCalculatingShipping ? (
+                          <span className="text-muted small"><span className="spinner-border spinner-border-sm me-1" style={{width:'14px',height:'14px'}}></span>Đang tính...</span>
+                        ) : shippingFee === undefined ? (
+                          <span className="text-muted small fst-italic">Chọn địa chỉ để tính</span>
+                        ) : shippingFee === null ? (
+                          <span className="text-warning fw-bold small"><i className="bi bi-exclamation-triangle me-1"></i>Liên hệ báo giá</span>
+                        ) : (
+                          <span className="text-success fw-bold">{shippingFee.toLocaleString()}đ</span>
+                        )}
+                      </span>
+                    </div>
+
+                    {/* Cảnh báo hàng cồng kềnh */}
+                    {shippingFee === null && (
+                      <div className="alert alert-warning py-2 px-3 mb-2 rounded-3 small border-0" style={{fontSize:'0.8rem'}}>
+                        <i className="bi bi-truck me-1"></i>
+                        Cửa hàng sẽ liên hệ báo giá phí ship hàng cồng kềnh sau khi đặt.
+                      </div>
+                    )}
+
+                    <div className="border-top mt-2 pt-2 d-flex justify-content-between align-items-center">
                       <span className="h6 mb-0 fw-bold text-secondary">Tổng thanh toán:</span>
                       <span className="h4 mb-0 fw-bold text-danger">
                         {cartItems.some(item => item.price === 0)
@@ -328,8 +389,8 @@ function CheckoutContent() {
                         }
                       </span>
                     </div>
-                    <div className="text-end text-muted small fst-italic">
-                      *Phí vận chuyển: Cửa hàng sẽ liên hệ báo giá thực tế dựa trên khối lượng vật tư.
+                    <div className="text-end text-muted small fst-italic mt-1">
+                      *Phí vận chuyển tính theo khu vực giao hàng.
                     </div>
                   </div>
 

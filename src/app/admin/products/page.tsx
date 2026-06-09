@@ -92,6 +92,7 @@ export default function AdminProductsPage() {
       { sku: "", price: "", stock: "", attributeValue: "" },
     ] as VariantForm[],
     attributes: [] as { key: string; value: string }[],
+    isBulky: false,
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -169,6 +170,7 @@ export default function AdminProductsPage() {
         attributeValue: v.name || "",
       })),
       attributes: parsedAttributes,
+      isBulky: !!(p as any).isBulky,
     });
     setShowModal(true);
   };
@@ -518,6 +520,25 @@ export default function AdminProductsPage() {
                       placeholder="Cây, Cuộn, Cái..."
                       required
                     />
+                  </div>
+
+                  {/* Checkbox Hàng cồng kềnh */}
+                  <div className="col-12 mt-2">
+                    <div className="form-check form-switch d-flex align-items-center gap-2 p-3 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded-3">
+                      <input
+                        className="form-check-input me-2"
+                        type="checkbox"
+                        id="isBulky"
+                        checked={formData.isBulky}
+                        onChange={(e) => setFormData({ ...formData, isBulky: e.target.checked })}
+                        style={{ width: '2rem', height: '1rem' }}
+                      />
+                      <label className="form-check-label fw-bold" htmlFor="isBulky">
+                        <i className="bi bi-truck me-1 text-warning"></i>
+                        Hàng cồng kềnh (ống dài, cồng kềnh, nặng)
+                        <div className="text-muted fw-normal small">Khi bật: phí vận chuyển sẽ được báo giá riêng cho khách.</div>
+                      </label>
+                    </div>
                   </div>
 
                   {/* 💡 THÊM Ô NHẬP MÔ TẢ (DESCRIPTION) */}
