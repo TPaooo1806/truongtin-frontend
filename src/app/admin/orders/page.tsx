@@ -174,12 +174,18 @@ export default function AdminOrdersPage() {
   };
 
   const handleConfirmPayment = async (orderId: number) => {
-    if (
-      !confirm(
-        "Xác nhận đã thu tiền thành công? Hành động này không thể hoàn tác.",
-      )
-    )
-      return;
+    const result = await Swal.fire({
+      title: "Xác nhận thu tiền?",
+      text: "Đã thu đủ tiền mặt (COD) thành công? Hành động này không thể hoàn tác.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#f5b041",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Đã thu tiền",
+      cancelButtonText: "Đóng",
+    });
+
+    if (!result.isConfirmed) return;
     try {
       const res = await api.patch<{ success: boolean; message: string }>(
         `/api/orders/admin/payment-status/${orderId}`,
