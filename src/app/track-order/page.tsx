@@ -91,8 +91,11 @@ export default function TrackOrderPage() {
             <div className="col-md-6 col-lg-5">
               <div className="card shadow-sm border-0 rounded-4 p-4 p-md-5">
                 <div className="text-center mb-4">
-                  <h3 className="fw-bold text-uppercase">Tra cứu đơn hàng</h3>
-                  <p className="text-muted small">Nhập mã đơn hàng và số điện thoại để kiểm tra trạng thái vận chuyển</p>
+                  <h3 className="fw-bold text-uppercase">Tra cứu chi tiết</h3>
+                  <p className="text-muted small mb-2">Nhập mã đơn hàng và số điện thoại để kiểm tra thông tin giao nhận</p>
+                  <a href="/tra-cuu-don-hang" className="text-decoration-none fw-bold text-primary small">
+                    <i className="bi bi-search me-1"></i> Quên mã đơn? Tra cứu danh sách bằng SĐT
+                  </a>
                 </div>
 
                 <form onSubmit={handleTrackOrder}>

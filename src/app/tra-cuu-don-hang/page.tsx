@@ -81,8 +81,11 @@ export default function TrackOrderPage() {
       <div className="row justify-content-center">
         <div className="col-12 col-md-8 col-lg-6">
           <div className="text-center mb-5">
-            <h1 className="fw-bold text-primary mb-3">Tra cứu đơn hàng</h1>
-            <p className="text-muted">Nhập số điện thoại của bạn để xem lịch sử và trạng thái các đơn hàng đã đặt.</p>
+            <h1 className="fw-bold text-primary mb-3">Tra cứu danh sách đơn</h1>
+            <p className="text-muted mb-2">Nhập số điện thoại của bạn để xem lịch sử tổng quát các đơn hàng đã đặt.</p>
+            <a href="/track-order" className="text-decoration-none fw-bold text-danger">
+              <i className="bi bi-arrow-right-circle me-1"></i> Tra cứu chi tiết bằng Mã đơn hàng
+            </a>
           </div>
 
           <div className="card border-0 shadow-sm rounded-4 mb-5">
@@ -145,32 +148,62 @@ export default function TrackOrderPage() {
                           </div>
                         </div>
 
+                        {/* Sản phẩm */}
+                        <div className="bg-light rounded-3 p-3 mb-3">
+                          <p className="fw-bold small text-muted mb-2">SẢN PHẨM ĐÃ ĐẶT</p>
+                          {order.items?.map(item => (
+                            <div key={item.id} className="d-flex justify-content-between mb-2 pb-2 border-bottom border-light">
+                              <div className="small">
+                                <span className="fw-semibold">{item.variant?.product?.name || item.productName}</span>
+                                {item.variant?.name && <span className="text-muted ms-1">({item.variant.name})</span>}
+                              </div>
+                              <div className="small fw-bold text-nowrap ms-3">
+                                x{item.quantity}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
                         <div className="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mt-3">
                           <span className="fw-semibold">Tổng tiền hàng:</span>
                           <span className="fw-bold text-danger fs-5">{order.total.toLocaleString()}đ</span>
                         </div>
 
-                        {order.paymentStatus === "UNPAID" && order.paymentMethod === "PAYOS" && order.paymentUrl && (
+                        {order.paymentStatus === "UNPAID" && order.paymentMethod === "PAYOS" && (
                           <div className="mt-4 pt-3 border-top text-center">
-                            <p className="text-muted small mb-3">Đơn hàng của bạn đang chờ thanh toán. Vui lòng thanh toán để Trường Tín xử lý đơn.</p>
-                            <a 
-                              href={order.paymentUrl} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="btn btn-warning fw-bold text-dark rounded-pill px-4 py-2 w-100 shadow-sm animate-pulse"
-                              style={{ animation: 'pulse 2s infinite' }}
-                            >
-                              <i className="bi bi-qr-code-scan me-2"></i> Thanh toán tiếp qua QR
-                            </a>
-                            <style jsx>{`
-                              @keyframes pulse {
-                                0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
-                                50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
-                                100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
-                              }
-                            `}</style>
+                            {order.paymentUrl ? (
+                              <>
+                                <p className="text-muted small mb-3">Đơn hàng của bạn đang chờ thanh toán. Vui lòng thanh toán để Trường Tín xử lý đơn.</p>
+                                <a 
+                                  href={order.paymentUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="btn btn-warning fw-bold text-dark rounded-pill px-4 py-2 w-100 shadow-sm animate-pulse"
+                                  style={{ animation: 'pulse 2s infinite' }}
+                                >
+                                  <i className="bi bi-qr-code-scan me-2"></i> Thanh toán tiếp qua QR
+                                </a>
+                                <style jsx>{`
+                                  @keyframes pulse {
+                                    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+                                    50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+                                    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+                                  }
+                                `}</style>
+                              </>
+                            ) : (
+                              <div className="alert alert-secondary py-2 small mb-0 rounded-3">
+                                <i className="bi bi-info-circle me-1"></i> Đơn hàng cũ chưa có link thanh toán. Vui lòng liên hệ Zalo hoặc Hotline để được hỗ trợ.
+                              </div>
+                            )}
                           </div>
                         )}
+                        
+                        <div className="mt-3 text-center">
+                          <a href="/track-order" className="btn btn-outline-primary btn-sm rounded-pill px-4">
+                            Xem chi tiết địa chỉ & Vận đơn
+                          </a>
+                        </div>
                       </div>
                     </div>
                   ))}

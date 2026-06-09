@@ -29,16 +29,28 @@ function OrderSuccessContent() {
 
         {/* 💡 HIỂN THỊ MÃ ĐƠN HÀNG */}
         {orderCode && (
-          <div className="alert alert-success my-4 border border-success rounded-3" style={{ borderStyle: 'dashed !important' }}>
-            <p className="mb-1 text-dark">Mã đơn hàng của bạn là:</p>
-            <h2 className="fw-bold text-danger mb-0">#{orderCode}</h2>
+          <div className="alert alert-success my-4 border border-success rounded-3 position-relative" style={{ borderStyle: 'dashed !important' }}>
+            <p className="mb-1 text-dark fw-semibold">Mã đơn hàng của bạn là:</p>
+            <div className="d-flex justify-content-center align-items-center gap-2">
+              <h1 className="fw-bolder text-danger mb-0" style={{ letterSpacing: '2px' }}>#{orderCode}</h1>
+              <button 
+                className="btn btn-sm btn-outline-danger" 
+                onClick={() => {
+                  navigator.clipboard.writeText(orderCode);
+                  alert("Đã copy mã đơn hàng!");
+                }}
+                title="Copy mã đơn hàng"
+              >
+                <i className="bi bi-clipboard"></i>
+              </button>
+            </div>
           </div>
         )}
 
         {/* 💡 CÂU LƯU Ý KHÁCH HÀNG */}
         <p className="text-danger small fw-bold mb-4 px-2">
           <i className="bi bi-exclamation-triangle-fill me-1"></i>
-          Vui lòng lưu lại hoặc chụp màn hình mã đơn hàng này để tra cứu trạng thái giao hàng nhé!
+          Rất quan trọng! Vui lòng Copy hoặc chụp màn hình Mã đơn hàng này để tra cứu chi tiết giao hàng về sau.
         </p>
         
         {/* KHỐI NÚT ĐIỀU HƯỚNG */}
