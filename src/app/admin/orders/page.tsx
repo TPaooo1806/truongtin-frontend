@@ -42,32 +42,57 @@ interface BackendResponse {
   success: boolean;
   data: Order[];
   message?: string;
+  totalOrders: number;
+  totalPages: number;
+  currentPage: number;
 }
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
 
   // --- 2. HÀM LẤY DỮ LIỆU ---
-  const fetchOrders = async () => {
+  const fetchOrders = async (page: number = 1) => {
+    if (page > 1) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
-      const res = await api.get<BackendResponse>("/api/orders/admin/all");
+      const res = await api.get<BackendResponse>(`/api/orders/admin/all?page=${page}&limit=10`);
 
       if (res.data.success) {
-        setOrders(res.data.data);
+        if (page === 1) {
+          setOrders(res.data.data);
+        } else {
+          setOrders(prev => [...prev, ...res.data.data]);
+        }
+        setCurrentPage(res.data.currentPage);
+        setTotalPages(res.data.totalPages);
       }
     } catch (error) {
       console.error(error);
       toast.error("Lỗi khi tải danh sách đơn hàng");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    fetchOrders();
+    fetchOrders(1);
   }, []);
+
+  const handleLoadMore = () => {
+    if (currentPage < totalPages) {
+      fetchOrders(currentPage + 1);
+    }
+  };
 
   // --- 3. HÀM DUYỆT ĐƠN ---
   const handleApprove = async (orderId: number, orderCode: string) => {
@@ -277,6 +302,23 @@ export default function AdminOrdersPage() {
           </div>
         )}
       </div>
+
+      {/* LOAD MORE BUTTON */}
+      {currentPage < totalPages && (
+        <div className="text-center mt-4">
+          <button 
+            className="btn btn-outline-primary rounded-pill px-4" 
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? (
+              <><span className="spinner-border spinner-border-sm me-2"></span> Đang tải...</>
+            ) : (
+              "Xem thêm đơn hàng"
+            )}
+          </button>
+        </div>
+      )}
 
       {/* MODAL CHI TIẾT */}
       {selectedOrder && (
