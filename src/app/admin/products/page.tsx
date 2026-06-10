@@ -521,26 +521,33 @@ export default function AdminProductsPage() {
                       required
                     />
                   </div>
+                </div>
 
-                  {/* Checkbox Hàng cồng kềnh */}
-                  <div className="col-12 mt-2">
-                    <div className="form-check form-switch d-flex align-items-center gap-2 p-3 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded-3">
-                      <input
-                        className="form-check-input me-2"
-                        type="checkbox"
-                        id="isBulky"
-                        checked={formData.isBulky}
-                        onChange={(e) => setFormData({ ...formData, isBulky: e.target.checked })}
-                        style={{ width: '2rem', height: '1rem' }}
-                      />
-                      <label className="form-check-label fw-bold" htmlFor="isBulky">
-                        <i className="bi bi-truck me-1 text-warning"></i>
+                {/* Checkbox Hàng cồng kềnh - Đặt nổi bật bên ngoài lưới form chính */}
+                <div className="mt-4 mb-2">
+                  <div className="form-check form-switch d-flex align-items-center gap-3 p-3 bg-warning bg-opacity-10 border border-warning rounded-4 shadow-sm" style={{ cursor: 'pointer' }}>
+                    <input
+                      className="form-check-input m-0"
+                      type="checkbox"
+                      id="isBulky"
+                      role="switch"
+                      checked={formData.isBulky}
+                      onChange={(e) => setFormData({ ...formData, isBulky: e.target.checked })}
+                      style={{ width: '3.5rem', height: '1.75rem', cursor: 'pointer' }}
+                    />
+                    <label className="form-check-label fw-bold d-flex flex-column" htmlFor="isBulky" style={{ cursor: 'pointer', userSelect: 'none' }}>
+                      <span className="d-flex align-items-center text-dark" style={{ fontSize: '1.05rem' }}>
+                        <i className="bi bi-truck me-2 text-warning fs-4"></i>
                         Hàng cồng kềnh (ống dài, cồng kềnh, nặng)
-                        <div className="text-muted fw-normal small">Khi bật: phí vận chuyển sẽ được báo giá riêng cho khách.</div>
-                      </label>
-                    </div>
+                      </span>
+                      <span className="text-muted fw-normal mt-1" style={{ fontSize: '0.85rem' }}>
+                        Khi bật: phí vận chuyển sẽ được báo giá riêng cho khách.
+                      </span>
+                    </label>
                   </div>
+                </div>
 
+                <div className="row g-3">
                   {/* 💡 THÊM Ô NHẬP MÔ TẢ (DESCRIPTION) */}
                   <div className="col-12 mt-3">
                     <label className="small fw-bold mb-1">Mô tả chi tiết (Bài viết)</label>
