@@ -364,6 +364,9 @@ export default function Header() {
             <Link href="/san-pham" className="mobile-menu-item list-group-item list-group-item-action fw-bold text-dark" onClick={() => closeBtnRef.current?.click()}>
               <i className="bi bi-grid text-success me-2 fs-5 align-middle"></i> TẤT CẢ SẢN PHẨM
             </Link>
+            <Link href="/lien-he" className="mobile-menu-item list-group-item list-group-item-action fw-bold text-dark" onClick={() => closeBtnRef.current?.click()}>
+              <i className="bi bi-geo-alt-fill text-danger me-2 fs-5 align-middle"></i> LIÊN HỆ & BẢN ĐỒ
+            </Link>
           </div>
 
           {/* Hotline Card */}

@@ -23,9 +23,17 @@ export default function Footer() {
             </p>
             <ul className="list-unstyled mt-3 d-flex flex-column gap-2 fs-6">
               <li>
-                <i className="bi bi-geo-alt-fill text-brand me-2"></i>
-                Cửa hàng Trường Tín,358 Nơ Trang Long, Phường 13, Bình Thạnh,
-                TP. HCM
+                <div className="d-flex align-items-start">
+                  <i className="bi bi-geo-alt-fill text-brand me-2 mt-1"></i>
+                  <div>
+                    Cửa hàng Trường Tín, 358 Nơ Trang Long, Phường 13, Bình Thạnh, TP. HCM
+                    <div className="mt-2 mb-2">
+                      <Link href="/lien-he" className="btn btn-sm btn-danger rounded-pill px-3 fw-bold shadow-sm d-inline-flex align-items-center">
+                        <i className="bi bi-map-fill me-2"></i> Xem đường đi trên Bản đồ
+                      </Link>
+                    </div>
+                  </div>
+                </div>
               </li>
               <li>
                 <i className="bi bi-telephone-fill text-brand me-2"></i>
