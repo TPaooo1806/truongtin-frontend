@@ -193,10 +193,10 @@ export default function Header() {
               <Image 
                 src="/Main_logo.png" 
                 alt="Trường Tín Logo" 
-                width={180} 
-                height={48} 
+                width={210} 
+                height={55} 
                 priority
-                style={{ objectFit: 'contain', maxHeight: '48px', width: 'auto' }}
+                style={{ objectFit: 'contain', maxHeight: '55px', width: 'auto' }}
               />
             </Link>
 
