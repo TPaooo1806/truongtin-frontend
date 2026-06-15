@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import AuthModal from "./AuthModal";
 import api from "@/lib/axios";
@@ -188,8 +189,15 @@ export default function Header() {
             </button>
 
             {/* LOGO */}
-            <Link className="navbar-brand header-logo fs-3 mx-0 me-lg-4 text-decoration-none fw-bold" style={{ letterSpacing: '-0.5px', color: '#1a2a3a' }} href="/">
-              <span className="text-brand">TRƯỜNG</span> TÍN
+            <Link className="navbar-brand header-logo mx-0 me-lg-4 d-flex align-items-center text-decoration-none" href="/">
+              <Image 
+                src="/logo-main.png" 
+                alt="Trường Tín Logo" 
+                width={180} 
+                height={48} 
+                priority
+                style={{ objectFit: 'contain', maxHeight: '48px', width: 'auto' }}
+              />
             </Link>
 
 {/* MENU PC - Gọn gàng, bo tròn nhẹ, không chiếm diện tích */}
