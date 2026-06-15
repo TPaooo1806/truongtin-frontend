@@ -191,7 +191,7 @@ export default function Header() {
             {/* LOGO */}
             <Link className="navbar-brand header-logo mx-0 me-lg-4 d-flex align-items-center text-decoration-none" href="/">
               <Image 
-                src="/logo-main.png" 
+                src="/Main_logo.png" 
                 alt="Trường Tín Logo" 
                 width={180} 
                 height={48} 
