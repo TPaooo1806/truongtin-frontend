@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from 'next';
+import './about.css';
 
 export const metadata: Metadata = {
   title: 'Giới thiệu | Điện Nước Trường Tín',
@@ -120,14 +121,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-      <style jsx>{`
-        .transition-all { transition: all 0.3s ease; }
-        .hover-scale:hover { transform: translateY(-8px); }
-        .hover-scale-btn:hover { transform: scale(1.05); }
-        .z-index-1 { z-index: 1; }
-        p { font-family: 'Inter', 'Roboto', sans-serif; }
-      `}</style>
     </main>
   );
 }
