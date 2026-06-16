@@ -701,7 +701,6 @@ export default function AdminProductsPage() {
                               newV[i].price = cleanMoney(e.target.value);
                               setFormData({ ...formData, variants: newV });
                             }}
-                            required
                           />
                         </div>
                         <div className="col-md-2">
@@ -720,7 +719,6 @@ export default function AdminProductsPage() {
                               newV[i].stock = e.target.value;
                               setFormData({ ...formData, variants: newV });
                             }}
-                            required
                           />
                         </div>
                         <div className="col-md-3">
