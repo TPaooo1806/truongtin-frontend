@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import type { Product, ApiResponse, Category } from "./type";
 import Sidebar from "./components/Sidebar";
@@ -18,26 +18,48 @@ const ProductSection = ({
   products: Product[];
   link?: string;
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const itemsPerPage = 6;
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showLeft, setShowLeft] = useState(false);
+  const [showRight, setShowRight] = useState(false);
 
-  const nextSlide = () => {
-    if (currentIndex + itemsPerPage < products.length)
-      setCurrentIndex(currentIndex + itemsPerPage);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        setShowLeft(scrollLeft > 0);
+        setShowRight(Math.ceil(scrollLeft + clientWidth) < scrollWidth - 2);
+      }
+    };
+    
+    if (products.length > 6 && scrollRef.current) {
+      handleScroll();
+      scrollRef.current.addEventListener('scroll', handleScroll);
+      window.addEventListener('resize', handleScroll);
+    }
+    return () => {
+      if (scrollRef.current) scrollRef.current.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [products]);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = scrollRef.current.clientWidth * 0.8;
+      scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
   };
 
-  const prevSlide = () => {
-    if (currentIndex - itemsPerPage >= 0)
-      setCurrentIndex(currentIndex - itemsPerPage);
-  };
-
-  const visibleProducts = products.slice(
-    currentIndex,
-    currentIndex + itemsPerPage,
-  );
+  const isSlider = products.length > 6;
 
   return (
     <section className="mb-5 position-relative">
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
       <div className="d-flex justify-content-between align-items-end mb-3">
         <h4
           className="fw-bold mb-0 d-flex align-items-center gap-2 fs-5 fs-md-4"
@@ -65,43 +87,57 @@ const ProductSection = ({
       </div>
 
       <div className="position-relative">
-        {currentIndex > 0 && (
+        {isSlider && showLeft && (
           <button
-            className="btn btn-white shadow rounded-circle position-absolute top-50 translate-middle-y z-3 d-flex align-items-center justify-content-center border slider-btn-prev"
+            className="btn btn-white shadow rounded-circle position-absolute top-50 translate-middle-y z-3 d-flex align-items-center justify-content-center border slider-btn-prev d-none d-md-flex"
             style={{
               width: "42px",
               height: "42px",
               left: "-15px",
               backgroundColor: "rgba(255,255,255,0.9)",
             }}
-            onClick={prevSlide}
+            onClick={() => scroll('left')}
           >
             <i className="bi bi-chevron-left fs-5"></i>
           </button>
         )}
 
-        {currentIndex + itemsPerPage < products.length && (
+        {isSlider && showRight && (
           <button
-            className="btn btn-white shadow rounded-circle position-absolute top-50 translate-middle-y z-3 d-flex align-items-center justify-content-center border slider-btn-next"
+            className="btn btn-white shadow rounded-circle position-absolute top-50 translate-middle-y z-3 d-flex align-items-center justify-content-center border slider-btn-next d-none d-md-flex"
             style={{
               width: "42px",
               height: "42px",
               right: "-15px",
               backgroundColor: "rgba(255,255,255,0.9)",
             }}
-            onClick={nextSlide}
+            onClick={() => scroll('right')}
           >
             <i className="bi bi-chevron-right fs-5"></i>
           </button>
         )}
 
-        <div className="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-2 g-md-3">
-          {visibleProducts.map((p) => (
-            <div className="col d-flex align-items-stretch" key={p.id}>
-              <ProductCard item={p} />
-            </div>
-          ))}
-        </div>
+        {isSlider ? (
+          <div 
+            ref={scrollRef}
+            className="row flex-nowrap overflow-x-auto g-2 g-md-3 hide-scrollbar pb-2"
+            style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
+          >
+            {products.map((p) => (
+              <div key={p.id} className="col-6 col-md-4 col-lg-2 d-flex align-items-stretch" style={{ scrollSnapAlign: 'start' }}>
+                <ProductCard item={p} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-2 g-md-3">
+            {products.map((p) => (
+              <div className="col d-flex align-items-stretch" key={p.id}>
+                <ProductCard item={p} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

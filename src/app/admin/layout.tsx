@@ -36,6 +36,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // STATE MODAL (POP-UP)
   const [selectedNotif, setSelectedNotif] = useState<Notification | null>(null);
 
+  // STATE MOBILE MENU
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
   useEffect(() => {
   }, [router]);
 
@@ -200,9 +203,7 @@ setNotifications(sorted);
           <button 
             className="btn btn-outline-light border-0" 
             type="button" 
-            data-bs-toggle="offcanvas" 
-            data-bs-target="#mobileSidebar" 
-            aria-controls="mobileSidebar"
+            onClick={() => setShowMobileMenu(true)}
           >
             {/* Icon 3 gạch */}
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
@@ -396,55 +397,70 @@ setNotifications(sorted);
         </div>
       )}
 
+      {/* Backdrop cho Mobile Menu */}
+      {showMobileMenu && (
+        <div 
+          className="offcanvas-backdrop fade show" 
+          onClick={() => setShowMobileMenu(false)}
+          style={{ zIndex: 1040 }}
+        ></div>
+      )}
+
       {/* Giao diện Menu trượt cho Mobile */}
-      <div className="offcanvas offcanvas-start bg-dark text-white" tabIndex={-1} id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
+      <div 
+        className={`offcanvas offcanvas-start bg-dark text-white ${showMobileMenu ? 'show' : ''}`} 
+        tabIndex={-1} 
+        id="mobileSidebar" 
+        style={{ visibility: showMobileMenu ? 'visible' : 'hidden', zIndex: 1045 }}
+      >
         <div className="offcanvas-header border-bottom border-secondary">
-          <h5 className="offcanvas-title fw-bold" id="mobileSidebarLabel">TRƯỜNG TÍN</h5>
-          <button type="button" className="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          <h5 className="offcanvas-title fw-bold">TRƯỜNG TÍN</h5>
+          <button type="button" className="btn-close btn-close-white" onClick={() => setShowMobileMenu(false)} aria-label="Close"></button>
         </div>
         <div className="offcanvas-body p-0 d-flex flex-column">
           <nav className="nav flex-column p-3 flex-grow-1 custom-scrollbar" style={{ overflowY: 'auto' }}>
             <div className="text-white-50 fw-bold mb-2 ms-2 mt-2" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>TỔNG QUAN</div>
-            <Link href="/admin" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+            <Link href="/admin" onClick={() => setShowMobileMenu(false)} className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
               <i className="bi bi-grid-1x2-fill me-3 fs-5"></i> Bảng điều khiển
             </Link>
             
             <div className="text-white-50 fw-bold mb-2 ms-2 mt-4" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>QUẢN LÝ BÁN HÀNG</div>
-            <Link href="/admin/orders" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/orders') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+            <Link href="/admin/orders" onClick={() => setShowMobileMenu(false)} className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/orders') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
               <i className="bi bi-cart-check-fill me-3 fs-5"></i> Đơn hàng 
               {notifications.some(n => n.type === 'ORDER') && (
                 <span className="badge bg-danger ms-auto rounded-pill shadow-sm">Có đơn</span>
               )}
             </Link>
-            <Link href="/admin/products" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/products') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+            <Link href="/admin/products" onClick={() => setShowMobileMenu(false)} className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/products') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
               <i className="bi bi-box-seam-fill me-3 fs-5"></i> Sản phẩm
             </Link>
-            <Link href="/admin/categories" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/categories') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+            <Link href="/admin/categories" onClick={() => setShowMobileMenu(false)} className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/categories') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
               <i className="bi bi-tags-fill me-3 fs-5"></i> Danh mục
             </Link>
 
             <div className="text-white-50 fw-bold mb-2 ms-2 mt-4" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>KHÁCH HÀNG & ĐỐI TÁC</div>
-            <Link href="/admin/customers" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/customers') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+            <Link href="/admin/customers" onClick={() => setShowMobileMenu(false)} className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/customers') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
               <i className="bi bi-people-fill me-3 fs-5"></i> Khách hàng
             </Link>
-            <Link href="/admin/vouchers" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/vouchers') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+            <Link href="/admin/vouchers" onClick={() => setShowMobileMenu(false)} className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/vouchers') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
               <i className="bi bi-ticket-perforated-fill me-3 fs-5"></i> Khuyến mãi
             </Link>
 
             <div className="text-white-50 fw-bold mb-2 ms-2 mt-4" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>HỆ THỐNG</div>
-            <Link href="/admin/reports" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/reports') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+            <Link href="/admin/reports" onClick={() => setShowMobileMenu(false)} className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/reports') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
               <i className="bi bi-bar-chart-fill me-3 fs-5"></i> Báo cáo
             </Link>
-            <Link href="/admin/banners" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/banners') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+            <Link href="/admin/banners" onClick={() => setShowMobileMenu(false)} className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/banners') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
               <i className="bi bi-images me-3 fs-5"></i> Quản lý Banner
             </Link>
-            <Link href="/admin/settings" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/settings') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+            <Link href="/admin/settings" onClick={() => setShowMobileMenu(false)} className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/settings') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
               <i className="bi bi-gear-fill me-3 fs-5"></i> Cài đặt
             </Link>
           </nav>
 
           <div className="p-3 border-top mt-auto" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-             <button data-bs-dismiss="offcanvas" onClick={() => { 
+             <button onClick={() => { 
+               setShowMobileMenu(false);
                localStorage.removeItem('user'); 
                localStorage.removeItem('token'); 
                document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
