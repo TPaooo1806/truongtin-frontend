@@ -406,7 +406,7 @@ export default function AdminOrdersPage() {
               </div>
               <div className="modal-body p-4 bg-white">
                 <div className="row mb-4 p-3 bg-light rounded-3 mx-0">
-                  <div className="col-md-6 mb-3 mb-md-0">
+                  <div className="col-12 col-md-6 mb-3 mb-md-0">
                     <p className="mb-1 text-muted small text-uppercase fw-bold">
                       Giao đến
                     </p>
@@ -418,7 +418,7 @@ export default function AdminOrdersPage() {
                       {selectedOrder.address}
                     </p>
                   </div>
-                  <div className="col-md-6 text-md-end">
+                  <div className="col-12 col-md-6 text-md-end">
                     <p className="mb-1 text-muted small text-uppercase fw-bold">
                       Thời gian đặt
                     </p>

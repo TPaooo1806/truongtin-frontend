@@ -6,7 +6,7 @@ import ClientLayout from './ClientLayout';
 
 export const metadata: Metadata = {
   metadataBase: new URL('http://localhost:3000'), // Replace with actual domain when deployed
-  title: 'Điện Nước Trường Tín | Vật Tư Chính Hãng',
+  title: 'Điện Nước Trường Tín | Chuyên cung cấp vật tư điện nước chính hãng giá sỉ Nơ Trang Long, quận Bình Thạnh',
   description: 'Chuyên cung cấp vật tư điện nước chuyên nghiệp',
 };
 

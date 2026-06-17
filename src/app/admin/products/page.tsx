@@ -473,7 +473,7 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div className="row g-3">
-                  <div className="col-md-5">
+                  <div className="col-12 col-md-5">
                     <label className="small fw-bold mb-1">Tên sản phẩm</label>
                     <input
                       type="text"
@@ -487,7 +487,7 @@ export default function AdminProductsPage() {
                     />
                   </div>
 
-                  <div className="col-md-4">
+                  <div className="col-12 col-md-4">
                     <label className="small fw-bold mb-1">Danh mục</label>
                     <select
                       className="form-select"
@@ -506,7 +506,7 @@ export default function AdminProductsPage() {
                     </select>
                   </div>
 
-                  <div className="col-md-3">
+                  <div className="col-12 col-md-3">
                     <label className="small fw-bold mb-1 text-danger">
                       Đơn vị tính
                     </label>
@@ -588,7 +588,7 @@ export default function AdminProductsPage() {
                         key={i}
                         className="row g-2 mb-2 align-items-center bg-white p-2 rounded shadow-sm border"
                       >
-                        <div className="col-md-5">
+                        <div className="col-12 col-md-5">
                           <input
                             type="text"
                             placeholder="Tên thông số (VD: Chất liệu)"
@@ -601,7 +601,7 @@ export default function AdminProductsPage() {
                             }}
                           />
                         </div>
-                        <div className="col-md-5">
+                        <div className="col-12 col-md-5">
                           <input
                             type="text"
                             placeholder="Giá trị (VD: Nhựa PVC)"
@@ -614,7 +614,7 @@ export default function AdminProductsPage() {
                             }}
                           />
                         </div>
-                        <div className="col-md-2 text-end">
+                        <div className="col-12 col-md-2 text-end">
                           <button
                             type="button"
                             className="btn btn-sm btn-outline-danger"
@@ -666,7 +666,7 @@ export default function AdminProductsPage() {
                         key={i}
                         className="row g-2 mb-2 align-items-center bg-white p-2 rounded shadow-sm border"
                       >
-                        <div className="col-md-4">
+                        <div className="col-12 col-md-4">
                           <label
                             className="small text-muted"
                             style={{ fontSize: "11px" }}
@@ -685,7 +685,7 @@ export default function AdminProductsPage() {
                             }}
                           />
                         </div>
-                        <div className="col-md-3">
+                        <div className="col-12 col-md-3">
                           <label
                             className="small text-muted"
                             style={{ fontSize: "11px" }}
@@ -703,7 +703,7 @@ export default function AdminProductsPage() {
                             }}
                           />
                         </div>
-                        <div className="col-md-2">
+                        <div className="col-12 col-md-2">
                           <label
                             className="small text-muted"
                             style={{ fontSize: "11px" }}
@@ -721,7 +721,7 @@ export default function AdminProductsPage() {
                             }}
                           />
                         </div>
-                        <div className="col-md-3">
+                        <div className="col-12 col-md-3">
                           <label
                             className="small text-muted"
                             style={{ fontSize: "11px" }}

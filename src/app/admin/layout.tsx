@@ -130,7 +130,7 @@ setNotifications(sorted);
     <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#eef2f5' }}>
       
       {/* SIDEBAR */}
-      <div className="text-white shadow-lg m-3 rounded-4 d-flex flex-column" style={{ width: '280px', background: 'linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%)', overflow: 'hidden' }}>
+      <div className="text-white shadow-lg m-3 rounded-4 d-none d-md-flex flex-column" style={{ width: '280px', background: 'linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%)', overflow: 'hidden' }}>
         {/* LOGO AREA */}
         <div className="p-4 border-bottom text-center" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
           <h4 className="fw-bold mb-0 text-white shadow-sm tracking-wide">TRƯỜNG TÍN</h4>
@@ -194,6 +194,23 @@ setNotifications(sorted);
       {/* CONTENT AREA */}
       <div className="flex-grow-1 d-flex flex-column pe-3 py-3 overflow-auto" style={{ height: '100vh' }}>
         
+        {/* Thanh Navbar phụ chỉ xuất hiện trên điện thoại (d-md-none) */}
+        <div className="d-md-none w-100 bg-dark text-white p-3 d-flex justify-content-between align-items-center shadow-sm rounded-4 mb-3">
+          <span className="fs-5 fw-bold">Admin Trường Tín</span>
+          <button 
+            className="btn btn-outline-light border-0" 
+            type="button" 
+            data-bs-toggle="offcanvas" 
+            data-bs-target="#mobileSidebar" 
+            aria-controls="mobileSidebar"
+          >
+            {/* Icon 3 gạch */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+              <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+            </svg>
+          </button>
+        </div>
+
         {/* HEADER */}
         <header className="bg-white p-3 shadow-sm d-flex justify-content-between align-items-center px-4 rounded-4 mb-3" style={{ border: '1px solid rgba(0,0,0,0.02)' }}>
           <h5 className="mb-0 text-dark fw-bold">
@@ -378,6 +395,66 @@ setNotifications(sorted);
           </div>
         </div>
       )}
+
+      {/* Giao diện Menu trượt cho Mobile */}
+      <div className="offcanvas offcanvas-start bg-dark text-white" tabIndex={-1} id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
+        <div className="offcanvas-header border-bottom border-secondary">
+          <h5 className="offcanvas-title fw-bold" id="mobileSidebarLabel">TRƯỜNG TÍN</h5>
+          <button type="button" className="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div className="offcanvas-body p-0 d-flex flex-column">
+          <nav className="nav flex-column p-3 flex-grow-1 custom-scrollbar" style={{ overflowY: 'auto' }}>
+            <div className="text-white-50 fw-bold mb-2 ms-2 mt-2" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>TỔNG QUAN</div>
+            <Link href="/admin" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+              <i className="bi bi-grid-1x2-fill me-3 fs-5"></i> Bảng điều khiển
+            </Link>
+            
+            <div className="text-white-50 fw-bold mb-2 ms-2 mt-4" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>QUẢN LÝ BÁN HÀNG</div>
+            <Link href="/admin/orders" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/orders') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+              <i className="bi bi-cart-check-fill me-3 fs-5"></i> Đơn hàng 
+              {notifications.some(n => n.type === 'ORDER') && (
+                <span className="badge bg-danger ms-auto rounded-pill shadow-sm">Có đơn</span>
+              )}
+            </Link>
+            <Link href="/admin/products" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/products') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+              <i className="bi bi-box-seam-fill me-3 fs-5"></i> Sản phẩm
+            </Link>
+            <Link href="/admin/categories" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/categories') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+              <i className="bi bi-tags-fill me-3 fs-5"></i> Danh mục
+            </Link>
+
+            <div className="text-white-50 fw-bold mb-2 ms-2 mt-4" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>KHÁCH HÀNG & ĐỐI TÁC</div>
+            <Link href="/admin/customers" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/customers') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+              <i className="bi bi-people-fill me-3 fs-5"></i> Khách hàng
+            </Link>
+            <Link href="/admin/vouchers" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/vouchers') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+              <i className="bi bi-ticket-perforated-fill me-3 fs-5"></i> Khuyến mãi
+            </Link>
+
+            <div className="text-white-50 fw-bold mb-2 ms-2 mt-4" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>HỆ THỐNG</div>
+            <Link href="/admin/reports" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/reports') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+              <i className="bi bi-bar-chart-fill me-3 fs-5"></i> Báo cáo
+            </Link>
+            <Link href="/admin/banners" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/banners') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+              <i className="bi bi-images me-3 fs-5"></i> Quản lý Banner
+            </Link>
+            <Link href="/admin/settings" data-bs-dismiss="offcanvas" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/settings') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+              <i className="bi bi-gear-fill me-3 fs-5"></i> Cài đặt
+            </Link>
+          </nav>
+
+          <div className="p-3 border-top mt-auto" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+             <button data-bs-dismiss="offcanvas" onClick={() => { 
+               localStorage.removeItem('user'); 
+               localStorage.removeItem('token'); 
+               document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+               router.replace('/'); 
+             }} className="btn btn-light w-100 rounded-3 fw-bold text-danger shadow-sm d-flex align-items-center justify-content-center gap-2">
+               <i className="bi bi-box-arrow-right fs-5"></i> Đăng xuất
+             </button>
+          </div>
+        </div>
+      </div>
 
     </div>
   );

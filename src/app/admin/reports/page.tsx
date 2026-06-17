@@ -122,7 +122,7 @@ export default function AdminReportsPage() {
         {dashboardData && (
           <>
             {/* 4 THẺ TỔNG QUAN (Thay thế 2 thẻ cũ theo yêu cầu) */}
-            <div className="col-md-3">
+            <div className="col-12 col-md-3">
               <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden" style={{ borderLeft: '5px solid #10b981' }}>
                 <div className="card-body p-4 position-relative">
                   <div className="d-flex align-items-center mb-3">
@@ -139,7 +139,7 @@ export default function AdminReportsPage() {
               </div>
             </div>
 
-            <div className="col-md-3">
+            <div className="col-12 col-md-3">
               <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden" style={{ borderLeft: '5px solid #3b82f6' }}>
                 <div className="card-body p-4 position-relative">
                   <div className="d-flex align-items-center mb-3">
@@ -156,7 +156,7 @@ export default function AdminReportsPage() {
               </div>
             </div>
 
-            <div className="col-md-3">
+            <div className="col-12 col-md-3">
               <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden" style={{ borderLeft: '5px solid #f59e0b' }}>
                 <div className="card-body p-4 position-relative">
                   <div className="d-flex align-items-center mb-3">
@@ -173,7 +173,7 @@ export default function AdminReportsPage() {
               </div>
             </div>
 
-            <div className="col-md-3">
+            <div className="col-12 col-md-3">
               <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden" style={{ borderLeft: '5px solid #0dcaf0' }}>
                 <div className="card-body p-4 position-relative">
                   <div className="d-flex align-items-center mb-3">
@@ -191,7 +191,7 @@ export default function AdminReportsPage() {
             </div>
 
             {/* KHU VỰC BIỂU ĐỒ */}
-            <div className="col-lg-8 mt-4">
+            <div className="col-12 col-lg-8 mt-4">
               <div className="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
                 <h6 className="fw-bold text-dark mb-4">Biểu Đồ Doanh Thu Thực Tế</h6>
                 <div style={{ height: '300px' }}>
@@ -207,7 +207,7 @@ export default function AdminReportsPage() {
               </div>
             </div>
 
-            <div className="col-lg-4 mt-4">
+            <div className="col-12 col-lg-4 mt-4">
               <div className="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
                 <h6 className="fw-bold text-dark mb-4"><i className="bi bi-star-fill me-2 text-warning"></i>Top 5 Bán Chạy</h6>
                 <div className="d-flex flex-column gap-3" style={{ overflowY: 'auto' }}>
