@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import Link from "next/link";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
 
@@ -95,9 +96,9 @@ export default function TrackOrderPage() {
           <div className="text-center mb-5">
             <h1 className="fw-bold text-primary mb-3">Tra cứu danh sách đơn</h1>
             <p className="text-muted mb-2">Nhập số điện thoại của bạn để xem lịch sử tổng quát các đơn hàng đã đặt.</p>
-            <a href="/track-order" className="text-decoration-none fw-bold text-danger">
+            <Link href="/track-order" className="text-decoration-none fw-bold text-danger">
               <i className="bi bi-arrow-right-circle me-1"></i> Tra cứu chi tiết bằng Mã đơn hàng
-            </a>
+            </Link>
           </div>
 
           <div className="card border-0 shadow-sm rounded-4 mb-5">
@@ -233,9 +234,9 @@ export default function TrackOrderPage() {
                         
                         <div className="mt-4 text-center border-top pt-3">
                           <p className="small text-muted mb-2">Vì lý do bảo mật, địa chỉ giao hàng chi tiết đã được ẩn.</p>
-                          <a href="/track-order" className="btn btn-outline-secondary btn-sm rounded-pill px-4">
+                          <Link href="/track-order" className="btn btn-outline-secondary btn-sm rounded-pill px-4">
                             Xem đầy đủ biên lai bằng Mã Đơn Hàng
-                          </a>
+                          </Link>
                         </div>
                       </div>
                     </div>

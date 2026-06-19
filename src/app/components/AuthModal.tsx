@@ -3,6 +3,7 @@ import { useState } from 'react';
 import axios, { AxiosError } from 'axios';
 import api from '@/lib/axios';
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 interface AuthResponse {
   success: boolean;
@@ -17,6 +18,7 @@ interface AuthResponse {
 }
 
 export default function AuthModal() {
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ phone: '', password: '', name: '' });
@@ -76,7 +78,16 @@ export default function AuthModal() {
             }
           }
           localStorage.setItem('user', JSON.stringify(res.data.data));
-          setTimeout(() => window.location.reload(), 1000);
+          
+          // SPA Approach: Close modal and refresh router instead of full page reload
+          const closeBtn = document.querySelector('#authModal .btn-close') as HTMLElement;
+          if (closeBtn) closeBtn.click();
+          
+          setTimeout(() => {
+            router.refresh();
+            // In a real SPA, you'd use context/zustand, but here we dispatch a custom event
+            window.dispatchEvent(new Event('authUpdated'));
+          }, 300);
         } else {
           setIsLogin(true);
           setErrors({ phone: '', password: '', name: '' });

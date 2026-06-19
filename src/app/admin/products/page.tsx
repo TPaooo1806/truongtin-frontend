@@ -4,7 +4,9 @@ import api from "@/lib/axios";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
 import Swal from "sweetalert2";
-import ImportExcelModal from "./components/ImportExcelModal";
+import dynamic from "next/dynamic";
+
+const ImportExcelModal = dynamic(() => import("./components/ImportExcelModal"), { ssr: false });
 
 // --- Interface ---
 interface Category {

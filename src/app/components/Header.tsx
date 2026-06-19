@@ -4,9 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import AuthModal from "./AuthModal";
+import dynamic from "next/dynamic";
 import api from "@/lib/axios";
 import { usePathname } from 'next/navigation';
+
+const AuthModal = dynamic(() => import('./AuthModal'), { ssr: false });
 
 // --- ĐỊNH NGHĨA KIỂU DỮ LIỆU ---
 interface UserData {
@@ -80,6 +82,8 @@ export default function Header() {
       }
     };
     initAuth();
+    
+    window.addEventListener('authUpdated', initAuth);
 
     const fetchCategories = async () => {
       try {
@@ -92,6 +96,10 @@ export default function Header() {
       }
     };
     fetchCategories();
+
+    return () => {
+      window.removeEventListener('authUpdated', initAuth);
+    };
   }, []);
 
   // LOGIC GỢI Ý TÌM KIẾM (DEBOUNCE 300ms)
@@ -141,7 +149,8 @@ export default function Header() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-    window.location.href = "/";
+    router.push("/");
+    router.refresh();
   };
 
   // Hàm Submit Tìm kiếm form chính

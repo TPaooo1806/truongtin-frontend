@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { AxiosError } from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import api from '@/lib/axios';
@@ -93,9 +94,9 @@ export default function TrackOrderPage() {
                 <div className="text-center mb-4">
                   <h3 className="fw-bold text-uppercase">Tra cứu chi tiết</h3>
                   <p className="text-muted small mb-2">Nhập mã đơn hàng và số điện thoại để kiểm tra thông tin giao nhận</p>
-                  <a href="/tra-cuu-don-hang" className="text-decoration-none fw-bold text-primary small">
+                  <Link href="/tra-cuu-don-hang" className="text-decoration-none fw-bold text-primary small">
                     <i className="bi bi-search me-1"></i> Quên mã đơn? Tra cứu danh sách bằng SĐT
-                  </a>
+                  </Link>
                 </div>
 
                 <form onSubmit={handleTrackOrder}>
