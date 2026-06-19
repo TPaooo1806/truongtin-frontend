@@ -1,92 +1,96 @@
-'use client';
-import { useEffect, useState, use } from 'react';
-import ProductCard from '../../components/ProductCard'; 
+import { Suspense } from 'react';
 import Sidebar from '../../components/Sidebar';
-import type { Product } from '../../type';
-import api from '@/lib/axios';
+import LoadMoreProductList from '../../components/LoadMoreProductList';
 
-export default function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = use(params);
-  
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentSlug, setCurrentSlug] = useState('');
-  // Thêm state để lưu tên danh mục có dấu
-  const [categoryName, setCategoryName] = useState('');
-
-  if (slug !== currentSlug) {
-    setCurrentSlug(slug);
-    setLoading(true);
-    setProducts([]);
-    setCategoryName(''); // Reset tên danh mục khi đổi slug
+// Hàm lấy tên danh mục để làm Title
+function getCategoryTitle(slug: string, products: any[]) {
+  if (products.length > 0 && products[0].category) {
+    return `Danh mục: ${products[0].category.name}`;
   }
+  return `Danh mục: ${slug.replace(/-/g, ' ')}`;
+}
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchData = async () => {
-      try {
-        const res = await api.get(`/api/products?category=${slug}`);
-        if (isMounted && res.data.success) {
-          const fetchedProducts = res.data.data;
-          setProducts(fetchedProducts);
-
-          // LẤY TÊN CÓ DẤU: Nếu có sản phẩm, lấy tên danh mục từ sản phẩm đầu tiên
-          if (fetchedProducts.length > 0 && fetchedProducts[0].category) {
-            setCategoryName(fetchedProducts[0].category.name);
-          } else {
-            // Nếu không có sản phẩm, dùng hàm format tạm thời từ slug
-            setCategoryName(slug.replace(/-/g, ' '));
-          }
-        }
-      } catch (err) {
-        console.error("Lỗi lọc sản phẩm:", err);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
+async function fetchCategoryProducts(slug: string) {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://truongtin-api.onrender.com";
+  try {
+    const res = await fetch(`${apiUrl}/api/products?category=${slug}&page=1&limit=12`, {
+      next: { revalidate: 60 } // Caching 60s
+    });
+    if (!res.ok) {
+      return { products: [], totalPages: 1, totalItems: 0 };
+    }
+    const data = await res.json();
+    return {
+      products: data.data || [],
+      totalPages: data.pagination?.totalPages || 1,
+      totalItems: data.pagination?.totalItems || 0
     };
+  } catch (error) {
+    console.error("Lỗi fetchCategoryProducts:", error);
+    return { products: [], totalPages: 1, totalItems: 0 };
+  }
+}
 
-    fetchData();
-    return () => { isMounted = false; };
-  }, [slug]);
+// 🛒 Component Server bọc dữ liệu
+async function CategoryGrid({ slug }: { slug: string }) {
+  const { products, totalPages, totalItems } = await fetchCategoryProducts(slug);
+  const categoryTitle = getCategoryTitle(slug, products);
+
+  return (
+    <LoadMoreProductList 
+      initialProducts={products} 
+      totalPages={totalPages} 
+      totalItems={totalItems} 
+      apiEndpoint={`/api/products?category=${slug}`} 
+      title={categoryTitle.toUpperCase()}
+    />
+  );
+}
+
+// ⏳ Skeleton hiển thị trong lúc Server chờ tải cục dữ liệu đầu tiên
+function ProductGridSkeleton() {
+  return (
+    <>
+      <div className="bg-white p-3 p-md-4 rounded-4 shadow-sm border mb-4 placeholder-glow">
+        <div className="d-flex justify-content-between align-items-center mb-0">
+          <span className="placeholder col-4 rounded" style={{ height: "24px" }}></span>
+          <span className="placeholder col-2 rounded" style={{ height: "24px" }}></span>
+        </div>
+      </div>
+      <div className="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-2 g-md-3 mb-4">
+        {Array(12).fill(0).map((_, i) => (
+          <div className="col" key={i}>
+            <div className="bg-white rounded-3 border p-2">
+              <div className="bg-secondary bg-opacity-10 rounded mb-2 placeholder-glow" style={{ aspectRatio: "1/1" }}></div>
+              <div className="placeholder-glow">
+                <span className="placeholder col-8 bg-secondary bg-opacity-10 rounded mb-1 d-block" style={{ height: "14px" }}></span>
+                <span className="placeholder col-5 bg-secondary bg-opacity-10 rounded d-block" style={{ height: "18px" }}></span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+// 📦 Trang Danh mục Chính (Server Component)
+export default async function CategoryPage(props: { params: Promise<{ slug: string }> | { slug: string } }) {
+  // Fix tương thích cho cả Next 14 và Next 15+ (khi params trở thành Promise)
+  const params = await Promise.resolve(props.params);
+  const slug = params.slug;
 
   return (
     <div className="container my-4">
       <div className="row g-4">
-        
-        {/* 💡 SỬA Ở ĐÂY: Thêm d-none d-lg-block để ẩn trên Mobile, hiện trên PC */}
         <div className="col-lg-3 d-none d-lg-block">
           <Sidebar />
         </div>
 
         <div className="col-lg-9">
-          <div className="bg-white p-3 rounded-3 shadow-sm mb-4 border-start border-danger border-5 d-flex align-items-center gap-2">
-            <h4 className="fw-bold mb-0 text-uppercase text-danger d-flex align-items-center">
-              {/* HIỂN THỊ TÊN CÓ DẤU TẠI ĐÂY */}
-              Danh mục: {categoryName || slug.replace(/-/g, ' ')}
-            </h4>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-5 bg-white rounded-3 shadow-sm">
-              <div className="spinner-border text-danger" role="status"></div>
-              <p className="mt-2 text-muted">Đang tìm sản phẩm...</p>
-            </div>
-          ) : (
-            <div className="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3">
-              {products.length > 0 ? (
-                products.map((item) => (
-                  <div className="col" key={item.id}>
-                    <ProductCard item={item} />
-                  </div>
-                ))
-              ) : (
-                <div className="col-12 text-center py-5 text-muted bg-white rounded-3">
-                   Chưa có sản phẩm nào trong danh mục này.
-                </div>
-              )}
-            </div>
-          )}
+          <Suspense key={slug} fallback={<ProductGridSkeleton />}>
+            <CategoryGrid slug={slug} />
+          </Suspense>
         </div>
       </div>
     </div>
