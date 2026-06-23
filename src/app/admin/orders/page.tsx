@@ -73,11 +73,11 @@ export default function AdminOrdersPage() {
     try {
       const queryParams = new URLSearchParams({
         page: page.toString(),
-        limit: "10"
+        limit: "10",
+        status: filterStatus,
+        paymentStatus: filterPaymentStatus,
+        paymentMethod: filterPaymentMethod
       });
-      if (filterStatus !== "ALL") queryParams.append("status", filterStatus);
-      if (filterPaymentStatus !== "ALL") queryParams.append("paymentStatus", filterPaymentStatus);
-      if (filterPaymentMethod !== "ALL") queryParams.append("paymentMethod", filterPaymentMethod);
       if (searchKeyword.trim()) queryParams.append("search", searchKeyword.trim());
 
       const res = await api.get<BackendResponse>(
