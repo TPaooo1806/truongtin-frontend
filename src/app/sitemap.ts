@@ -24,8 +24,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     // 2. Tự động lấy danh sách Sản phẩm từ Backend để tạo sitemap động
-    // Lưu ý: Thay đổi URL API cho khớp với backend của bạn nếu cần
-    const resProducts = await fetch('https://truongtin-api.onrender.com/api/products?limit=1000');
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://truongtin-api.onrender.com';
+    const resProducts = await fetch(`${apiUrl}/api/products?limit=1000`);
     const productsData = await resProducts.json();
 
     if (productsData.success && Array.isArray(productsData.data)) {
@@ -39,7 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     // 3. Tự động lấy danh sách Danh mục (Categories)
-    const resCategories = await fetch('https://truongtin-api.onrender.com/api/categories');
+    const resCategories = await fetch(`${apiUrl}/api/categories`);
     const categoriesData = await resCategories.json();
 
     if (categoriesData.success && Array.isArray(categoriesData.data)) {
