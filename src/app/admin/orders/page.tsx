@@ -56,6 +56,12 @@ export default function AdminOrdersPage() {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
 
+  // --- FILTERS STATE ---
+  const [filterStatus, setFilterStatus] = useState<string>("ALL");
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState<string>("ALL"); 
+  const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>("ALL");
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+
   // --- 2. HÀM LẤY DỮ LIỆU ---
   const fetchOrders = async (page: number = 1) => {
     if (page > 1) {
@@ -65,8 +71,17 @@ export default function AdminOrdersPage() {
     }
 
     try {
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: "10"
+      });
+      if (filterStatus !== "ALL") queryParams.append("status", filterStatus);
+      if (filterPaymentStatus !== "ALL") queryParams.append("paymentStatus", filterPaymentStatus);
+      if (filterPaymentMethod !== "ALL") queryParams.append("paymentMethod", filterPaymentMethod);
+      if (searchKeyword.trim()) queryParams.append("search", searchKeyword.trim());
+
       const res = await api.get<BackendResponse>(
-        `/api/orders/admin/all?page=${page}&limit=10`,
+        `/api/orders/admin/all?${queryParams.toString()}`,
       );
 
       if (res.data.success) {
@@ -289,6 +304,54 @@ export default function AdminOrdersPage() {
           <span className="text-muted small">
             Xem chi tiết và xác nhận trừ kho
           </span>
+        </div>
+      </div>
+
+      {/* FILTER BAR LỊCH SỬ ĐƠN HÀNG */}
+      <div className="row g-2 mb-4 bg-light p-3 rounded-3 mx-0 border">
+        <div className="col-12 col-md-3">
+          <input 
+            type="text" 
+            className="form-control shadow-sm" 
+            placeholder="Tìm mã đơn, SĐT, Tên KH..." 
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && fetchOrders(1)}
+          />
+        </div>
+        <div className="col-6 col-md-2">
+          <select className="form-select shadow-sm" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+            <option value="ALL">Mọi trạng thái</option>
+            <option value="PENDING_COD">Chờ duyệt COD</option>
+            <option value="PENDING_PAYOS">Chờ duyệt PayOS</option>
+            <option value="PAID_PENDING_CONFIRM">Đã TT (Chờ duyệt)</option>
+            <option value="PAID_AND_CONFIRMED">Đã duyệt & Trừ kho</option>
+            <option value="PROCESSING">Đang soạn hàng</option>
+            <option value="SHIPPING">Đang giao hàng</option>
+            <option value="DELIVERED">Đã giao hàng</option>
+            <option value="RETURNED">Đã hoàn trả</option>
+            <option value="CANCELLED">Đã hủy</option>
+          </select>
+        </div>
+        <div className="col-6 col-md-3">
+          <select className="form-select shadow-sm text-primary fw-bold" value={filterPaymentStatus} onChange={(e) => setFilterPaymentStatus(e.target.value)}>
+            <option value="ALL">Lịch sử (Tất cả Hóa Đơn)</option>
+            <option value="UNPAID">Chỉ đơn Chưa thanh toán</option>
+            <option value="PAID">Đã thanh toán thành công</option>
+            <option value="CANCELLED">Đã hủy / Quá giờ</option>
+          </select>
+        </div>
+        <div className="col-6 col-md-2">
+          <select className="form-select shadow-sm" value={filterPaymentMethod} onChange={(e) => setFilterPaymentMethod(e.target.value)}>
+            <option value="ALL">Kiểu TT</option>
+            <option value="COD">Tiền mặt (COD)</option>
+            <option value="PAYOS">Chuyển khoản (PayOS)</option>
+          </select>
+        </div>
+        <div className="col-6 col-md-2">
+          <button className="btn btn-danger w-100 fw-bold shadow-sm" onClick={() => fetchOrders(1)}>
+            <i className="bi bi-funnel-fill me-2"></i>Lọc Đơn
+          </button>
         </div>
       </div>
 
