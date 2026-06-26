@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 import Image from "next/image";
 import Swal from "sweetalert2";
 import dynamic from "next/dynamic";
+import imageCompression from "browser-image-compression";
 
 const ImportExcelModal = dynamic(() => import("./components/ImportExcelModal"), { ssr: false });
 
@@ -185,7 +186,28 @@ export default function AdminProductsPage() {
     const uploadedUrls: string[] = [];
 
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+      let file = files[i];
+
+      // 💡 XỬ LÝ ẢNH TỪ MOBILE: Nén ảnh và chuyển định dạng (HEIC -> JPG)
+      try {
+        const options = {
+          maxSizeMB: 0.4,           // Nén xuống tối đa 400KB
+          maxWidthOrHeight: 1200,   // Resize lại chiều ngang/dọc tối đa 1200px
+          useWebWorker: true,
+          fileType: "image/jpeg"    // Ép kiểu về JPEG để lọt qua khe của Cloudinary
+        };
+        const compressedBlob = await imageCompression(file, options);
+        
+        // Chuyển Blob về dạng File hợp lệ, tự động đổi đuôi thành .jpg
+        file = new File([compressedBlob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+          type: "image/jpeg",
+        });
+      } catch (error) {
+        console.error("Lỗi nén ảnh:", error);
+        toast.error(`Không thể xử lý ảnh: ${file.name}`);
+        continue; // Bỏ qua file lỗi, up các file khác
+      }
+
       const data = new FormData();
       data.append("image", file);
 
