@@ -1,5 +1,613 @@
-.transition-all { transition: all 0.3s ease; }
-.hover-scale:hover { transform: translateY(-8px); }
-.hover-scale-btn:hover { transform: scale(1.05); }
-.z-index-1 { z-index: 1; }
-.about-page p { font-family: 'Inter', 'Roboto', sans-serif; }
+/* ==========================================================================
+   LANDING PAGE GIỚI THIỆU - ĐIỆN NƯỚC TRƯỜNG TÍN (BẢN CAO CẤP V3)
+   Fixes:
+   - Sửa triệt để lỗi màu nhạt/chìm của Banner CTA (Deep Navy siêu tương phản)
+   - 4 Bước Accordion: Hover vào bung to cả Card LẪN Chữ, Icon, Badge
+   - Tối ưu 100% Responsive Mobile: Không vỡ form, không ép ngang
+   - Form nhận ưu đãi/voucher cao cấp ở cuối trang
+   ========================================================================== */
+
+:root {
+  --brand-primary: #0078d4;
+  --brand-primary-dark: #005a9e;
+  --brand-primary-light: #eff6ff;
+  --brand-navy: #0b192c;
+  --brand-navy-card: #0f2942;
+  --brand-accent: #ff6b00;
+  --brand-accent-light: #fff7ed;
+  --brand-green: #16a34a;
+  --brand-green-light: #f0fdf4;
+  --brand-purple: #7c3aed;
+  --brand-zalo: #0068ff;
+  
+  --text-heading: #0b192c;
+  --text-body: #1e293b;
+  --text-muted-dark: #475569;
+}
+
+/* Animations Keyframes */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+@keyframes floatReverse {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, 10px, 0);
+  }
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 120, 212, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(0, 120, 212, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 120, 212, 0);
+  }
+}
+
+@keyframes pulseOrangeGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(255, 107, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 0, 0);
+  }
+}
+
+@keyframes marqueeScroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* ==========================================
+   TYPOGRAPHY & HIGH CONTRAST TEXT
+   ========================================== */
+.about-landing {
+  color: var(--text-body);
+  line-height: 1.65;
+  background-color: #fafbfc;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+.text-contrast-dark {
+  color: var(--text-heading) !important;
+}
+
+.text-contrast-body {
+  color: var(--text-body) !important;
+}
+
+.text-gradient-blue {
+  background: linear-gradient(135deg, #0078d4 0%, #0284c7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ==========================================
+   HERO SECTION
+   ========================================== */
+.hero-wrapper-v2 {
+  position: relative;
+  background: 
+    radial-gradient(circle at 15% 15%, rgba(0, 120, 212, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 20%, rgba(255, 107, 0, 0.1) 0%, transparent 45%),
+    radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #f8fafd 0%, #ffffff 100%);
+}
+
+.hero-tag-v2 {
+  background: linear-gradient(135deg, #ebf5ff 0%, #dbeafe 100%);
+  color: #0369a1;
+  border: 1px solid #93c5fd;
+  font-size: 0.88rem;
+  box-shadow: 0 2px 6px rgba(0, 120, 212, 0.08);
+}
+
+.hero-store-frame {
+  position: relative;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 20px 45px -10px rgba(11, 25, 44, 0.22);
+}
+
+.hero-store-frame:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 30px 60px -12px rgba(0, 120, 212, 0.25) !important;
+}
+
+.store-real-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(11, 25, 44, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 3;
+}
+
+.floating-badge-1 {
+  animation: floatSlow 4s ease-in-out infinite;
+  will-change: transform;
+}
+
+.floating-badge-2 {
+  animation: floatReverse 4.5s ease-in-out infinite 0.5s;
+  will-change: transform;
+}
+
+.glass-badge-v2 {
+  background: rgba(11, 25, 44, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================
+   STATS BAR (CON SỐ NỔI BẬT NỀN ĐẬM)
+   ========================================== */
+.stats-bar-navy {
+  background: linear-gradient(135deg, #0b192c 0%, #0f2942 50%, #17385c 100%);
+  position: relative;
+  overflow: hidden;
+  border-top: 2px solid rgba(0, 120, 212, 0.3);
+  border-bottom: 2px solid rgba(0, 120, 212, 0.3);
+}
+
+.stat-item-box {
+  padding: 1.25rem 0.75rem;
+  transition: transform 0.3s ease;
+}
+
+.stat-item-box:hover {
+  transform: translateY(-4px);
+}
+
+.stat-number-glow {
+  text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+}
+
+/* ==========================================
+   MARQUEE BĂNG CHUYỀN
+   ========================================== */
+.brand-marquee-container {
+  overflow: hidden;
+  user-select: none;
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.brand-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll 26s linear infinite;
+  will-change: transform;
+}
+
+.brand-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.brand-card-premium {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(15, 41, 66, 0.04);
+}
+
+.brand-card-premium:hover {
+  transform: translateY(-5px) scale(1.03);
+  border-color: var(--brand-primary);
+  box-shadow: 0 12px 24px -6px rgba(0, 120, 212, 0.2);
+}
+
+/* ==========================================
+   BENTO GRID ĐA SẮC MÀU
+   ========================================== */
+.bento-card-color {
+  border-radius: 1.25rem;
+  padding: 2rem;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.bento-blue {
+  background: linear-gradient(145deg, #ffffff 0%, #eff6ff 100%);
+  border: 2px solid #bfdbfe;
+  box-shadow: 0 8px 24px rgba(0, 120, 212, 0.08);
+}
+.bento-blue:hover {
+  transform: translateY(-6px);
+  border-color: #0284c7;
+  box-shadow: 0 20px 40px -10px rgba(0, 120, 212, 0.25) !important;
+}
+
+.bento-orange {
+  background: linear-gradient(145deg, #ffffff 0%, #fff7ed 100%);
+  border: 2px solid #fed7aa;
+  box-shadow: 0 8px 24px rgba(255, 107, 0, 0.08);
+}
+.bento-orange:hover {
+  transform: translateY(-6px);
+  border-color: #ea580c;
+  box-shadow: 0 20px 40px -10px rgba(255, 107, 0, 0.25) !important;
+}
+
+.bento-green {
+  background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
+  border: 2px solid #bbf7d0;
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.08);
+}
+.bento-green:hover {
+  transform: translateY(-6px);
+  border-color: #16a34a;
+  box-shadow: 0 20px 40px -10px rgba(22, 163, 74, 0.25) !important;
+}
+
+.bento-navy {
+  background: linear-gradient(145deg, #0b192c 0%, #0f2942 50%, #1a3a5c 100%);
+  border: 2px solid #38bdf8;
+  color: #ffffff !important;
+  box-shadow: 0 12px 30px rgba(11, 25, 44, 0.25);
+}
+.bento-navy:hover {
+  transform: translateY(-6px);
+  border-color: #7dd3fc;
+  box-shadow: 0 22px 45px -10px rgba(2, 132, 199, 0.35) !important;
+}
+
+.product-chip-preview {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 6px 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease;
+}
+.product-chip-preview:hover {
+  transform: scale(1.05);
+}
+
+/* ==========================================================================
+   ⭐ 4 BƯỚC ACCORDION EXPANDER (LIA CHUỘT PHÓNG TO CARD + TO CHỮ CỰC RÕ)
+   ========================================================================== */
+.steps-expand-wrapper {
+  width: 100%;
+}
+
+@media (min-width: 992px) {
+  .steps-expand-container {
+    display: flex;
+    gap: 1.25rem;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .step-expand-item {
+    flex: 1 1 0;
+    min-width: 0;
+    transition: flex 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.35s ease,
+                border-color 0.35s ease,
+                background-color 0.35s ease,
+                opacity 0.35s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    padding: 1.75rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Transition cho các thành phần chữ và icon bên trong */
+  .step-expand-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--brand-navy);
+    transition: font-size 0.35s ease, color 0.35s ease;
+  }
+
+  .step-expand-desc {
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: #475569;
+    transition: font-size 0.35s ease, line-height 0.35s ease, color 0.35s ease;
+  }
+
+  .step-expand-icon {
+    font-size: 2rem;
+    transition: transform 0.35s ease;
+  }
+
+  .step-expand-badge {
+    width: 48px;
+    height: 48px;
+    font-size: 1.15rem;
+    transition: all 0.35s ease;
+  }
+
+  .step-full-details {
+    font-size: 0.85rem;
+    transition: font-size 0.35s ease, opacity 0.35s ease;
+  }
+
+  /* KHI HOVER VÀO CONTAINER: 3 thẻ còn lại hơi thu nhỏ nhẹ */
+  .steps-expand-container:hover .step-expand-item {
+    flex: 0.72 1 0;
+    opacity: 0.75;
+    border-color: #e2e8f0;
+  }
+
+  .steps-expand-container:hover .step-expand-item:not(:hover) .step-expand-title {
+    font-size: 1.05rem;
+  }
+
+  .steps-expand-container:hover .step-expand-item:not(:hover) .step-expand-desc {
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  /* ⭐ THẺ HOVER ĐƯỢC PHÓNG TO CARD (FLEX: 2.2) VÀ PHÓNG TO CẢ CHỮ! ⭐ */
+  .steps-expand-container .step-expand-item:hover {
+    flex: 2.2 1 0;
+    opacity: 1;
+    transform: translateY(-8px);
+    box-shadow: 0 24px 50px -12px rgba(0, 120, 212, 0.28) !important;
+    border-color: var(--brand-primary) !important;
+    background: linear-gradient(145deg, #ffffff 0%, #eff6ff 100%) !important;
+  }
+
+  /* CHỮ TIÊU ĐỀ TO RÕ */
+  .steps-expand-container .step-expand-item:hover .step-expand-title {
+    font-size: 1.45rem !important;
+    font-weight: 900 !important;
+    color: #0078d4 !important;
+  }
+
+  /* CHỮ MÔ TẢ TO RÕ, ĐẬM ĐÀ, DỄ ĐỌC */
+  .steps-expand-container .step-expand-item:hover .step-expand-desc {
+    font-size: 1.08rem !important;
+    line-height: 1.75 !important;
+    color: #0f172a !important;
+    font-weight: 500 !important;
+  }
+
+  .steps-expand-container .step-expand-item:hover .step-expand-icon {
+    transform: scale(1.3) rotate(-8deg);
+  }
+
+  .steps-expand-container .step-expand-item:hover .step-expand-badge {
+    width: 56px;
+    height: 56px;
+    font-size: 1.35rem;
+    box-shadow: 0 4px 14px rgba(0, 120, 212, 0.35);
+  }
+
+  .steps-expand-container .step-expand-item:hover .step-full-details {
+    font-size: 0.98rem !important;
+    font-weight: 700 !important;
+  }
+}
+
+/* ==========================================================================
+   📱 MOBILE & TABLET RESPONSIVE CHO 4 BƯỚC (< 992px)
+   KHÔNG ÉP NGANG - XẾP CỘT THÔNG THƯỜNG - KHÔNG VỠ FORM
+   ========================================================================== */
+@media (max-width: 991.98px) {
+  .steps-expand-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    width: 100% !important;
+  }
+
+  .step-expand-item {
+    width: 100% !important;
+    flex: none !important;
+    border-radius: 1rem !important;
+    background: #ffffff !important;
+    border: 2px solid #e2e8f0 !important;
+    padding: 1.25rem !important;
+    transform: none !important;
+  }
+
+  .step-expand-title {
+    font-size: 1.2rem !important;
+    font-weight: 800 !important;
+    color: var(--brand-navy) !important;
+  }
+
+  .step-expand-desc {
+    font-size: 0.95rem !important;
+    line-height: 1.6 !important;
+    color: #334155 !important;
+  }
+
+  .step-full-details {
+    font-size: 0.88rem !important;
+  }
+}
+
+/* ==========================================================================
+   🔥 SỬA TRIỆT ĐỂ LỖI HÌNH 2: BLUEPRINT BANNER CTA (DEEP NAVY SIÊU TƯƠNG PHẢN)
+   ========================================================================== */
+.blueprint-cta-v2 {
+  background-color: #071322 !important;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(0, 120, 212, 0.45) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, rgba(255, 107, 0, 0.3) 0%, transparent 45%),
+    linear-gradient(135deg, #071322 0%, #0b192c 50%, #0f2942 100%) !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.4) !important;
+  box-shadow: 0 25px 60px -15px rgba(7, 19, 34, 0.5) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-heading-contrast {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+}
+
+.cta-desc-contrast {
+  color: #cbd5e1 !important; /* Màu bạc sáng cực kỳ rõ nét */
+  font-size: 1.05rem !important;
+  line-height: 1.75 !important;
+}
+
+.cta-info-contrast {
+  color: #e2e8f0 !important;
+  font-weight: 500 !important;
+}
+
+/* ==========================================================================
+   FORM NHẬN ƯU ĐÃI / BÁO GIÁ SỈ (LEAD CAPTURE FORM)
+   ========================================================================== */
+.promo-form-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: 1.5px solid #bfdbfe;
+  border-radius: 1.25rem;
+  box-shadow: 0 12px 30px -8px rgba(0, 120, 212, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.promo-form-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #0078d4, #ff6b00, #16a34a);
+}
+
+.promo-input {
+  border: 1.5px solid #cbd5e1;
+  border-radius: 0.6rem;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.88rem;
+  transition: all 0.25s ease;
+  color: #0b192c;
+  font-weight: 500;
+}
+
+.promo-input:focus {
+  border-color: #0078d4;
+  box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15);
+  outline: none;
+}
+
+.role-chip-btn {
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-chip-btn.active {
+  background: #0078d4;
+  border-color: #0078d4;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 120, 212, 0.25);
+}
+
+/* ==========================================
+   BUTTONS & PULSE EFFECTS
+   ========================================== */
+.btn-brand-primary-v2 {
+  background: linear-gradient(135deg, #0078d4 0%, #0284c7 100%);
+  border: none;
+  color: #ffffff;
+  font-weight: 700;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(0, 120, 212, 0.3);
+}
+
+.btn-brand-primary-v2:hover {
+  background: linear-gradient(135deg, #0060aa 0%, #0369a1 100%);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 120, 212, 0.45);
+}
+
+.btn-pulse-v2 {
+  animation: pulseGlow 2.5s infinite;
+}
+
+/* Fade in section */
+.fade-in-section {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.fade-in-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Mobile Tối ưu */
+@media (max-width: 767.98px) {
+  .floating-badge-1,
+  .floating-badge-2,
+  .btn-pulse-v2 {
+    animation: none !important;
+  }
+
+  .glass-badge-v2 {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(11, 25, 44, 0.96) !important;
+  }
+
+  .brand-marquee-track {
+    animation-duration: 32s !important;
+  }
+
+  .bento-card-color {
+    padding: 1.25rem !important;
+  }
+
+  .promo-form-card {
+    padding: 1.5rem 1.25rem !important;
+  }
+}

@@ -21,6 +21,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
+  const isFullWidthRoute = pathname === '/gioi-thieu' || pathname === '/lien-he';
 
   return (
     <>
@@ -30,6 +31,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       
       {isAdminRoute ? (
         children
+      ) : isFullWidthRoute ? (
+        <main style={{ minHeight: '80vh' }} className="p-0 m-0">
+          {children}
+        </main>
       ) : (
         <main 
           className="container bg-white shadow-sm rounded-4 my-4 p-3 p-md-4" 

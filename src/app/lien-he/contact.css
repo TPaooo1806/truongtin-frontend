@@ -1,0 +1,129 @@
+/* ==========================================================================
+   LIEN-HE (CONTACT) PAGE STYLES - DỰ ÁN ĐIỆN NƯỚC TRƯỜNG TÍN
+   Đồng bộ 100% với Design System của Trang Giới Thiệu (Brand Blue #0078D4,
+   Deep Navy #0B192C, Accent Orange #FF6B00, Slate Text & Glassmorphism)
+   ========================================================================== */
+
+/* Card Main */
+.contact-card-main {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 30px -5px rgba(0, 120, 212, 0.07);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.contact-card-main:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 15px 35px -5px rgba(0, 120, 212, 0.12);
+}
+
+.contact-info-icon-box {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.contact-input-custom {
+  border: 1.5px solid #cbd5e1;
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.95rem;
+  font-size: 0.92rem;
+  transition: all 0.25s ease;
+  color: #0b192c;
+  font-weight: 500;
+  background-color: #f8fafc;
+}
+
+.contact-input-custom:focus {
+  background-color: #ffffff;
+  border-color: #0078d4;
+  box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15);
+  outline: none;
+}
+
+/* Topic chips */
+.contact-topic-chip {
+  border: 1.5px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.contact-topic-chip:hover {
+  background: #e2e8f0;
+  color: #0b192c;
+}
+
+.contact-topic-chip.active {
+  background: #0078d4;
+  border-color: #0078d4;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 120, 212, 0.28);
+}
+
+/* Map frame */
+.contact-map-card {
+  border-radius: 1.25rem;
+  overflow: hidden;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06);
+}
+
+.contact-map-header {
+  background: linear-gradient(90deg, #0b192c 0%, #1a365d 100%);
+  color: #ffffff;
+  padding: 1rem 1.25rem;
+}
+
+/* Brand Button */
+.btn-brand-primary-contact {
+  background: linear-gradient(135deg, #0078d4 0%, #0284c7 100%);
+  border: none;
+  color: #ffffff;
+  font-weight: 700;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(0, 120, 212, 0.3);
+}
+
+.btn-brand-primary-contact:hover {
+  background: linear-gradient(135deg, #0060aa 0%, #0369a1 100%);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 120, 212, 0.42);
+}
+
+/* Feature note box */
+.contact-feature-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.contact-feature-box:hover {
+  border-color: #bfdbfe;
+  transform: translateY(-2px);
+}
+
+/* Mobile Tối ưu */
+@media (max-width: 767.98px) {
+  .contact-card-main {
+    padding: 1.25rem !important;
+  }
+}

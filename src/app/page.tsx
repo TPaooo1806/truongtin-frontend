@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import type { Product, Category } from "./type";
-import Sidebar from "./components/Sidebar";
 import BannerDisplay from "@/components/BannerDisplay";
 import DailyNews from "@/components/DailyNews";
 import ProductSection from "./components/ProductSection";
@@ -85,12 +84,9 @@ export default function HomePage() {
   return (
     <div className="bg-white min-vh-100">
       <main className="container my-4 px-2 px-md-3">
-        {/* SECTION 1: SIDEBAR & BANNER CHÍNH */}
-        <section className="row g-3 mb-4">
-          <aside className="col-lg-3 d-none d-lg-block">
-            <Sidebar />
-          </aside>
-          <div className="col-lg-9">
+        {/* SECTION 1: BANNER CHÍNH QUẢNG CÁO FULL-WIDTH 100% */}
+        <section className="mb-4">
+          <div className="w-100">
             <BannerDisplay position="HOME_MAIN" />
           </div>
         </section>
