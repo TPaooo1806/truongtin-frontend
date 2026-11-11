@@ -79,9 +79,9 @@ function SearchSkeleton() {
   );
 }
 
-export default async function SearchPage(props: { searchParams: Promise<{ q?: string }> | { q?: string } }) {
-  const searchParams = await Promise.resolve(props.searchParams);
-  const q = searchParams?.q || '';
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const resolvedSearchParams = await searchParams;
+  const q = resolvedSearchParams?.q || '';
 
   return (
     <div className="container my-4 search-page" style={{ backgroundColor: "#f6f5f4", paddingBottom: "2.5rem" }}>

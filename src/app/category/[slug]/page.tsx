@@ -75,10 +75,9 @@ function ProductGridSkeleton() {
 }
 
 // 📦 Trang Danh mục Chính (Server Component)
-export default async function CategoryPage(props: { params: Promise<{ slug: string }> | { slug: string } }) {
-  // Fix tương thích cho cả Next 14 và Next 15+ (khi params trở thành Promise)
-  const params = await Promise.resolve(props.params);
-  const slug = params.slug;
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug;
 
   return (
     <div className="container my-4">
