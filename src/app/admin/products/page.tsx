@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "@/lib/axios";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
@@ -7,7 +7,10 @@ import Swal from "sweetalert2";
 import dynamic from "next/dynamic";
 import imageCompression from "browser-image-compression";
 
-const ImportExcelModal = dynamic(() => import("./components/ImportExcelModal"), { ssr: false });
+const ImportExcelModal = dynamic(
+  () => import("./components/ImportExcelModal"),
+  { ssr: false },
+);
 
 // --- Interface ---
 interface Category {
@@ -55,79 +58,80 @@ const STANDARD_BRANDS = [
 ];
 
 // --- Mẫu Thông Số Kỹ Thuật Theo Danh Mục ---
-const SPECIFICATION_PRESETS: Record<string, { key: string; value: string }[]> = {
-  "bóng đèn": [
-    { key: "Công suất", value: "" },
-    { key: "Đui đèn", value: "" },
-    { key: "Màu ánh sáng", value: "" },
-    { key: "Điện áp", value: "" },
-    { key: "Bảo hành", value: "" },
-  ],
-  "chiếu sáng": [
-    { key: "Công suất", value: "" },
-    { key: "Đui đèn", value: "" },
-    { key: "Màu ánh sáng", value: "" },
-    { key: "Điện áp", value: "" },
-    { key: "Bảo hành", value: "" },
-  ],
-  "dây điện": [
-    { key: "Tiết diện ruột dẫn", value: "" },
-    { key: "Số lõi", value: "" },
-    { key: "Chất liệu ruột dẫn", value: "" },
-    { key: "Điện áp định mức", value: "" },
-    { key: "Tiêu chuẩn", value: "" },
-  ],
-  "thiết bị điện": [
-    { key: "Dòng định mức", value: "" },
-    { key: "Điện áp", value: "" },
-    { key: "Số cực", value: "" },
-    { key: "Tiêu chuẩn", value: "" },
-    { key: "Xuất xứ", value: "" },
-  ],
-  "ống nước": [
-    { key: "Đường kính ngoài (Ø)", value: "" },
-    { key: "Độ dày", value: "" },
-    { key: "Áp lực làm việc (PN)", value: "" },
-    { key: "Chất liệu", value: "" },
-  ],
-  "phụ kiện": [
-    { key: "Quy cách / Đường kính (Ø)", value: "" },
-    { key: "Độ dày", value: "" },
-    { key: "Kiểu kết nối", value: "" },
-    { key: "Chất liệu", value: "" },
-  ],
-  "keo": [
-    { key: "Dung tích / Trọng lượng", value: "" },
-    { key: "Màu sắc", value: "" },
-    { key: "Đặc tính bám dính", value: "" },
-    { key: "Ứng dụng", value: "" },
-  ],
-  "silicon": [
-    { key: "Dung tích / Trọng lượng", value: "" },
-    { key: "Màu sắc", value: "" },
-    { key: "Đặc tính bám dính", value: "" },
-    { key: "Ứng dụng", value: "" },
-  ],
-  "băng keo": [
-    { key: "Quy cách / Khổ rộng", value: "" },
-    { key: "Chiều dài cuộn", value: "" },
-    { key: "Độ dính", value: "" },
-    { key: "Màu sắc", value: "" },
-  ],
-  "thiết bị vệ sinh": [
-    { key: "Chất liệu", value: "" },
-    { key: "Kích thước ren", value: "" },
-    { key: "Áp lực nước", value: "" },
-    { key: "Bảo hành", value: "" },
-  ],
-  "mặc định": [
-    { key: "Thương hiệu", value: "" },
-    { key: "Chất liệu", value: "" },
-    { key: "Kích thước / Quy cách", value: "" },
-    { key: "Xuất xứ", value: "" },
-    { key: "Bảo hành", value: "" },
-  ],
-};
+const SPECIFICATION_PRESETS: Record<string, { key: string; value: string }[]> =
+  {
+    "bóng đèn": [
+      { key: "Công suất", value: "" },
+      { key: "Đui đèn", value: "" },
+      { key: "Màu ánh sáng", value: "" },
+      { key: "Điện áp", value: "" },
+      { key: "Bảo hành", value: "" },
+    ],
+    "chiếu sáng": [
+      { key: "Công suất", value: "" },
+      { key: "Đui đèn", value: "" },
+      { key: "Màu ánh sáng", value: "" },
+      { key: "Điện áp", value: "" },
+      { key: "Bảo hành", value: "" },
+    ],
+    "dây điện": [
+      { key: "Tiết diện ruột dẫn", value: "" },
+      { key: "Số lõi", value: "" },
+      { key: "Chất liệu ruột dẫn", value: "" },
+      { key: "Điện áp định mức", value: "" },
+      { key: "Tiêu chuẩn", value: "" },
+    ],
+    "thiết bị điện": [
+      { key: "Dòng định mức", value: "" },
+      { key: "Điện áp", value: "" },
+      { key: "Số cực", value: "" },
+      { key: "Tiêu chuẩn", value: "" },
+      { key: "Xuất xứ", value: "" },
+    ],
+    "ống nước": [
+      { key: "Đường kính ngoài (Ø)", value: "" },
+      { key: "Độ dày", value: "" },
+      { key: "Áp lực làm việc (PN)", value: "" },
+      { key: "Chất liệu", value: "" },
+    ],
+    "phụ kiện": [
+      { key: "Quy cách / Đường kính (Ø)", value: "" },
+      { key: "Độ dày", value: "" },
+      { key: "Kiểu kết nối", value: "" },
+      { key: "Chất liệu", value: "" },
+    ],
+    keo: [
+      { key: "Dung tích / Trọng lượng", value: "" },
+      { key: "Màu sắc", value: "" },
+      { key: "Đặc tính bám dính", value: "" },
+      { key: "Ứng dụng", value: "" },
+    ],
+    silicon: [
+      { key: "Dung tích / Trọng lượng", value: "" },
+      { key: "Màu sắc", value: "" },
+      { key: "Đặc tính bám dính", value: "" },
+      { key: "Ứng dụng", value: "" },
+    ],
+    "băng keo": [
+      { key: "Quy cách / Khổ rộng", value: "" },
+      { key: "Chiều dài cuộn", value: "" },
+      { key: "Độ dính", value: "" },
+      { key: "Màu sắc", value: "" },
+    ],
+    "thiết bị vệ sinh": [
+      { key: "Chất liệu", value: "" },
+      { key: "Kích thước ren", value: "" },
+      { key: "Áp lực nước", value: "" },
+      { key: "Bảo hành", value: "" },
+    ],
+    "mặc định": [
+      { key: "Thương hiệu", value: "" },
+      { key: "Chất liệu", value: "" },
+      { key: "Kích thước / Quy cách", value: "" },
+      { key: "Xuất xứ", value: "" },
+      { key: "Bảo hành", value: "" },
+    ],
+  };
 
 const getPresetForCategory = (catName: string) => {
   const n = (catName || "").toLowerCase();
@@ -167,9 +171,13 @@ export default function AdminProductsPage() {
   const [editId, setEditId] = useState<number | null>(null);
 
   // Phân trang
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
+    totalItems: 0,
+    limit: 10,
   });
 
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -178,7 +186,11 @@ export default function AdminProductsPage() {
   // ĐÃ THÊM: STATE CHO IMPORT EXCEL
   // ==========================================
   const [isImporting, setIsImporting] = useState(false);
-  const [importSummary, setImportSummary] = useState<{success: number, failed: number, errors: {row: number, reason: string}[]} | null>(null);
+  const [importSummary, setImportSummary] = useState<{
+    success: number;
+    failed: number;
+    errors: { row: number; reason: string }[];
+  } | null>(null);
 
   const initialFormState = {
     name: "",
@@ -199,16 +211,24 @@ export default function AdminProductsPage() {
 
   const [formData, setFormData] = useState(initialFormState);
 
-  const fetchData = async (page = 1) => {
+  const fetchData = async (page = 1, customLimit = pageSize) => {
     try {
       setLoading(true);
       const [prodRes, catRes] = await Promise.all([
-        api.get(`/api/products?page=${page}&limit=12`),
+        api.get(`/api/products?page=${page}&limit=${customLimit}`),
         api.get("/api/categories"),
       ]);
-      setProducts(prodRes.data.data);
-      setPagination(prodRes.data.pagination);
-      setCategories(catRes.data.data);
+      const items = prodRes.data.data || [];
+      setProducts(items);
+      setPagination(
+        prodRes.data.pagination || {
+          currentPage: page,
+          totalPages: 1,
+          totalItems: items.length,
+          limit: customLimit,
+        },
+      );
+      setCategories(catRes.data.data || []);
     } catch (err: unknown) {
       console.error(err);
       toast.error("Lỗi tải dữ liệu");
@@ -217,28 +237,58 @@ export default function AdminProductsPage() {
     }
   };
 
+  const goToPage = (targetPage: number) => {
+    const totalPagesSafe = Math.max(pagination.totalPages || 1, 1);
+    if (
+      targetPage < 1 ||
+      targetPage > totalPagesSafe ||
+      targetPage === pagination.currentPage
+    ) {
+      return;
+    }
+    fetchData(targetPage, pageSize);
+    const scrollContainer = cardRef.current?.closest(".overflow-auto");
+    if (scrollContainer) {
+      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSize = Number(e.target.value);
+    setPageSize(newSize);
+    fetchData(1, newSize);
+    const scrollContainer = cardRef.current?.closest(".overflow-auto");
+    if (scrollContainer) {
+      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   useEffect(() => {
-    fetchData();
+    fetchData(1, 10);
   }, []);
 
   const handleDelete = async (id: number) => {
     const result = await Swal.fire({
-      title: 'Bạn có chắc chắn?',
+      title: "Bạn có chắc chắn?",
       text: "Bạn sẽ không thể khôi phục lại sản phẩm này!",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Có, xóa nó!',
-      cancelButtonText: 'Hủy'
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Có, xóa nó!",
+      cancelButtonText: "Hủy",
     });
-    
+
     if (!result.isConfirmed) return;
 
     try {
       await api.delete(`/api/products/${id}`);
       toast.success("Đã xóa");
-      fetchData(pagination.currentPage);
+      const targetPage =
+        products.length === 1 && pagination.currentPage > 1
+          ? pagination.currentPage - 1
+          : pagination.currentPage;
+      fetchData(targetPage, pageSize);
     } catch (err: unknown) {
       console.error(err);
       toast.error("Lỗi xóa sản phẩm");
@@ -254,15 +304,20 @@ export default function AdminProductsPage() {
   const openEditModal = (p: Product) => {
     setEditId(p.id);
     let parsedAttributes: { key: string; value: string }[] = [];
-    if (p.attributes && typeof p.attributes === 'object') {
-      parsedAttributes = Object.entries(p.attributes).map(([key, value]) => ({ key, value: String(value) }));
+    if (p.attributes && typeof p.attributes === "object") {
+      parsedAttributes = Object.entries(p.attributes).map(([key, value]) => ({
+        key,
+        value: String(value),
+      }));
     }
 
     // Xác định brand và customBrand
     let brandVal = "";
     let customBrandVal = "";
     if (p.brand) {
-      const match = STANDARD_BRANDS.find(b => b.toUpperCase() === p.brand?.toUpperCase());
+      const match = STANDARD_BRANDS.find(
+        (b) => b.toUpperCase() === p.brand?.toUpperCase(),
+      );
       if (match) {
         brandVal = match;
       } else {
@@ -272,7 +327,8 @@ export default function AdminProductsPage() {
     }
 
     // Kiểm tra xem tất cả các biến thể có phải giá 0 hoặc rỗng không
-    const isContactPrice = p.variants.length > 0 && p.variants.every((v) => Number(v.price) === 0);
+    const isContactPrice =
+      p.variants.length > 0 && p.variants.every((v) => Number(v.price) === 0);
 
     setFormData({
       name: p.name,
@@ -309,17 +365,21 @@ export default function AdminProductsPage() {
       // 💡 XỬ LÝ ẢNH TỪ MOBILE: Nén ảnh và chuyển định dạng (HEIC -> JPG)
       try {
         const options = {
-          maxSizeMB: 0.4,           // Nén xuống tối đa 400KB
-          maxWidthOrHeight: 1200,   // Resize lại chiều ngang/dọc tối đa 1200px
+          maxSizeMB: 0.4, // Nén xuống tối đa 400KB
+          maxWidthOrHeight: 1200, // Resize lại chiều ngang/dọc tối đa 1200px
           useWebWorker: true,
-          fileType: "image/jpeg"    // Ép kiểu về JPEG để lọt qua khe của Cloudinary
+          fileType: "image/jpeg", // Ép kiểu về JPEG để lọt qua khe của Cloudinary
         };
         const compressedBlob = await imageCompression(file, options);
-        
+
         // Chuyển Blob về dạng File hợp lệ, tự động đổi đuôi thành .jpg
-        file = new File([compressedBlob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
-          type: "image/jpeg",
-        });
+        file = new File(
+          [compressedBlob],
+          file.name.replace(/\.[^/.]+$/, ".jpg"),
+          {
+            type: "image/jpeg",
+          },
+        );
       } catch (error) {
         console.error("Lỗi nén ảnh:", error);
         toast.error(`Không thể xử lý ảnh: ${file.name}`);
@@ -335,9 +395,9 @@ export default function AdminProductsPage() {
         const fetchRes = await fetch(`${baseURL}/api/upload`, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
           },
-          body: data
+          body: data,
         });
         const resData = await fetchRes.json();
 
@@ -376,14 +436,14 @@ export default function AdminProductsPage() {
     }
 
     const selectedCategory = categories.find(
-      (c) => c.id.toString() === formData.categoryId
+      (c) => c.id.toString() === formData.categoryId,
     );
     const catName = selectedCategory ? selectedCategory.name : "";
     const preset = getPresetForCategory(catName);
 
     // Kiểm tra dữ liệu cũ để tránh việc bấm nhầm làm mất công gõ
     const hasExistingData = formData.attributes.some(
-      (a) => a.key.trim() !== "" || a.value.trim() !== ""
+      (a) => a.key.trim() !== "" || a.value.trim() !== "",
     );
 
     if (hasExistingData) {
@@ -465,50 +525,58 @@ export default function AdminProductsPage() {
   // ĐÃ THÊM: HÀM LẤY FORM MẪU VÀ IMPORT EXCEL / CSV
   // ==========================================
   const handleDownloadTemplate = (format: "xlsx" | "csv" = "xlsx") => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://truongtin-api.onrender.com';
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_URL || "https://truongtin-api.onrender.com";
     const url = `${baseUrl}/api/products/template${format === "csv" ? "?format=csv" : ""}`;
     window.open(url, "_blank");
   };
 
-
-
   const [showImportModal, setShowImportModal] = useState(false);
 
-
   return (
-    <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <div
+      ref={cardRef}
+      className="card border-0 shadow-sm rounded-4 bg-white d-flex flex-column"
+      style={{ minHeight: "calc(100vh - 118px)" }}
+    >
       {/* NẾU ĐANG BẬT MODAL IMPORT EXCEL NÂNG CAO */}
       {showImportModal && (
-        <ImportExcelModal 
+        <ImportExcelModal
           onClose={() => setShowImportModal(false)}
           onSuccess={() => {
-            fetchData(1);
+            fetchData(1, pageSize);
           }}
         />
       )}
 
+      {/* Phần nội dung trên (Tiêu đề + Bảng) có padding riêng để thanh phân trang tràn 100% bề rộng card */}
+      <div className="p-4 pb-2 flex-grow-1 d-flex flex-column">
       {/* ĐÃ SỬA: Cụm tiêu đề và các nút thao tác */}
       <div className="d-flex justify-content-between mb-4 align-items-center flex-wrap gap-3">
         <div>
           <h5 className="fw-bold mb-0">Hàng Hóa Trường Tín</h5>
           <small className="text-muted">Quản lý kho và giá bán</small>
         </div>
-        
+
         <div className="d-flex flex-wrap gap-2">
           {/* NÚT LẤY FORM MẪU (EXCEL / CSV) */}
           <div className="dropdown">
-            <button 
+            <button
               className="btn btn-outline-success rounded-pill px-3 shadow-sm d-flex align-items-center dropdown-toggle"
               type="button"
               id="dropdownDownloadTemplate"
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              <i className="bi bi-file-earmark-arrow-down me-2"></i> Lấy form mẫu
+              <i className="bi bi-file-earmark-arrow-down me-2"></i> Lấy form
+              mẫu
             </button>
-            <ul className="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1" aria-labelledby="dropdownDownloadTemplate">
+            <ul
+              className="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1"
+              aria-labelledby="dropdownDownloadTemplate"
+            >
               <li>
-                <button 
+                <button
                   type="button"
                   className="dropdown-item py-2 d-flex align-items-center gap-2"
                   onClick={() => handleDownloadTemplate("xlsx")}
@@ -516,13 +584,17 @@ export default function AdminProductsPage() {
                   <i className="bi bi-file-earmark-excel text-success fs-5"></i>
                   <div>
                     <div className="fw-semibold">Tải mẫu Excel (.xlsx)</div>
-                    <small className="text-muted">Có sẵn dropdown chọn Hãng & Danh mục</small>
+                    <small className="text-muted">
+                      Có sẵn dropdown chọn Hãng & Danh mục
+                    </small>
                   </div>
                 </button>
               </li>
-              <li><hr className="dropdown-divider my-1" /></li>
               <li>
-                <button 
+                <hr className="dropdown-divider my-1" />
+              </li>
+              <li>
+                <button
                   type="button"
                   className="dropdown-item py-2 d-flex align-items-center gap-2"
                   onClick={() => handleDownloadTemplate("csv")}
@@ -530,7 +602,9 @@ export default function AdminProductsPage() {
                   <i className="bi bi-file-text text-primary fs-5"></i>
                   <div>
                     <div className="fw-semibold">Tải mẫu CSV (.csv UTF-8)</div>
-                    <small className="text-muted">Nhẹ, mở tốt trên Excel & Google Sheets</small>
+                    <small className="text-muted">
+                      Nhẹ, mở tốt trên Excel & Google Sheets
+                    </small>
                   </div>
                 </button>
               </li>
@@ -538,11 +612,12 @@ export default function AdminProductsPage() {
           </div>
 
           {/* NÚT IMPORT EXCEL NÂNG CAO */}
-          <button 
+          <button
             className="btn btn-success rounded-pill px-3 shadow-sm d-flex align-items-center mb-0"
             onClick={() => setShowImportModal(true)}
           >
-            <i className="bi bi-file-earmark-spreadsheet me-2"></i> Nhập Excel (Kèm Ảnh)
+            <i className="bi bi-file-earmark-spreadsheet me-2"></i> Nhập Excel
+            (Kèm Ảnh)
           </button>
 
           {/* NÚT THÊM SẢN PHẨM THỦ CÔNG */}
@@ -561,20 +636,31 @@ export default function AdminProductsPage() {
           <div className="d-flex justify-content-between align-items-center mb-2">
             <h6 className="fw-bold mb-0 text-danger">
               <i className="bi bi-exclamation-triangle me-2"></i>
-              Báo cáo Import (Thành công: {importSummary.success} | Lỗi: {importSummary.failed})
+              Báo cáo Import (Thành công: {importSummary.success} | Lỗi:{" "}
+              {importSummary.failed})
             </h6>
-            <button className="btn-close" onClick={() => setImportSummary(null)}></button>
+            <button
+              className="btn-close"
+              onClick={() => setImportSummary(null)}
+            ></button>
           </div>
-          <ul className="mb-0 text-dark" style={{ fontSize: '14px', maxHeight: '150px', overflowY: 'auto' }}>
-            {importSummary.errors.map((err: {row: number, reason: string}, idx: number) => (
-              <li key={idx}><strong>Dòng {err.row}:</strong> {err.reason}</li>
-            ))}
+          <ul
+            className="mb-0 text-dark"
+            style={{ fontSize: "14px", maxHeight: "150px", overflowY: "auto" }}
+          >
+            {importSummary.errors.map(
+              (err: { row: number; reason: string }, idx: number) => (
+                <li key={idx}>
+                  <strong>Dòng {err.row}:</strong> {err.reason}
+                </li>
+              ),
+            )}
           </ul>
         </div>
       )}
 
-      <div className="table-responsive">
-        <table className="table table-hover align-middle">
+        <div className="table-responsive flex-grow-1">
+          <table className="table table-hover align-middle mb-0">
           <thead className="table-light">
             <tr>
               <th>Sản phẩm</th>
@@ -618,7 +704,10 @@ export default function AdminProductsPage() {
                         <div className="fw-bold d-flex align-items-center gap-2">
                           <span>{p.name}</span>
                           {p.brand && (
-                            <span className="badge bg-primary-subtle text-primary border" style={{ fontSize: "10px" }}>
+                            <span
+                              className="badge bg-primary-subtle text-primary border"
+                              style={{ fontSize: "10px" }}
+                            >
                               {p.brand}
                             </span>
                           )}
@@ -664,30 +753,147 @@ export default function AdminProductsPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
-      {/* Điều hướng phân trang (Pagination UI) */}
-      {!loading && pagination.totalPages > 1 && (
-        <div className="d-flex justify-content-center mt-4">
-          <nav>
-            <ul className="pagination pagination-sm">
-              {Array.from({ length: pagination.totalPages }, (_, i) => (
-                <li
-                  key={i}
-                  className={`page-item ${pagination.currentPage === i + 1 ? "active" : ""}`}
+      {/* THANH PHÂN TRANG CỐ ĐỊNH DƯỚI ĐÁY (STICKY BOTTOM FOOTER) */}
+      {(() => {
+        const totalPagesSafe = Math.max(pagination.totalPages || 1, 1);
+        const totalItemsSafe = pagination.totalItems ?? products.length;
+        const isFirstPage = pagination.currentPage <= 1;
+        const isLastPage = pagination.currentPage >= totalPagesSafe;
+
+        const navButtons = [
+          {
+            key: "first",
+            icon: "bi-chevron-double-left",
+            title: "Trang đầu",
+            disabled: loading || isFirstPage,
+            onClick: () => goToPage(1),
+          },
+          {
+            key: "prev",
+            icon: "bi-chevron-left",
+            title: "Trang trước",
+            disabled: loading || isFirstPage,
+            onClick: () => goToPage(pagination.currentPage - 1),
+          },
+          {
+            key: "next",
+            icon: "bi-chevron-right",
+            title: "Trang sau",
+            disabled: loading || isLastPage,
+            onClick: () => goToPage(pagination.currentPage + 1),
+          },
+          {
+            key: "last",
+            icon: "bi-chevron-double-right",
+            title: "Trang cuối",
+            disabled: loading || isLastPage,
+            onClick: () => goToPage(totalPagesSafe),
+          },
+        ];
+
+        return (
+          <div
+            className="px-4 py-3 bg-white d-flex flex-wrap justify-content-between align-items-center gap-3"
+            style={{
+              position: "sticky",
+              bottom: 0,
+              zIndex: 20,
+              borderTop: "1px solid #e5e7eb",
+              borderBottomLeftRadius: "1rem",
+              borderBottomRightRadius: "1rem",
+              boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.03)",
+            }}
+          >
+            {/* Bên trái: Tổng số sản phẩm */}
+            <div style={{ fontSize: "13.5px", color: "#6b7280" }}>
+              Có tổng {totalItemsSafe} sản phẩm
+            </div>
+
+            {/* Bên phải: Số dòng mỗi trang + Trang X / Y + 4 nút điều hướng */}
+            <div className="d-flex align-items-center flex-wrap gap-3">
+              <div className="d-flex align-items-center gap-2">
+                <span
+                  className="fw-bold text-nowrap"
+                  style={{ fontSize: "13.5px", color: "#1e293b" }}
                 >
+                  Số dòng mỗi trang
+                </span>
+                <select
+                  className="form-select form-select-sm shadow-none admin-page-select"
+                  aria-label="Số dòng mỗi trang"
+                  value={pageSize}
+                  onChange={handlePageSizeChange}
+                  disabled={loading}
+                  style={{
+                    width: "70px",
+                    height: "34px",
+                    borderRadius: "8px",
+                    border: "1px solid #d1d5db",
+                    fontSize: "13.5px",
+                    fontWeight: 500,
+                    color: "#1e293b",
+                    backgroundColor: "#ffffff",
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+
+              <span
+                className="fw-bold text-nowrap"
+                style={{ fontSize: "13.5px", color: "#1e293b" }}
+              >
+                Trang {pagination.currentPage} / {totalPagesSafe}
+              </span>
+
+              <div className="d-flex align-items-center" style={{ gap: "6px" }}>
+                {navButtons.map((btn) => (
                   <button
-                    className="page-link"
-                    onClick={() => fetchData(i + 1)}
+                    key={btn.key}
+                    type="button"
+                    title={btn.title}
+                    aria-label={btn.title}
+                    disabled={btn.disabled}
+                    onClick={btn.onClick}
+                    className="btn p-0 d-inline-flex align-items-center justify-content-center shadow-none admin-page-btn"
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "8px",
+                      backgroundColor: "#ffffff",
+                      border: `1px solid ${btn.disabled ? "#f1f5f9" : "#e2e8f0"}`,
+                      color: btn.disabled ? "#cbd5e1" : "#334155",
+                      cursor: btn.disabled ? "not-allowed" : "pointer",
+                      fontSize: "12px",
+                      transition: "all 0.15s ease",
+                    }}
                   >
-                    {i + 1}
+                    <i className={`bi ${btn.icon}`}></i>
                   </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </div>
-      )}
+                ))}
+              </div>
+            </div>
+
+            <style jsx>{`
+              .admin-page-btn:not(:disabled):hover {
+                background-color: #f8fafc !important;
+                border-color: #cbd5e1 !important;
+                color: #0f172a !important;
+              }
+              .admin-page-select:focus {
+                border-color: #94a3b8 !important;
+              }
+            `}</style>
+          </div>
+        );
+      })()}
 
       {/* Modal */}
       {showModal && (
@@ -775,7 +981,10 @@ export default function AdminProductsPage() {
                         setFormData({
                           ...formData,
                           brand: e.target.value,
-                          customBrand: e.target.value === "KHÁC" ? formData.customBrand : "",
+                          customBrand:
+                            e.target.value === "KHÁC"
+                              ? formData.customBrand
+                              : "",
                         })
                       }
                     >
@@ -794,7 +1003,10 @@ export default function AdminProductsPage() {
                         placeholder="Gõ tên hãng mới..."
                         value={formData.customBrand}
                         onChange={(e) =>
-                          setFormData({ ...formData, customBrand: e.target.value })
+                          setFormData({
+                            ...formData,
+                            customBrand: e.target.value,
+                          })
                         }
                         required
                       />
@@ -808,7 +1020,9 @@ export default function AdminProductsPage() {
                   <div className="col-12 col-md-6">
                     <div
                       className={`form-check form-switch d-flex align-items-center gap-3 p-3 border rounded-4 shadow-sm h-100 transition-all ${
-                        formData.isContactPrice ? "bg-info bg-opacity-10 border-info" : "bg-light"
+                        formData.isContactPrice
+                          ? "bg-info bg-opacity-10 border-info"
+                          : "bg-light"
                       }`}
                       style={{ cursor: "pointer" }}
                     >
@@ -828,19 +1042,30 @@ export default function AdminProductsPage() {
                               : prev.variants,
                           }));
                         }}
-                        style={{ width: "3.2rem", height: "1.6rem", cursor: "pointer" }}
+                        style={{
+                          width: "3.2rem",
+                          height: "1.6rem",
+                          cursor: "pointer",
+                        }}
                       />
                       <label
                         className="form-check-label fw-bold d-flex flex-column"
                         htmlFor="isContactPrice"
                         style={{ cursor: "pointer", userSelect: "none" }}
                       >
-                        <span className="d-flex align-items-center text-dark" style={{ fontSize: "0.95rem" }}>
+                        <span
+                          className="d-flex align-items-center text-dark"
+                          style={{ fontSize: "0.95rem" }}
+                        >
                           <i className="bi bi-telephone-outbound-fill text-primary me-2 fs-5"></i>
                           Liên hệ báo giá
                         </span>
-                        <span className="text-muted fw-normal mt-1" style={{ fontSize: "0.8rem" }}>
-                          Khi bật: Khóa các ô giá và tự động hiển thị &quot;Liên hệ báo giá&quot; (Zalo).
+                        <span
+                          className="text-muted fw-normal mt-1"
+                          style={{ fontSize: "0.8rem" }}
+                        >
+                          Khi bật: Khóa các ô giá và tự động hiển thị &quot;Liên
+                          hệ báo giá&quot; (Zalo).
                         </span>
                       </label>
                     </div>
@@ -850,7 +1075,9 @@ export default function AdminProductsPage() {
                   <div className="col-12 col-md-6">
                     <div
                       className={`form-check form-switch d-flex align-items-center gap-3 p-3 border rounded-4 shadow-sm h-100 transition-all ${
-                        formData.isBulky ? "bg-warning bg-opacity-10 border-warning" : "bg-light"
+                        formData.isBulky
+                          ? "bg-warning bg-opacity-10 border-warning"
+                          : "bg-light"
                       }`}
                       style={{ cursor: "pointer" }}
                     >
@@ -860,20 +1087,36 @@ export default function AdminProductsPage() {
                         id="isBulky"
                         role="switch"
                         checked={formData.isBulky}
-                        onChange={(e) => setFormData({ ...formData, isBulky: e.target.checked })}
-                        style={{ width: "3.2rem", height: "1.6rem", cursor: "pointer" }}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            isBulky: e.target.checked,
+                          })
+                        }
+                        style={{
+                          width: "3.2rem",
+                          height: "1.6rem",
+                          cursor: "pointer",
+                        }}
                       />
                       <label
                         className="form-check-label fw-bold d-flex flex-column"
                         htmlFor="isBulky"
                         style={{ cursor: "pointer", userSelect: "none" }}
                       >
-                        <span className="d-flex align-items-center text-dark" style={{ fontSize: "0.95rem" }}>
+                        <span
+                          className="d-flex align-items-center text-dark"
+                          style={{ fontSize: "0.95rem" }}
+                        >
                           <i className="bi bi-truck me-2 text-warning fs-5"></i>
                           Hàng cồng kềnh (ống dài, nặng)
                         </span>
-                        <span className="text-muted fw-normal mt-1" style={{ fontSize: "0.8rem" }}>
-                          Khi bật: phí vận chuyển sẽ được thỏa thuận báo giá riêng cho khách.
+                        <span
+                          className="text-muted fw-normal mt-1"
+                          style={{ fontSize: "0.8rem" }}
+                        >
+                          Khi bật: phí vận chuyển sẽ được thỏa thuận báo giá
+                          riêng cho khách.
                         </span>
                       </label>
                     </div>
@@ -883,13 +1126,20 @@ export default function AdminProductsPage() {
                 <div className="row g-3">
                   {/* 💡 THÊM Ô NHẬP MÔ TẢ (DESCRIPTION) */}
                   <div className="col-12 mt-3">
-                    <label className="small fw-bold mb-1">Mô tả chi tiết (Bài viết)</label>
+                    <label className="small fw-bold mb-1">
+                      Mô tả chi tiết (Bài viết)
+                    </label>
                     <textarea
                       className="form-control"
                       rows={4}
                       placeholder="Nhập giới thiệu chi tiết sản phẩm..."
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
                     />
                   </div>
 
@@ -909,7 +1159,7 @@ export default function AdminProductsPage() {
                           title="Nạp nhanh các trường thông số mẫu chuẩn hóa theo Danh mục đã chọn"
                         >
                           <i className="bi bi-lightning-charge-fill text-warning"></i>
-                          <span>⚡ Nạp mẫu theo Danh mục</span>
+                          <span>Nạp mẫu theo Danh mục</span>
                         </button>
                         <button
                           type="button"
@@ -1041,13 +1291,19 @@ export default function AdminProductsPage() {
                           <input
                             type="text"
                             disabled={formData.isContactPrice}
-                            placeholder={formData.isContactPrice ? "Liên hệ báo giá" : "0"}
+                            placeholder={
+                              formData.isContactPrice ? "Liên hệ báo giá" : "0"
+                            }
                             className={`form-control form-control-sm ${
                               formData.isContactPrice
                                 ? "bg-light text-muted fst-italic border-secondary"
                                 : "text-danger fw-bold"
                             }`}
-                            value={formData.isContactPrice ? "Liên hệ báo giá" : formatMoney(v.price)}
+                            value={
+                              formData.isContactPrice
+                                ? "Liên hệ báo giá"
+                                : formatMoney(v.price)
+                            }
                             onChange={(e) => {
                               const newV = [...formData.variants];
                               newV[i].price = cleanMoney(e.target.value);

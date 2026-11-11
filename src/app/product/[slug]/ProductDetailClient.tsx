@@ -109,7 +109,9 @@ export default function ProductDetailClient({
         if (parsed.rating) setRating(parsed.rating);
         if (parsed.comment) {
           setComment(parsed.comment);
-          toast.success("Đã khôi phục nội dung đánh giá của bạn!", { icon: "📝" });
+          toast.success("Đã khôi phục nội dung đánh giá của bạn!", {
+            icon: "📝",
+          });
         }
       } catch {
         // Bỏ qua lỗi parse
@@ -290,7 +292,11 @@ export default function ProductDetailClient({
     }
 
     toast.success("Đã sao chép nội dung! Đang mở Zalo...", { icon: "💬" });
-    window.open(`https://zalo.me/${zaloPhone}`, "_blank", "noopener,noreferrer");
+    window.open(
+      `https://zalo.me/${zaloPhone}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   // Gửi bình luận đánh giá
@@ -317,9 +323,13 @@ export default function ProductDetailClient({
       localStorage.removeItem("user");
       window.dispatchEvent(new Event("authUpdated"));
       setIsLoggedIn(false);
-      toast.error("Phiên đăng nhập đã hết hạn. Đã lưu tạm nội dung, vui lòng đăng nhập lại để gửi!");
+      toast.error(
+        "Phiên đăng nhập đã hết hạn. Đã lưu tạm nội dung, vui lòng đăng nhập lại để gửi!",
+      );
       // Kích hoạt mở modal đăng nhập
-      const modalBtn = document.querySelector('[data-bs-target="#authModal"]') as HTMLElement;
+      const modalBtn = document.querySelector(
+        '[data-bs-target="#authModal"]',
+      ) as HTMLElement;
       if (modalBtn) modalBtn.click();
       return;
     }
@@ -352,7 +362,9 @@ export default function ProductDetailClient({
         localStorage.removeItem("user");
         window.dispatchEvent(new Event("authUpdated"));
         setIsLoggedIn(false);
-        toast.error("Phiên đăng nhập đã hết hạn. Đã lưu tạm đánh giá, vui lòng đăng nhập lại!");
+        toast.error(
+          "Phiên đăng nhập đã hết hạn. Đã lưu tạm đánh giá, vui lòng đăng nhập lại!",
+        );
       } else {
         toast.error("Có lỗi xảy ra, không thể gửi đánh giá lúc này.");
       }
@@ -368,14 +380,15 @@ export default function ProductDetailClient({
   const totalReviews = reviews.length;
   const averageRating =
     totalReviews > 0
-      ? (
-          reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
-        ).toFixed(1)
+      ? (reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(
+          1,
+        )
       : "5.0";
 
   const starPercentages = [5, 4, 3, 2, 1].map((s) => {
     const count = reviews.filter((r) => Math.round(r.rating) === s).length;
-    const percent = totalReviews > 0 ? (count / totalReviews) * 100 : s === 5 ? 100 : 0;
+    const percent =
+      totalReviews > 0 ? (count / totalReviews) * 100 : s === 5 ? 100 : 0;
     return { star: s, count, percent };
   });
 
@@ -397,7 +410,9 @@ export default function ProductDetailClient({
                     alt={product.name}
                     fill
                     priority
-                    unoptimized={!(mainImage || "").includes("res.cloudinary.com")}
+                    unoptimized={
+                      !(mainImage || "").includes("res.cloudinary.com")
+                    }
                     className="object-fit-contain p-3 transition-transform hover-zoom"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
@@ -448,9 +463,15 @@ export default function ProductDetailClient({
               <div className="col-md-6 d-flex flex-column">
                 {/* BREADCRUMB 3 CẤP CHUẨN */}
                 <nav aria-label="breadcrumb" className="mb-2">
-                  <ol className="breadcrumb mb-0 small" style={{ fontSize: "13px" }}>
+                  <ol
+                    className="breadcrumb mb-0 small"
+                    style={{ fontSize: "13px" }}
+                  >
                     <li className="breadcrumb-item">
-                      <Link href="/" className="text-decoration-none text-muted">
+                      <Link
+                        href="/"
+                        className="text-decoration-none text-muted"
+                      >
                         Trang chủ
                       </Link>
                     </li>
@@ -484,7 +505,7 @@ export default function ProductDetailClient({
                 <div className="mb-3">
                   {totalStock > 0 ? (
                     <span className="badge bg-success-subtle text-success px-3 py-2 fs-6 rounded-pill">
-                      <i className="bi bi-check2-circle me-1"></i> Còn hàng ({totalStock})
+                      <i className="bi bi-check2-circle me-1"></i> Còn hàng
                     </span>
                   ) : (
                     <span className="badge bg-danger-subtle text-danger px-3 py-2 fs-6 rounded-pill">
@@ -500,7 +521,9 @@ export default function ProductDetailClient({
                   <div>
                     <div className="d-flex align-items-center mb-3">
                       <span className="text-muted me-2">Đơn vị tính:</span>
-                      <span className="fw-bold text-dark">{product.unit || "Cái"}</span>
+                      <span className="fw-bold text-dark">
+                        {product.unit || "Cái"}
+                      </span>
                     </div>
 
                     {/* BẢNG CHỌN SỐ LƯỢNG CHO TỪNG BIẾN THỂ */}
@@ -521,7 +544,9 @@ export default function ProductDetailClient({
                             }`}
                           >
                             <div className="flex-grow-1">
-                              <div className="fw-bold text-dark fs-6">{v.name}</div>
+                              <div className="fw-bold text-dark fs-6">
+                                {v.name}
+                              </div>
                               <div className="d-flex align-items-center gap-3 small mt-1">
                                 <div>
                                   {v.price > 0 ? (
@@ -537,9 +562,13 @@ export default function ProductDetailClient({
                                 <div className="text-muted border-start ps-3">
                                   Kho:{" "}
                                   {v.stock > 0 ? (
-                                    <span className="text-success fw-bold">{v.stock}</span>
+                                    <span className="text-success fw-bold">
+                                      {v.stock}
+                                    </span>
                                   ) : (
-                                    <span className="text-danger fw-bold">Hết</span>
+                                    <span className="text-danger fw-bold">
+                                      Hết
+                                    </span>
                                   )}
                                 </div>
                               </div>
@@ -554,7 +583,9 @@ export default function ProductDetailClient({
                                 >
                                   <button
                                     className="btn btn-light border-0 px-2 h-100 d-flex align-items-center justify-content-center"
-                                    onClick={() => updateVariantQty(v.id, -1, v.stock)}
+                                    onClick={() =>
+                                      updateVariantQty(v.id, -1, v.stock)
+                                    }
                                     disabled={qty <= 0}
                                     style={{ width: "36px" }}
                                     aria-label="Giảm"
@@ -578,7 +609,9 @@ export default function ProductDetailClient({
                                   />
                                   <button
                                     className="btn btn-light border-0 px-2 h-100 d-flex align-items-center justify-content-center"
-                                    onClick={() => updateVariantQty(v.id, 1, v.stock)}
+                                    onClick={() =>
+                                      updateVariantQty(v.id, 1, v.stock)
+                                    }
                                     disabled={qty >= v.stock}
                                     style={{ width: "36px" }}
                                     aria-label="Tăng"
@@ -601,7 +634,10 @@ export default function ProductDetailClient({
                     <div className="d-flex flex-column flex-sm-row gap-2 mt-2">
                       <button
                         className="btn btn-primary fw-bold flex-grow-1 py-2 rounded-3 shadow-sm"
-                        style={{ backgroundColor: "#0078D4", borderColor: "#0078D4" }}
+                        style={{
+                          backgroundColor: "#0078D4",
+                          borderColor: "#0078D4",
+                        }}
                         onClick={handleBulkAddToCart}
                       >
                         <i className="bi bi-cart-plus me-1"></i> THÊM VÀO GIỎ
@@ -655,13 +691,19 @@ export default function ProductDetailClient({
                   <div>
                     {/* KHỐI GIÁ TIỀN */}
                     <div className="mb-3 d-flex align-items-baseline gap-2">
-                      <span className="fw-bold fs-1" style={{ color: "#0078D4" }}>
+                      <span
+                        className="fw-bold fs-1"
+                        style={{ color: "#0078D4" }}
+                      >
                         {(currentVariant?.price ?? 0) > 0
                           ? currentVariant!.price.toLocaleString("vi-VN")
                           : "Liên hệ"}
                       </span>
                       {(currentVariant?.price ?? 0) > 0 && (
-                        <span className="fw-bold fs-4" style={{ color: "#0078D4" }}>
+                        <span
+                          className="fw-bold fs-4"
+                          style={{ color: "#0078D4" }}
+                        >
                           đ
                         </span>
                       )}
@@ -674,14 +716,18 @@ export default function ProductDetailClient({
                       <div className="alert alert-warning py-2 px-3 mb-3 d-flex align-items-center gap-2 rounded-3 border-0">
                         <i className="bi bi-info-circle-fill text-warning fs-5"></i>
                         <span className="small">
-                          Sản phẩm báo giá theo thời điểm hoặc quy cách dự án. Vui lòng liên hệ Hotline/Zalo <strong>0903 989 096</strong>.
+                          Sản phẩm báo giá theo thời điểm hoặc quy cách dự án.
+                          Vui lòng liên hệ Hotline/Zalo{" "}
+                          <strong>0903 989 096</strong>.
                         </span>
                       </div>
                     )}
 
                     {/* CHỌN SỐ LƯỢNG */}
                     <div className="mb-3 d-flex align-items-center gap-3">
-                      <span className="text-muted fw-semibold small">Số lượng:</span>
+                      <span className="text-muted fw-semibold small">
+                        Số lượng:
+                      </span>
                       <div
                         className="d-flex align-items-center border rounded-3 overflow-hidden bg-white shadow-sm"
                         style={{ height: "40px", width: "125px" }}
@@ -740,7 +786,10 @@ export default function ProductDetailClient({
                         <>
                           <button
                             className="btn btn-primary fw-bold flex-grow-1 py-2 rounded-3 shadow-sm"
-                            style={{ backgroundColor: "#0078D4", borderColor: "#0078D4" }}
+                            style={{
+                              backgroundColor: "#0078D4",
+                              borderColor: "#0078D4",
+                            }}
                             onClick={handleAddToCart}
                           >
                             <i className="bi bi-cart-plus me-1"></i> THÊM GIỎ
@@ -753,13 +802,18 @@ export default function ProductDetailClient({
                           </button>
                         </>
                       )}
-                      {(!(currentVariant?.price && currentVariant.price > 0) || totalStock === 0) && (
+                      {(!(currentVariant?.price && currentVariant.price > 0) ||
+                        totalStock === 0) && (
                         <button
                           className="btn btn-primary fw-bold w-100 py-2 rounded-3 shadow-sm"
-                          style={{ backgroundColor: "#0068FF", borderColor: "#0068FF" }}
+                          style={{
+                            backgroundColor: "#0068FF",
+                            borderColor: "#0068FF",
+                          }}
                           onClick={handleZaloContact}
                         >
-                          <i className="bi bi-chat-dots me-1"></i> NHẬN BÁO GIÁ ZALO
+                          <i className="bi bi-chat-dots me-1"></i> NHẬN BÁO GIÁ
+                          ZALO
                         </button>
                       )}
                     </div>
@@ -771,7 +825,8 @@ export default function ProductDetailClient({
                           style={{ borderColor: "#0068FF", color: "#0068FF" }}
                           onClick={handleZaloContact}
                         >
-                          <i className="bi bi-chat-dots me-1"></i> LIÊN HỆ ZALO BÁO GIÁ SỈ
+                          <i className="bi bi-chat-dots me-1"></i> LIÊN HỆ ZALO
+                          BÁO GIÁ SỈ
                         </button>
                       </div>
                     )}
@@ -823,7 +878,10 @@ export default function ProductDetailClient({
                     <table className="table table-striped table-bordered table-sm mb-0 rounded-3 overflow-hidden bg-white">
                       <tbody>
                         <tr>
-                          <td className="text-muted py-2 px-3 fw-medium" style={{ width: "45%" }}>
+                          <td
+                            className="text-muted py-2 px-3 fw-medium"
+                            style={{ width: "45%" }}
+                          >
                             Tên sản phẩm
                           </td>
                           <td className="fw-bold text-dark py-2 px-3">
@@ -832,22 +890,30 @@ export default function ProductDetailClient({
                         </tr>
                         {product.category && (
                           <tr>
-                            <td className="text-muted py-2 px-3 fw-medium">Danh mục</td>
+                            <td className="text-muted py-2 px-3 fw-medium">
+                              Danh mục
+                            </td>
                             <td className="fw-semibold text-primary py-2 px-3">
                               {product.category.name}
                             </td>
                           </tr>
                         )}
                         <tr>
-                          <td className="text-muted py-2 px-3 fw-medium">Đơn vị tính</td>
-                          <td className="text-dark py-2 px-3">{product.unit || "Cái"}</td>
+                          <td className="text-muted py-2 px-3 fw-medium">
+                            Đơn vị tính
+                          </td>
+                          <td className="text-dark py-2 px-3">
+                            {product.unit || "Cái"}
+                          </td>
                         </tr>
                         <tr>
-                          <td className="text-muted py-2 px-3 fw-medium">Tình trạng kho</td>
+                          <td className="text-muted py-2 px-3 fw-medium">
+                            Tình trạng kho
+                          </td>
                           <td className="py-2 px-3">
                             {totalStock > 0 ? (
                               <span className="badge bg-success-subtle text-success border-0">
-                                Còn hàng ({totalStock})
+                                Còn hàng
                               </span>
                             ) : (
                               <span className="badge bg-warning-subtle text-warning border-0">
@@ -858,12 +924,18 @@ export default function ProductDetailClient({
                         </tr>
                         {product.attributes &&
                           typeof product.attributes === "object" &&
-                          Object.entries(product.attributes).map(([key, value], idx) => (
-                            <tr key={idx}>
-                              <td className="text-muted py-2 px-3 fw-medium">{key}</td>
-                              <td className="fw-medium text-dark py-2 px-3">{String(value)}</td>
-                            </tr>
-                          ))}
+                          Object.entries(product.attributes).map(
+                            ([key, value], idx) => (
+                              <tr key={idx}>
+                                <td className="text-muted py-2 px-3 fw-medium">
+                                  {key}
+                                </td>
+                                <td className="fw-medium text-dark py-2 px-3">
+                                  {String(value)}
+                                </td>
+                              </tr>
+                            ),
+                          )}
                       </tbody>
                     </table>
                   </div>
@@ -881,7 +953,8 @@ export default function ProductDetailClient({
                   style={{ fontSize: "0.95rem" }}
                   dangerouslySetInnerHTML={{
                     __html:
-                      product.description && product.description.trim().length >= 10
+                      product.description &&
+                      product.description.trim().length >= 10
                         ? product.description
                         : `<p class="text-dark">${product.name} là sản phẩm chính hãng được phân phối tại Cửa hàng Điện Nước Trường Tín, đảm bảo chất lượng và tiêu chuẩn an toàn kỹ thuật cao nhất.</p>`,
                   }}
@@ -897,29 +970,48 @@ export default function ProductDetailClient({
                     <div className="col-sm-6 d-flex align-items-start gap-2">
                       <i className="bi bi-arrow-repeat text-primary fs-5 flex-shrink-0"></i>
                       <div>
-                        <strong className="text-dark d-block">Đổi trả trong 7 ngày</strong>
-                        <span className="text-muted">Đổi mới nếu lỗi kỹ thuật nhà sản xuất hoặc mua nhầm kích thước ren/ống.</span>
+                        <strong className="text-dark d-block">
+                          Đổi trả trong 7 ngày
+                        </strong>
+                        <span className="text-muted">
+                          Đổi mới nếu lỗi kỹ thuật nhà sản xuất hoặc mua nhầm
+                          kích thước ren/ống.
+                        </span>
                       </div>
                     </div>
                     <div className="col-sm-6 d-flex align-items-start gap-2">
                       <i className="bi bi-patch-check text-success fs-5 flex-shrink-0"></i>
                       <div>
-                        <strong className="text-dark d-block">100% Hàng chính hãng</strong>
-                        <span className="text-muted">Đầy đủ hóa đơn, CO/CQ từ nhà sản xuất (Bình Minh, Cadivi, Panasonic...).</span>
+                        <strong className="text-dark d-block">
+                          100% Hàng chính hãng
+                        </strong>
+                        <span className="text-muted">
+                          Đầy đủ hóa đơn, CO/CQ từ nhà sản xuất (Bình Minh,
+                          Cadivi, Panasonic...).
+                        </span>
                       </div>
                     </div>
                     <div className="col-sm-6 d-flex align-items-start gap-2">
                       <i className="bi bi-truck text-warning fs-5 flex-shrink-0"></i>
                       <div>
-                        <strong className="text-dark d-block">Giao hàng nhanh 2H</strong>
-                        <span className="text-muted">Giao tận chân công trình khu vực Bình Thạnh, Gò Vấp, Phú Nhuận.</span>
+                        <strong className="text-dark d-block">
+                          Giao hàng nhanh 2H
+                        </strong>
+                        <span className="text-muted">
+                          Giao tận chân công trình khu vực Bình Thạnh, Gò Vấp,
+                          Phú Nhuận.
+                        </span>
                       </div>
                     </div>
                     <div className="col-sm-6 d-flex align-items-start gap-2">
                       <i className="bi bi-geo-alt text-danger fs-5 flex-shrink-0"></i>
                       <div>
-                        <strong className="text-dark d-block">Kiểm tra hàng trực tiếp</strong>
-                        <span className="text-muted">358 Nơ Trang Long, P.13, Q. Bình Thạnh, TP.HCM.</span>
+                        <strong className="text-dark d-block">
+                          Kiểm tra hàng trực tiếp
+                        </strong>
+                        <span className="text-muted">
+                          358 Nơ Trang Long, P.13, Q. Bình Thạnh, TP.HCM.
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -934,8 +1026,19 @@ export default function ProductDetailClient({
       <div className="row mb-5">
         <div className="col-12">
           <section className="bg-white p-4 p-md-5 rounded-4 shadow-sm border">
-            <h4 className="fw-bold text-uppercase mb-4 d-flex align-items-center gap-2" style={{ color: "#1a3a5c" }}>
-              <span style={{ width: "5px", height: "22px", backgroundColor: "#0078D4", borderRadius: "2px", display: "inline-block" }}></span>
+            <h4
+              className="fw-bold text-uppercase mb-4 d-flex align-items-center gap-2"
+              style={{ color: "#1a3a5c" }}
+            >
+              <span
+                style={{
+                  width: "5px",
+                  height: "22px",
+                  backgroundColor: "#0078D4",
+                  borderRadius: "2px",
+                  display: "inline-block",
+                }}
+              ></span>
               ĐÁNH GIÁ & NHẬN XÉT
             </h4>
 
@@ -945,7 +1048,9 @@ export default function ProductDetailClient({
                 {/* ĐIỂM TRUNG BÌNH & BIỂU ĐỒ PHÂN BỔ */}
                 <div className="p-3 p-md-4 rounded-4 bg-light border mb-4">
                   <div className="d-flex align-items-center gap-3 mb-3">
-                    <div className="display-5 fw-bold text-dark">{averageRating}</div>
+                    <div className="display-5 fw-bold text-dark">
+                      {averageRating}
+                    </div>
                     <div>
                       <div className="text-warning fs-5">
                         {[1, 2, 3, 4, 5].map((s) => (
@@ -968,11 +1073,21 @@ export default function ProductDetailClient({
                   {/* THANH TỶ LỆ SAO (5★ ĐẾN 1★) */}
                   <div className="d-flex flex-column gap-2 small">
                     {starPercentages.map(({ star, count, percent }) => (
-                      <div key={star} className="d-flex align-items-center gap-2">
-                        <span className="text-muted fw-semibold" style={{ width: "35px" }}>
-                          {star} <i className="bi bi-star-fill text-warning"></i>
+                      <div
+                        key={star}
+                        className="d-flex align-items-center gap-2"
+                      >
+                        <span
+                          className="text-muted fw-semibold"
+                          style={{ width: "35px" }}
+                        >
+                          {star}{" "}
+                          <i className="bi bi-star-fill text-warning"></i>
                         </span>
-                        <div className="progress flex-grow-1" style={{ height: "8px" }}>
+                        <div
+                          className="progress flex-grow-1"
+                          style={{ height: "8px" }}
+                        >
                           <div
                             className="progress-bar bg-warning"
                             role="progressbar"
@@ -982,7 +1097,10 @@ export default function ProductDetailClient({
                             aria-valuemax={100}
                           ></div>
                         </div>
-                        <span className="text-muted" style={{ width: "25px", textAlign: "right" }}>
+                        <span
+                          className="text-muted"
+                          style={{ width: "25px", textAlign: "right" }}
+                        >
                           {count}
                         </span>
                       </div>
@@ -999,12 +1117,16 @@ export default function ProductDetailClient({
                         Đăng nhập để chia sẻ trải nghiệm
                       </p>
                       <p className="text-muted small mb-3">
-                        Đánh giá của bạn giúp cửa hàng nâng cao chất lượng phục vụ
+                        Đánh giá của bạn giúp cửa hàng nâng cao chất lượng phục
+                        vụ
                       </p>
                       <button
                         type="button"
                         className="btn btn-primary px-4 py-2 rounded-pill fw-bold btn-sm shadow-sm"
-                        style={{ backgroundColor: "#0078D4", borderColor: "#0078D4" }}
+                        style={{
+                          backgroundColor: "#0078D4",
+                          borderColor: "#0078D4",
+                        }}
                         data-bs-toggle="modal"
                         data-bs-target="#authModal"
                       >
@@ -1013,7 +1135,9 @@ export default function ProductDetailClient({
                     </div>
                   ) : (
                     <div>
-                      <h6 className="fw-bold text-dark mb-2">Gửi nhận xét của bạn:</h6>
+                      <h6 className="fw-bold text-dark mb-2">
+                        Gửi nhận xét của bạn:
+                      </h6>
                       <div className="star-rating-input mb-3 d-flex gap-2 text-warning">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <i
@@ -1047,7 +1171,10 @@ export default function ProductDetailClient({
                         <button
                           type="button"
                           className="btn btn-primary px-4 py-2 fw-bold rounded-pill btn-sm shadow-sm"
-                          style={{ backgroundColor: "#0078D4", borderColor: "#0078D4" }}
+                          style={{
+                            backgroundColor: "#0078D4",
+                            borderColor: "#0078D4",
+                          }}
                           onClick={handleSubmitReview}
                           disabled={isSubmittingReview}
                         >
@@ -1071,56 +1198,86 @@ export default function ProductDetailClient({
                   <div className="text-center py-5 px-3 border rounded-4 bg-light">
                     <i className="bi bi-chat-left-dots text-muted fs-1 mb-2 d-block opacity-50"></i>
                     <p className="text-muted mb-0 small">
-                      Chưa có nhận xét nào cho sản phẩm này. Hãy là người đầu tiên chia sẻ trải nghiệm thực tế với Điện Nước Trường Tín!
+                      Chưa có nhận xét nào cho sản phẩm này. Hãy là người đầu
+                      tiên chia sẻ trải nghiệm thực tế với Điện Nước Trường Tín!
                     </p>
                   </div>
                 ) : (
-                  <div className="d-flex flex-column gap-3" style={{ maxHeight: "560px", overflowY: "auto" }}>
+                  <div
+                    className="d-flex flex-column gap-3"
+                    style={{ maxHeight: "560px", overflowY: "auto" }}
+                  >
                     {reviews.map((rev) => {
-                      const displayName = rev.userName || rev.user?.name || "Khách hàng";
+                      const displayName =
+                        rev.userName || rev.user?.name || "Khách hàng";
                       return (
-                      <div key={rev.id} className="p-3 border rounded-4 bg-light shadow-sm">
-                        <div className="d-flex align-items-center justify-content-between mb-2">
-                          <div className="d-flex align-items-center gap-2">
-                            <div
-                              className="avatar-placeholder bg-primary text-white d-flex align-items-center justify-content-center fw-bold rounded-circle shadow-sm"
-                              style={{ width: "36px", height: "36px", fontSize: "14px" }}
-                            >
-                              {displayName.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="fw-bold text-dark small">
-                                {displayName}
-                                {rev.userPhone && (
-                                  <span className="text-muted fw-normal ms-1" style={{ fontSize: "11px" }}>
-                                    ({rev.userPhone})
-                                  </span>
-                                )}
+                        <div
+                          key={rev.id}
+                          className="p-3 border rounded-4 bg-light shadow-sm"
+                        >
+                          <div className="d-flex align-items-center justify-content-between mb-2">
+                            <div className="d-flex align-items-center gap-2">
+                              <div
+                                className="avatar-placeholder bg-primary text-white d-flex align-items-center justify-content-center fw-bold rounded-circle shadow-sm"
+                                style={{
+                                  width: "36px",
+                                  height: "36px",
+                                  fontSize: "14px",
+                                }}
+                              >
+                                {displayName.charAt(0).toUpperCase()}
                               </div>
-                              <span className="badge bg-success-subtle text-success border-0 small" style={{ fontSize: "10px" }}>
-                                ✓ Đã mua tại Trường Tín
-                              </span>
+                              <div>
+                                <div className="fw-bold text-dark small">
+                                  {displayName}
+                                  {rev.userPhone && (
+                                    <span
+                                      className="text-muted fw-normal ms-1"
+                                      style={{ fontSize: "11px" }}
+                                    >
+                                      ({rev.userPhone})
+                                    </span>
+                                  )}
+                                </div>
+                                <span
+                                  className="badge bg-success-subtle text-success border-0 small"
+                                  style={{ fontSize: "10px" }}
+                                >
+                                  ✓ Đã mua tại Trường Tín
+                                </span>
+                              </div>
                             </div>
+                            <span
+                              className="text-muted small"
+                              style={{ fontSize: "11px" }}
+                            >
+                              {new Date(rev.createdAt).toLocaleDateString(
+                                "vi-VN",
+                              )}
+                            </span>
                           </div>
-                          <span className="text-muted small" style={{ fontSize: "11px" }}>
-                            {new Date(rev.createdAt).toLocaleDateString("vi-VN")}
-                          </span>
-                        </div>
 
-                        <div className="text-warning mb-2 small" style={{ fontSize: "12px" }}>
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <i
-                              key={star}
-                              className={`bi ${
-                                star <= rev.rating ? "bi-star-fill" : "bi-star text-muted"
-                              } me-1`}
-                            ></i>
-                          ))}
-                        </div>
+                          <div
+                            className="text-warning mb-2 small"
+                            style={{ fontSize: "12px" }}
+                          >
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <i
+                                key={star}
+                                className={`bi ${
+                                  star <= rev.rating
+                                    ? "bi-star-fill"
+                                    : "bi-star text-muted"
+                                } me-1`}
+                              ></i>
+                            ))}
+                          </div>
 
-                        <p className="text-dark mb-0 small lh-base">{rev.comment}</p>
-                      </div>
-                    );
+                          <p className="text-dark mb-0 small lh-base">
+                            {rev.comment}
+                          </p>
+                        </div>
+                      );
                     })}
                   </div>
                 )}
@@ -1138,7 +1295,10 @@ export default function ProductDetailClient({
             {(loadingRelated || relatedProducts.length > 0) && (
               <section className="mb-5">
                 <div className="d-flex align-items-center mb-4">
-                  <h4 className="fw-bold text-uppercase mb-0" style={{ color: "#1a3a5c" }}>
+                  <h4
+                    className="fw-bold text-uppercase mb-0"
+                    style={{ color: "#1a3a5c" }}
+                  >
                     Sản phẩm tương tự
                   </h4>
                   <div className="flex-grow-1 ms-3 border-bottom opacity-25"></div>
@@ -1173,7 +1333,10 @@ export default function ProductDetailClient({
             {bestSellers.length > 0 && (
               <section>
                 <div className="d-flex align-items-center mb-4">
-                  <h4 className="fw-bold text-uppercase mb-0" style={{ color: "#1a3a5c" }}>
+                  <h4
+                    className="fw-bold text-uppercase mb-0"
+                    style={{ color: "#1a3a5c" }}
+                  >
                     Top bán chạy tại Trường Tín
                   </h4>
                   <div className="flex-grow-1 ms-3 border-bottom opacity-25"></div>
