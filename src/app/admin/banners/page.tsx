@@ -103,9 +103,11 @@ export default function AdminBannersPage() {
           const ratio = w / h;
 
           // Kiểm tra xem tỷ lệ có chuẩn với vị trí hay không
-          // HOME_MAIN: chuẩn từ 16:9 (1.77) tới 21:9 (2.33)
+          // HOME_MAIN: chuẩn 16:9 (~1.77) đồng bộ hoàn toàn giữa Admin & Frontend
           // HOME_SUB: chuẩn từ 16:9 (1.77) tới 2:1 (2.0)
-          const isStandardRatio = isMain ? ratio >= 1.7 : ratio >= 1.5;
+          const isStandardRatio = isMain
+            ? ratio >= 1.6 && ratio <= 1.95
+            : ratio >= 1.5 && ratio <= 2.3;
 
           // Thu nhỏ kích thước tối đa mà vẫn giữ nguyên tỷ lệ
           if (w > maxW) {
@@ -371,37 +373,22 @@ export default function AdminBannersPage() {
           {banners.map((banner) => (
             <div key={banner.id} className="col-12 col-md-6 col-lg-4">
               <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
-                {/* ẢNH BANNER VỚI DUAL-LAYER THẨM MỸ */}
+                {/* ẢNH BANNER CHUẨN ĐỒNG BỘ TỶ LỆ */}
                 <div
                   className="position-relative w-100 overflow-hidden bg-light"
-                  style={{ paddingTop: "46%" }}
+                  style={{
+                    aspectRatio:
+                      banner.position === "HOME_MAIN"
+                        ? "var(--banner-main-aspect, 16 / 9)"
+                        : "var(--banner-sub-aspect, 2 / 1)",
+                  }}
                 >
-                  {/* Layer Nền Mờ */}
-                  <div
-                    className="position-absolute top-0 start-0 w-100 h-100 overflow-hidden"
-                    style={{
-                      transform: "scale(1.15)",
-                      filter: "blur(18px)",
-                      opacity: 0.6,
-                    }}
-                  >
-                    <Image
-                      src={banner.imageUrl}
-                      alt=""
-                      fill
-                      className="object-fit-cover"
-                      unoptimized
-                    />
-                  </div>
-
-                  {/* Layer Chính */}
                   <Image
                     src={banner.imageUrl}
                     alt={banner.title}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-fit-contain position-relative"
-                    style={{ zIndex: 2 }}
+                    className="object-fit-cover"
                     unoptimized
                   />
 
@@ -606,9 +593,9 @@ export default function AdminBannersPage() {
                             Gợi ý Banner Chính (HOME_MAIN)
                           </div>
                           <div className="text-dark small" style={{ fontSize: "12px", lineHeight: "1.4" }}>
-                            &bull; <strong>Tỷ lệ khuyến nghị:</strong> 21:9 hoặc 16:9<br />
-                            &bull; <strong>Chuẩn nét nhất:</strong> 1920x820px hoặc 1920x1080px<br />
-                            &bull; <strong>Chống vỡ trang:</strong> Tự động kích hoạt hiệu ứng Dual-Layer Blur nếu tải ảnh vuông.
+                            &bull; <strong>Tỷ lệ khuyến nghị:</strong> Chuẩn 16:9 đồng bộ<br />
+                            &bull; <strong>Chuẩn nét nhất:</strong> 1920x1080px hoặc 1280x720px<br />
+                            &bull; <strong>Đồng bộ 1:1:</strong> Khung xem trước bên phải khớp đúng tỷ lệ hiển thị ngoài Trang chủ.
                           </div>
                         </div>
                       ) : (
@@ -629,7 +616,7 @@ export default function AdminBannersPage() {
                       )}
                     </div>
 
-                    {/* CỘT PHẢI: KHUNG LIVE PREVIEW THÔNG MINH (DUAL-LAYER SIMULATION) */}
+                    {/* CỘT PHẢI: KHUNG LIVE PREVIEW ĐỒNG BỘ TỶ LỆ THỰC TẾ */}
                     <div className="col-12 col-md-6">
                       <label className="form-label fw-bold small text-dark mb-1 d-flex justify-content-between align-items-center">
                         <span>
@@ -640,13 +627,13 @@ export default function AdminBannersPage() {
                             className={`badge rounded-pill small ${
                               imageMeta.isStandardRatio
                                 ? "bg-success bg-opacity-10 text-success border border-success-subtle"
-                                : "bg-info bg-opacity-15 text-primary border border-info-subtle"
+                                : "bg-warning bg-opacity-15 text-dark border border-warning-subtle"
                             }`}
                             style={{ fontSize: "10.5px" }}
                           >
                             {imageMeta.isStandardRatio
                               ? "✅ Tỷ lệ chuẩn"
-                              : "⚡ Kích hoạt Dual-Layer"}
+                              : "⚠️ Nên dùng ảnh 16:9"}
                           </span>
                         )}
                       </label>
@@ -676,11 +663,14 @@ export default function AdminBannersPage() {
                           <span className="opacity-0">...</span>
                         </div>
 
-                        {/* Vùng Container Hiển Thị Banner với Tỷ Lệ Thực Tế */}
+                        {/* Vùng Container Hiển Thị Banner Dùng Chung Biến Tỷ Lệ CSS Với Trang Chủ */}
                         <div
                           className="position-relative w-100 overflow-hidden bg-light d-flex align-items-center justify-content-center"
                           style={{
-                            height: formData.position === "HOME_MAIN" ? "210px" : "180px",
+                            aspectRatio:
+                              formData.position === "HOME_MAIN"
+                                ? "var(--banner-main-aspect, 16 / 9)"
+                                : "var(--banner-sub-aspect, 2 / 1)",
                           }}
                         >
                           {activePreviewUrl ? (
@@ -690,7 +680,7 @@ export default function AdminBannersPage() {
                                 src={activePreviewUrl}
                                 alt="Live Preview"
                                 fill
-                                className="object-fit-cover rounded-3"
+                                className="object-fit-cover"
                                 unoptimized
                               />
 

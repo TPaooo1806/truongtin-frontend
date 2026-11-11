@@ -133,7 +133,7 @@ setNotifications(sorted);
     <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#eef2f5' }}>
       
       {/* SIDEBAR */}
-      <div className="text-white shadow-lg m-3 rounded-4 d-none d-md-flex flex-column" style={{ width: '280px', background: 'linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%)', overflow: 'hidden' }}>
+      <div className="text-white shadow-lg m-3 rounded-4 d-none d-md-flex flex-column flex-shrink-0" style={{ width: '280px', minWidth: '280px', background: 'linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%)', overflow: 'hidden' }}>
         {/* LOGO AREA */}
         <div className="p-4 border-bottom text-center" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
           <h4 className="fw-bold mb-0 text-white shadow-sm tracking-wide">TRƯỜNG TÍN</h4>
@@ -198,7 +198,7 @@ setNotifications(sorted);
       </div>
 
       {/* CONTENT AREA */}
-      <div className="flex-grow-1 d-flex flex-column pe-3 py-3 overflow-auto" style={{ height: '100vh' }}>
+      <div className="flex-grow-1 d-flex flex-column px-3 px-md-0 pe-md-3 py-3 overflow-auto" style={{ height: '100vh', minWidth: 0 }}>
         
         {/* Thanh Navbar phụ chỉ xuất hiện trên điện thoại (d-md-none) */}
         <div className="d-md-none w-100 bg-dark text-white p-3 d-flex justify-content-between align-items-center shadow-sm rounded-4 mb-3">
@@ -222,7 +222,8 @@ setNotifications(sorted);
              pathname.includes('products') ? 'Quản Lý Sản Phẩm' : 
              pathname.includes('orders') ? 'Xử Lý Đơn Hàng' :
              pathname.includes('reviews') ? 'Quản Lý Đánh Giá' :
-             pathname.includes('categories') ? 'Danh Mục Vật Tư' : 'Trang Quản Trị'}
+             pathname.includes('categories') ? 'Danh Mục Vật Tư' :
+             pathname.includes('banners') ? 'Quản Lý Banner' : 'Trang Quản Trị'}
           </h5>
           <div className="d-flex align-items-center gap-3">
             
@@ -301,7 +302,7 @@ setNotifications(sorted);
         </header>
 
         {/* NỘI DUNG CHÍNH */}
-        <main className="flex-grow-1 position-relative">
+        <main className="flex-grow-1 position-relative" style={{ minWidth: 0 }}>
           {children}
         </main>
       </div>

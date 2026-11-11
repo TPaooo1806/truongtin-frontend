@@ -21,6 +21,8 @@ export default function BannerDisplay({ position }: { position: BannerPosition }
   const [banners, setBanners] = useState<Banner[]>(cachedData || []);
   const [loading, setLoading] = useState<boolean>(!cachedData);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const bannerBoxClass =
+    position === "HOME_MAIN" ? "banner-main-box" : "banner-sub-box";
 
   useEffect(() => {
     let isMounted = true;
@@ -58,28 +60,13 @@ export default function BannerDisplay({ position }: { position: BannerPosition }
     return () => clearInterval(interval);
   }, [banners.length, goNext]);
 
-  // 1. Trạng thái Loading: Hiển thị Skeleton khớp đúng chiều cao gốc
+  // 1. Trạng thái Loading: Hiển thị Skeleton khớp đúng tỷ lệ khung hình thật
   if (loading && banners.length === 0) {
     return (
       <div className="container-fluid px-0 mb-4">
-        <div className="placeholder-glow rounded-4 shadow-sm w-100 banner-container">
+        <div className={`placeholder-glow rounded-4 shadow-sm w-100 ${bannerBoxClass}`}>
           <div className="placeholder w-100 h-100 rounded-4" style={{ backgroundColor: "#e2e8f0" }}></div>
         </div>
-        <style jsx>{`
-          .banner-container {
-            height: ${position.includes("HOME_SUB") ? "120px" : "150px"};
-          }
-          @media (min-width: 768px) {
-            .banner-container {
-              height: ${position.includes("HOME_SUB") ? "180px" : "300px"};
-            }
-          }
-          @media (min-width: 992px) {
-            .banner-container {
-              height: ${position.includes("HOME_SUB") ? "220px" : "400px"};
-            }
-          }
-        `}</style>
       </div>
     );
   }
@@ -89,7 +76,7 @@ export default function BannerDisplay({ position }: { position: BannerPosition }
     if (position === "HOME_SUB_LEFT") {
       return (
         <div
-          className="rounded-4 p-4 text-white shadow-sm d-flex flex-column justify-content-end position-relative overflow-hidden mb-4 h-100 banner-container"
+          className={`rounded-4 p-4 text-white shadow-sm d-flex flex-column justify-content-end position-relative overflow-hidden mb-4 h-100 ${bannerBoxClass}`}
           style={{ minHeight: "200px", backgroundColor: "#0078D4" }}
         >
           <div
@@ -105,28 +92,13 @@ export default function BannerDisplay({ position }: { position: BannerPosition }
             </h3>
             <p className="mb-0 fw-medium">Đầy đủ kích cỡ Φ21 - Φ200</p>
           </div>
-          <style jsx>{`
-            .banner-container {
-              height: 120px;
-            }
-            @media (min-width: 768px) {
-              .banner-container {
-                height: 180px;
-              }
-            }
-            @media (min-width: 992px) {
-              .banner-container {
-                height: 220px;
-              }
-            }
-          `}</style>
         </div>
       );
     }
     if (position === "HOME_SUB_RIGHT") {
       return (
         <div
-          className="rounded-4 p-4 text-white shadow-sm d-flex flex-column justify-content-end position-relative overflow-hidden mb-4 h-100 banner-container"
+          className={`rounded-4 p-4 text-white shadow-sm d-flex flex-column justify-content-end position-relative overflow-hidden mb-4 h-100 ${bannerBoxClass}`}
           style={{ minHeight: "200px", backgroundColor: "#005a9e" }}
         >
           <div
@@ -142,21 +114,6 @@ export default function BannerDisplay({ position }: { position: BannerPosition }
             </h3>
             <p className="mb-0 fw-medium">Chiết khấu cao cho nhà thầu</p>
           </div>
-          <style jsx>{`
-            .banner-container {
-              height: 120px;
-            }
-            @media (min-width: 768px) {
-              .banner-container {
-                height: 180px;
-              }
-            }
-            @media (min-width: 992px) {
-              .banner-container {
-                height: 220px;
-              }
-            }
-          `}</style>
         </div>
       );
     }
@@ -199,7 +156,7 @@ export default function BannerDisplay({ position }: { position: BannerPosition }
               key={banner.id}
               className={`carousel-item ${index === currentIndex ? "active" : ""}`}
             >
-              <div className="position-relative w-100 banner-container">
+              <div className={`position-relative w-100 ${bannerBoxClass}`}>
                 {banner.link ? (
                   <a
                     href={banner.link}
@@ -265,23 +222,6 @@ export default function BannerDisplay({ position }: { position: BannerPosition }
           </>
         )}
       </div>
-
-      {/* Style tùy chỉnh cho chiều cao Responsive của Banner chuẩn kích thước ban đầu */}
-      <style jsx>{`
-        .banner-container {
-          height: ${position.includes("HOME_SUB") ? "120px" : "150px"};
-        }
-        @media (min-width: 768px) {
-          .banner-container {
-            height: ${position.includes("HOME_SUB") ? "180px" : "300px"};
-          }
-        }
-        @media (min-width: 992px) {
-          .banner-container {
-            height: ${position.includes("HOME_SUB") ? "220px" : "400px"};
-          }
-        }
-      `}</style>
     </div>
   );
 }
