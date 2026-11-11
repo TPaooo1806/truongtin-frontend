@@ -4,8 +4,14 @@ import { useEffect, useState } from "react";
 import { fetchNews } from "@/actions/news";
 import type { NewsItem } from "@/data/curated-news";
 
-const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=600&q=80";
-const LOCAL_FALLBACK = "/images/ongnuoc.png";
+const LOCAL_FALLBACKS = [
+  "/images/ongnuoc.png",
+  "/images/cadivi.png",
+  "/images/mat-tien-truong-tin.jpg",
+  "/images/STORE_IMAGE_URL.webp",
+  "/images/rp7.png",
+];
+const DEFAULT_IMAGE = "/images/ongnuoc.png";
 
 export default function DailyNews() {
   const [newsList, setNewsList] = useState<NewsItem[]>([]);
@@ -171,28 +177,43 @@ export default function DailyNews() {
                 >
                   {/* Khung ảnh bài viết */}
                   <div className="p-2 pb-1 position-relative">
-                    <div className="position-relative overflow-hidden rounded-3" style={{ height: "135px" }}>
+                    <div 
+                      className="position-relative overflow-hidden rounded-3 d-flex align-items-center justify-content-center" 
+                      style={{ 
+                        height: "135px", 
+                        backgroundColor: "#f1f5f9",
+                        backgroundImage: "linear-gradient(135deg, #e0f2fe 0%, #f1f5f9 100%)" 
+                      }}
+                    >
+                      {/* Biểu tượng nền sang trọng nếu ảnh đang tải hoặc lỗi */}
+                      <div className="position-absolute top-50 start-50 translate-middle text-primary opacity-25 pointer-events-none">
+                        <i className="bi bi-newspaper fs-1"></i>
+                      </div>
+
                       <img
                         src={imageUrl}
-                        className="w-100 h-100 object-fit-cover transition-all"
+                        className="w-100 h-100 object-fit-cover transition-all position-relative"
+                        style={{ zIndex: 1 }}
                         alt={news.title}
                         loading="lazy"
                         onError={(e) => {
-                          // Nếu ảnh bị lỗi 403 hoặc hỏng link, tự động đổi sang ảnh dự phòng sắc nét
                           const target = e.currentTarget as HTMLImageElement;
-                          if (target.src !== DEFAULT_IMAGE && !target.src.includes(DEFAULT_IMAGE)) {
-                            target.src = DEFAULT_IMAGE;
-                          } else if (!target.src.includes("ongnuoc.png")) {
-                            target.src = LOCAL_FALLBACK;
+                          const currentStep = parseInt(target.getAttribute("data-fallback-step") || "0", 10);
+                          if (currentStep < LOCAL_FALLBACKS.length) {
+                            target.setAttribute("data-fallback-step", (currentStep + 1).toString());
+                            target.src = LOCAL_FALLBACKS[currentStep];
+                          } else {
+                            // Nếu đã thử hết danh sách ảnh nội bộ, ẩn thẻ img để khung hiển thị banner gradient
+                            target.style.opacity = "0";
                           }
                         }}
-                        style={{ backgroundColor: "#f8f9fa" }}
                       />
                       {/* Badge phân loại bài viết */}
                       {news.category && (
                         <span
                           className="position-absolute top-0 start-0 m-2 badge px-2 py-1 shadow-sm"
                           style={{
+                            zIndex: 2,
                             fontSize: "0.68rem",
                             backgroundColor: "rgba(0, 120, 212, 0.9)",
                             backdropFilter: "blur(4px)",

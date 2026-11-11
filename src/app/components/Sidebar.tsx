@@ -37,9 +37,12 @@ export default function Sidebar() {
     };
   }, []);
 
-  // VẤN ĐỀ 6: ICON CHUYÊN BIỆT CHO TỪNG DANH MỤC
-  const getCategoryIcon = (name: string) => {
-    const n = name.toLowerCase();
+  // VẤN ĐỀ 6: ICON CHUYÊN BIỆT CHO TỪNG DANH MỤC (Ưu tiên icon cấu hình từ Admin)
+  const renderCategoryIcon = (cat: Category) => {
+    if (cat.icon && cat.icon.trim()) {
+      return cat.icon;
+    }
+    const n = cat.name.toLowerCase();
     if (n.includes("băng keo") || n.includes("keo dán")) return "bi-disc text-primary";
     if (n.includes("silicon") || n.includes("keo silicon")) return "bi-droplet-half text-info";
     if (n.includes("phụ kiện")) return "bi-intersect text-warning";
@@ -51,13 +54,20 @@ export default function Sidebar() {
     return "bi-box-seam text-primary";
   };
 
-  // VẤN ĐỀ 4: SẮP XẾP DANH MỤC (Đẩy danh mục 0 sản phẩm xuống dưới)
-  const sortedCategories = [...categories].sort((a, b) => {
+  // VẤN ĐỀ 4: SẮP XẾP DANH MỤC:
+  // 1. Chỉ lấy danh mục đang Kích Hoạt (isActive !== false)
+  // 2. Ưu tiên danh mục có sản phẩm (>0) xếp trên theo displayOrder
+  // 3. Gom các danh mục 0 sản phẩm xuống cuối danh sách kèm nhãn (Đang nhập hàng)
+  const activeCategories = categories.filter((cat) => cat.isActive !== false);
+
+  const sortedCategories = [...activeCategories].sort((a, b) => {
     const countA = a._count?.products ?? 0;
     const countB = b._count?.products ?? 0;
     if (countA > 0 && countB === 0) return -1;
     if (countA === 0 && countB > 0) return 1;
-    return 0;
+    const orderDiff = (a.displayOrder ?? 0) - (b.displayOrder ?? 0);
+    if (orderDiff !== 0) return orderDiff;
+    return a.name.localeCompare(b.name);
   });
 
   return (
@@ -132,25 +142,32 @@ export default function Sidebar() {
                 }
               >
                 <div className="text-truncate me-2 d-flex align-items-center gap-2">
-                  <i className={`bi ${getCategoryIcon(cat.name)} fs-6`}></i>
+                  <i className={`bi ${renderCategoryIcon(cat)} fs-6 text-primary`}></i>
                   <span className="text-truncate">{cat.name}</span>
                 </div>
 
                 <div className="d-flex align-items-center gap-1 flex-shrink-0">
-                  {/* VẤN ĐỀ 4: SỐ ĐẾM SẢN PHẨM BÊN CẠNH TÊN */}
+                  {/* SỐ ĐẾM SẢN PHẨM HOẶC NHÃN ĐANG NHẬP HÀNG */}
                   {count !== undefined && (
-                    <span 
-                      className={`badge rounded-pill small ${
-                        isActive 
-                          ? 'bg-primary text-white' 
-                          : count > 0 
-                            ? 'bg-light text-secondary border' 
-                            : 'bg-light text-muted border-0 opacity-50'
-                      }`}
-                      style={{ fontSize: '0.72rem', padding: '0.3em 0.6em' }}
-                    >
-                      {count}
-                    </span>
+                    count > 0 ? (
+                      <span 
+                        className={`badge rounded-pill small ${
+                          isActive 
+                            ? 'bg-primary text-white' 
+                            : 'bg-light text-secondary border'
+                        }`}
+                        style={{ fontSize: '0.72rem', padding: '0.3em 0.6em' }}
+                      >
+                        {count}
+                      </span>
+                    ) : (
+                      <span 
+                        className="badge rounded-pill small bg-light text-muted border-0 opacity-75"
+                        style={{ fontSize: '0.68rem', padding: '0.25em 0.5em' }}
+                      >
+                        Đang nhập
+                      </span>
+                    )
                   )}
                   <i className="bi bi-chevron-right small opacity-50"></i>
                 </div>

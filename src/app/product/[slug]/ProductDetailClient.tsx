@@ -42,7 +42,9 @@ interface Review {
   rating: number;
   comment: string;
   createdAt: string;
-  user: { name: string };
+  userName?: string;
+  userPhone?: string;
+  user?: { name: string };
 }
 
 export default function ProductDetailClient({
@@ -1074,7 +1076,9 @@ export default function ProductDetailClient({
                   </div>
                 ) : (
                   <div className="d-flex flex-column gap-3" style={{ maxHeight: "560px", overflowY: "auto" }}>
-                    {reviews.map((rev) => (
+                    {reviews.map((rev) => {
+                      const displayName = rev.userName || rev.user?.name || "Khách hàng";
+                      return (
                       <div key={rev.id} className="p-3 border rounded-4 bg-light shadow-sm">
                         <div className="d-flex align-items-center justify-content-between mb-2">
                           <div className="d-flex align-items-center gap-2">
@@ -1082,10 +1086,17 @@ export default function ProductDetailClient({
                               className="avatar-placeholder bg-primary text-white d-flex align-items-center justify-content-center fw-bold rounded-circle shadow-sm"
                               style={{ width: "36px", height: "36px", fontSize: "14px" }}
                             >
-                              {(rev.user?.name || "K").charAt(0).toUpperCase()}
+                              {displayName.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <div className="fw-bold text-dark small">{rev.user?.name || "Khách hàng"}</div>
+                              <div className="fw-bold text-dark small">
+                                {displayName}
+                                {rev.userPhone && (
+                                  <span className="text-muted fw-normal ms-1" style={{ fontSize: "11px" }}>
+                                    ({rev.userPhone})
+                                  </span>
+                                )}
+                              </div>
                               <span className="badge bg-success-subtle text-success border-0 small" style={{ fontSize: "10px" }}>
                                 ✓ Đã mua tại Trường Tín
                               </span>
@@ -1109,7 +1120,8 @@ export default function ProductDetailClient({
 
                         <p className="text-dark mb-0 small lh-base">{rev.comment}</p>
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 )}
               </div>

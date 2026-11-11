@@ -5,13 +5,14 @@ import { CURATED_NEWS, NewsItem } from '@/data/curated-news';
 
 const parser = new Parser();
 
-// Bộ ảnh dự phòng sắc nét chất lượng cao theo chủ đề vật tư / điện nước
+// Bộ ảnh dự phòng cục bộ sắc nét 100% không lo lỗi link/403
 const FALLBACK_NEWS_IMAGES = [
-  "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?auto=format&fit=crop&w=600&q=80",
+  "/images/cadivi.png",
+  "/images/ongnuoc.png",
+  "/images/mat-tien-truong-tin.jpg",
+  "/images/STORE_IMAGE_URL.webp",
+  "/images/rp7.png",
+  "/images/co-21.webp",
 ];
 
 // NHÓM 5: BỘ TỪ KHÓA LOẠI TRỪ (Negative Keywords - Bắt buộc phải chặn)
@@ -64,7 +65,6 @@ export async function fetchNews(): Promise<NewsItem[]> {
     const urls = [
       'https://vnexpress.net/rss/gia-dinh.rss',
       'https://vnexpress.net/rss/thoi-su.rss',
-      'https://baoxaydung.vn/rss/xay-dung/vat-lieu-xay-dung.rss',
     ];
 
     let allRssItems: any[] = [];

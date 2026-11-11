@@ -26,6 +26,7 @@ interface Product {
   id: number;
   name: string;
   slug: string;
+  brand?: string;
   description: string;
   unit: string;
   categoryId: number;
@@ -40,6 +41,101 @@ interface Product {
   images: { url: string }[];
   attributes?: any;
 }
+
+// --- Danh sách Thương hiệu Chuẩn hóa ---
+const STANDARD_BRANDS = [
+  "CADIVI",
+  "BÌNH MINH",
+  "PANASONIC",
+  "PHILIPS",
+  "MPE",
+  "SINO - VANLOCK",
+  "DAPHACO",
+  "APOLLO",
+];
+
+// --- Mẫu Thông Số Kỹ Thuật Theo Danh Mục ---
+const SPECIFICATION_PRESETS: Record<string, { key: string; value: string }[]> = {
+  "bóng đèn": [
+    { key: "Công suất", value: "" },
+    { key: "Đui đèn", value: "" },
+    { key: "Màu ánh sáng", value: "" },
+    { key: "Điện áp", value: "" },
+    { key: "Bảo hành", value: "" },
+  ],
+  "chiếu sáng": [
+    { key: "Công suất", value: "" },
+    { key: "Đui đèn", value: "" },
+    { key: "Màu ánh sáng", value: "" },
+    { key: "Điện áp", value: "" },
+    { key: "Bảo hành", value: "" },
+  ],
+  "dây điện": [
+    { key: "Tiết diện ruột dẫn", value: "" },
+    { key: "Số lõi", value: "" },
+    { key: "Chất liệu ruột dẫn", value: "" },
+    { key: "Điện áp định mức", value: "" },
+    { key: "Tiêu chuẩn", value: "" },
+  ],
+  "thiết bị điện": [
+    { key: "Dòng định mức", value: "" },
+    { key: "Điện áp", value: "" },
+    { key: "Số cực", value: "" },
+    { key: "Tiêu chuẩn", value: "" },
+    { key: "Xuất xứ", value: "" },
+  ],
+  "ống nước": [
+    { key: "Đường kính ngoài (Ø)", value: "" },
+    { key: "Độ dày", value: "" },
+    { key: "Áp lực làm việc (PN)", value: "" },
+    { key: "Chất liệu", value: "" },
+  ],
+  "phụ kiện": [
+    { key: "Quy cách / Đường kính (Ø)", value: "" },
+    { key: "Độ dày", value: "" },
+    { key: "Kiểu kết nối", value: "" },
+    { key: "Chất liệu", value: "" },
+  ],
+  "keo": [
+    { key: "Dung tích / Trọng lượng", value: "" },
+    { key: "Màu sắc", value: "" },
+    { key: "Đặc tính bám dính", value: "" },
+    { key: "Ứng dụng", value: "" },
+  ],
+  "silicon": [
+    { key: "Dung tích / Trọng lượng", value: "" },
+    { key: "Màu sắc", value: "" },
+    { key: "Đặc tính bám dính", value: "" },
+    { key: "Ứng dụng", value: "" },
+  ],
+  "băng keo": [
+    { key: "Quy cách / Khổ rộng", value: "" },
+    { key: "Chiều dài cuộn", value: "" },
+    { key: "Độ dính", value: "" },
+    { key: "Màu sắc", value: "" },
+  ],
+  "thiết bị vệ sinh": [
+    { key: "Chất liệu", value: "" },
+    { key: "Kích thước ren", value: "" },
+    { key: "Áp lực nước", value: "" },
+    { key: "Bảo hành", value: "" },
+  ],
+  "mặc định": [
+    { key: "Thương hiệu", value: "" },
+    { key: "Chất liệu", value: "" },
+    { key: "Kích thước / Quy cách", value: "" },
+    { key: "Xuất xứ", value: "" },
+    { key: "Bảo hành", value: "" },
+  ],
+};
+
+const getPresetForCategory = (catName: string) => {
+  const n = (catName || "").toLowerCase();
+  for (const [key, preset] of Object.entries(SPECIFICATION_PRESETS)) {
+    if (n.includes(key)) return preset;
+  }
+  return SPECIFICATION_PRESETS["mặc định"];
+};
 
 // --- Helpers ---
 const generateSlug = (str: string) => {
@@ -87,9 +183,12 @@ export default function AdminProductsPage() {
   const initialFormState = {
     name: "",
     slug: "",
+    brand: "",
+    customBrand: "",
     categoryId: "",
     description: "",
     unit: "Cái",
+    isContactPrice: false,
     images: [] as string[],
     variants: [
       { sku: "", price: "", stock: "", attributeValue: "" },
@@ -159,12 +258,31 @@ export default function AdminProductsPage() {
       parsedAttributes = Object.entries(p.attributes).map(([key, value]) => ({ key, value: String(value) }));
     }
 
+    // Xác định brand và customBrand
+    let brandVal = "";
+    let customBrandVal = "";
+    if (p.brand) {
+      const match = STANDARD_BRANDS.find(b => b.toUpperCase() === p.brand?.toUpperCase());
+      if (match) {
+        brandVal = match;
+      } else {
+        brandVal = "KHÁC";
+        customBrandVal = p.brand;
+      }
+    }
+
+    // Kiểm tra xem tất cả các biến thể có phải giá 0 hoặc rỗng không
+    const isContactPrice = p.variants.length > 0 && p.variants.every((v) => Number(v.price) === 0);
+
     setFormData({
       name: p.name,
       slug: p.slug,
+      brand: brandVal,
+      customBrand: customBrandVal,
       description: p.description || "",
       unit: p.unit || "Cái",
       categoryId: p.categoryId.toString(),
+      isContactPrice,
       images: p.images.length > 0 ? p.images.map((img) => img.url) : [],
       variants: p.variants.map((v) => ({
         sku: v.sku,
@@ -250,6 +368,48 @@ export default function AdminProductsPage() {
     }));
   };
 
+  // VẤN ĐỀ 3 & CẢNH BÁO RỦI RO ĐÈ DỮ LIỆU: NẠP MẪU THÔNG SỐ THEO DANH MỤC
+  const handleApplyPresetSpecs = async () => {
+    if (!formData.categoryId) {
+      toast.error("Vui lòng chọn Danh mục trước khi nạp mẫu thông số!");
+      return;
+    }
+
+    const selectedCategory = categories.find(
+      (c) => c.id.toString() === formData.categoryId
+    );
+    const catName = selectedCategory ? selectedCategory.name : "";
+    const preset = getPresetForCategory(catName);
+
+    // Kiểm tra dữ liệu cũ để tránh việc bấm nhầm làm mất công gõ
+    const hasExistingData = formData.attributes.some(
+      (a) => a.key.trim() !== "" || a.value.trim() !== ""
+    );
+
+    if (hasExistingData) {
+      const result = await Swal.fire({
+        title: "Tải lại mẫu thông số?",
+        text: "Hành động này sẽ tải lại mẫu thông số, dữ liệu cũ chưa lưu có thể bị thay thế. Bạn có chắc chắn không?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#0078D4",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Đồng ý nạp mẫu",
+        cancelButtonText: "Hủy bỏ",
+      });
+
+      if (!result.isConfirmed) return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      attributes: preset.map((p) => ({ ...p })),
+    }));
+    toast.success(`Đã nạp mẫu thông số cho nhóm ${catName || "sản phẩm"}!`, {
+      icon: "⚡",
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = { ...formData };
@@ -259,16 +419,31 @@ export default function AdminProductsPage() {
 
     // Convert attributes array to object
     const attributesObj: Record<string, string> = {};
-    payload.attributes.forEach(attr => {
+    payload.attributes.forEach((attr) => {
       if (attr.key.trim() && attr.value.trim()) {
         attributesObj[attr.key.trim()] = attr.value.trim();
       }
     });
-    
+
+    const finalBrand =
+      formData.brand === "KHÁC" ? formData.customBrand.trim() : formData.brand;
+
+    const variantsPayload = formData.variants.map((v) => ({
+      ...v,
+      price: formData.isContactPrice ? "0" : cleanMoney(v.price),
+    }));
+
     // Using any type to allow deleting attributes field and adding it as object
-    const finalPayload: any = { ...payload };
+    const finalPayload: any = {
+      ...payload,
+      brand: finalBrand || null,
+      variants: variantsPayload,
+    };
+    delete finalPayload.customBrand;
+    delete finalPayload.isContactPrice;
     delete finalPayload.attributes;
-    finalPayload.attributes = Object.keys(attributesObj).length > 0 ? attributesObj : null;
+    finalPayload.attributes =
+      Object.keys(attributesObj).length > 0 ? attributesObj : null;
 
     try {
       if (editId) {
@@ -287,11 +462,12 @@ export default function AdminProductsPage() {
   };
 
   // ==========================================
-  // ĐÃ THÊM: HÀM LẤY FORM MẪU VÀ IMPORT EXCEL
+  // ĐÃ THÊM: HÀM LẤY FORM MẪU VÀ IMPORT EXCEL / CSV
   // ==========================================
-  const handleDownloadTemplate = () => {
-    // Gọi thẳng URL Backend để tải file mẫu
-    window.open(`${process.env.NEXT_PUBLIC_API_URL || 'https://truongtin-api.onrender.com'}/api/products/template`);
+  const handleDownloadTemplate = (format: "xlsx" | "csv" = "xlsx") => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://truongtin-api.onrender.com';
+    const url = `${baseUrl}/api/products/template${format === "csv" ? "?format=csv" : ""}`;
+    window.open(url, "_blank");
   };
 
 
@@ -319,13 +495,47 @@ export default function AdminProductsPage() {
         </div>
         
         <div className="d-flex flex-wrap gap-2">
-          {/* NÚT LẤY FORM MẪU */}
-          <button 
-            onClick={handleDownloadTemplate} 
-            className="btn btn-outline-success rounded-pill px-3 shadow-sm d-flex align-items-center"
-          >
-            <i className="bi bi-file-earmark-arrow-down me-2"></i> Lấy form mẫu
-          </button>
+          {/* NÚT LẤY FORM MẪU (EXCEL / CSV) */}
+          <div className="dropdown">
+            <button 
+              className="btn btn-outline-success rounded-pill px-3 shadow-sm d-flex align-items-center dropdown-toggle"
+              type="button"
+              id="dropdownDownloadTemplate"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <i className="bi bi-file-earmark-arrow-down me-2"></i> Lấy form mẫu
+            </button>
+            <ul className="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1" aria-labelledby="dropdownDownloadTemplate">
+              <li>
+                <button 
+                  type="button"
+                  className="dropdown-item py-2 d-flex align-items-center gap-2"
+                  onClick={() => handleDownloadTemplate("xlsx")}
+                >
+                  <i className="bi bi-file-earmark-excel text-success fs-5"></i>
+                  <div>
+                    <div className="fw-semibold">Tải mẫu Excel (.xlsx)</div>
+                    <small className="text-muted">Có sẵn dropdown chọn Hãng & Danh mục</small>
+                  </div>
+                </button>
+              </li>
+              <li><hr className="dropdown-divider my-1" /></li>
+              <li>
+                <button 
+                  type="button"
+                  className="dropdown-item py-2 d-flex align-items-center gap-2"
+                  onClick={() => handleDownloadTemplate("csv")}
+                >
+                  <i className="bi bi-file-text text-primary fs-5"></i>
+                  <div>
+                    <div className="fw-semibold">Tải mẫu CSV (.csv UTF-8)</div>
+                    <small className="text-muted">Nhẹ, mở tốt trên Excel & Google Sheets</small>
+                  </div>
+                </button>
+              </li>
+            </ul>
+          </div>
 
           {/* NÚT IMPORT EXCEL NÂNG CAO */}
           <button 
@@ -405,7 +615,14 @@ export default function AdminProductsPage() {
                         unoptimized
                       />
                       <div>
-                        <div className="fw-bold">{p.name}</div>
+                        <div className="fw-bold d-flex align-items-center gap-2">
+                          <span>{p.name}</span>
+                          {p.brand && (
+                            <span className="badge bg-primary-subtle text-primary border" style={{ fontSize: "10px" }}>
+                              {p.brand}
+                            </span>
+                          )}
+                        </div>
                         <div
                           className="text-muted"
                           style={{ fontSize: "10px" }}
@@ -497,7 +714,7 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div className="row g-3">
-                  <div className="col-12 col-md-5">
+                  <div className="col-12 col-md-4">
                     <label className="small fw-bold mb-1">Tên sản phẩm</label>
                     <input
                       type="text"
@@ -506,12 +723,12 @@ export default function AdminProductsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      placeholder="Ống nhựa Bình Minh..."
+                      placeholder="Ống nhựa Bình Minh, Dây Cadivi..."
                       required
                     />
                   </div>
 
-                  <div className="col-12 col-md-4">
+                  <div className="col-12 col-md-3">
                     <label className="small fw-bold mb-1">Danh mục</label>
                     <select
                       className="form-select"
@@ -530,7 +747,7 @@ export default function AdminProductsPage() {
                     </select>
                   </div>
 
-                  <div className="col-12 col-md-3">
+                  <div className="col-12 col-md-2">
                     <label className="small fw-bold mb-1 text-danger">
                       Đơn vị tính
                     </label>
@@ -545,29 +762,121 @@ export default function AdminProductsPage() {
                       required
                     />
                   </div>
+
+                  {/* VẤN ĐỀ 1: BỔ SUNG Ô CHỌN THƯƠNG HIỆU (BRAND) */}
+                  <div className="col-12 col-md-3">
+                    <label className="small fw-bold mb-1 text-primary">
+                      Thương hiệu (Hãng)
+                    </label>
+                    <select
+                      className="form-select"
+                      value={formData.brand}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          brand: e.target.value,
+                          customBrand: e.target.value === "KHÁC" ? formData.customBrand : "",
+                        })
+                      }
+                    >
+                      <option value="">-- Chọn thương hiệu --</option>
+                      {STANDARD_BRANDS.map((b) => (
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
+                      ))}
+                      <option value="KHÁC">Khác (Tự nhập tên hãng)...</option>
+                    </select>
+                    {formData.brand === "KHÁC" && (
+                      <input
+                        type="text"
+                        className="form-control form-control-sm mt-1 border-primary"
+                        placeholder="Gõ tên hãng mới..."
+                        value={formData.customBrand}
+                        onChange={(e) =>
+                          setFormData({ ...formData, customBrand: e.target.value })
+                        }
+                        required
+                      />
+                    )}
+                  </div>
                 </div>
 
-                {/* Checkbox Hàng cồng kềnh - Đặt nổi bật bên ngoài lưới form chính */}
-                <div className="mt-4 mb-2">
-                  <div className="form-check form-switch d-flex align-items-center gap-3 p-3 bg-warning bg-opacity-10 border border-warning rounded-4 shadow-sm" style={{ cursor: 'pointer' }}>
-                    <input
-                      className="form-check-input m-0"
-                      type="checkbox"
-                      id="isBulky"
-                      role="switch"
-                      checked={formData.isBulky}
-                      onChange={(e) => setFormData({ ...formData, isBulky: e.target.checked })}
-                      style={{ width: '3.5rem', height: '1.75rem', cursor: 'pointer' }}
-                    />
-                    <label className="form-check-label fw-bold d-flex flex-column" htmlFor="isBulky" style={{ cursor: 'pointer', userSelect: 'none' }}>
-                      <span className="d-flex align-items-center text-dark" style={{ fontSize: '1.05rem' }}>
-                        <i className="bi bi-truck me-2 text-warning fs-4"></i>
-                        Hàng cồng kềnh (ống dài, cồng kềnh, nặng)
-                      </span>
-                      <span className="text-muted fw-normal mt-1" style={{ fontSize: '0.85rem' }}>
-                        Khi bật: phí vận chuyển sẽ được báo giá riêng cho khách.
-                      </span>
-                    </label>
+                {/* HÀNG CHECKBOX CHỨC NĂNG: LIÊN HỆ BÁO GIÁ & HÀNG CỒNG KỀNH */}
+                <div className="row g-2 mt-2">
+                  {/* VẤN ĐỀ 2: CHECKBOX LIÊN HỆ BÁO GIÁ TRỰC QUAN (ÁP DỤNG CHUNG CHO TOÀN BỘ SẢN PHẨM) */}
+                  <div className="col-12 col-md-6">
+                    <div
+                      className={`form-check form-switch d-flex align-items-center gap-3 p-3 border rounded-4 shadow-sm h-100 transition-all ${
+                        formData.isContactPrice ? "bg-info bg-opacity-10 border-info" : "bg-light"
+                      }`}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <input
+                        className="form-check-input m-0"
+                        type="checkbox"
+                        id="isContactPrice"
+                        role="switch"
+                        checked={formData.isContactPrice}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setFormData((prev) => ({
+                            ...prev,
+                            isContactPrice: checked,
+                            variants: checked
+                              ? prev.variants.map((v) => ({ ...v, price: "0" }))
+                              : prev.variants,
+                          }));
+                        }}
+                        style={{ width: "3.2rem", height: "1.6rem", cursor: "pointer" }}
+                      />
+                      <label
+                        className="form-check-label fw-bold d-flex flex-column"
+                        htmlFor="isContactPrice"
+                        style={{ cursor: "pointer", userSelect: "none" }}
+                      >
+                        <span className="d-flex align-items-center text-dark" style={{ fontSize: "0.95rem" }}>
+                          <i className="bi bi-telephone-outbound-fill text-primary me-2 fs-5"></i>
+                          Liên hệ báo giá
+                        </span>
+                        <span className="text-muted fw-normal mt-1" style={{ fontSize: "0.8rem" }}>
+                          Khi bật: Khóa các ô giá và tự động hiển thị &quot;Liên hệ báo giá&quot; (Zalo).
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* CHECKBOX HÀNG CỒNG KỀNH */}
+                  <div className="col-12 col-md-6">
+                    <div
+                      className={`form-check form-switch d-flex align-items-center gap-3 p-3 border rounded-4 shadow-sm h-100 transition-all ${
+                        formData.isBulky ? "bg-warning bg-opacity-10 border-warning" : "bg-light"
+                      }`}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <input
+                        className="form-check-input m-0"
+                        type="checkbox"
+                        id="isBulky"
+                        role="switch"
+                        checked={formData.isBulky}
+                        onChange={(e) => setFormData({ ...formData, isBulky: e.target.checked })}
+                        style={{ width: "3.2rem", height: "1.6rem", cursor: "pointer" }}
+                      />
+                      <label
+                        className="form-check-label fw-bold d-flex flex-column"
+                        htmlFor="isBulky"
+                        style={{ cursor: "pointer", userSelect: "none" }}
+                      >
+                        <span className="d-flex align-items-center text-dark" style={{ fontSize: "0.95rem" }}>
+                          <i className="bi bi-truck me-2 text-warning fs-5"></i>
+                          Hàng cồng kềnh (ống dài, nặng)
+                        </span>
+                        <span className="text-muted fw-normal mt-1" style={{ fontSize: "0.8rem" }}>
+                          Khi bật: phí vận chuyển sẽ được thỏa thuận báo giá riêng cho khách.
+                        </span>
+                      </label>
+                    </div>
                   </div>
                 </div>
 
@@ -586,25 +895,38 @@ export default function AdminProductsPage() {
 
                   {/* 💡 THÊM Ô THÔNG SỐ KỸ THUẬT */}
                   <div className="col-12 bg-light p-3 rounded-3 mt-4 border">
-                    <div className="d-flex justify-content-between mb-3 align-items-center">
-                      <span className="fw-bold text-dark">
+                    <div className="d-flex justify-content-between mb-3 align-items-center flex-wrap gap-2">
+                      <span className="fw-bold text-dark d-flex align-items-center gap-2">
+                        <i className="bi bi-gear-wide-connected text-primary"></i>
                         Thông số kỹ thuật (Tùy chọn)
                       </span>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-dark rounded-pill px-3"
-                        onClick={() =>
-                          setFormData({
-                            ...formData,
-                            attributes: [
-                              ...formData.attributes,
-                              { key: "", value: "" },
-                            ],
-                          })
-                        }
-                      >
-                        + Thêm thông số
-                      </button>
+                      <div className="d-flex gap-2">
+                        {/* VẤN ĐỀ 3: NÚT NẠP MẪU THÔNG SỐ THEO DANH MỤC */}
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm d-flex align-items-center gap-1"
+                          onClick={handleApplyPresetSpecs}
+                          title="Nạp nhanh các trường thông số mẫu chuẩn hóa theo Danh mục đã chọn"
+                        >
+                          <i className="bi bi-lightning-charge-fill text-warning"></i>
+                          <span>⚡ Nạp mẫu theo Danh mục</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-dark rounded-pill px-3 shadow-sm"
+                          onClick={() =>
+                            setFormData({
+                              ...formData,
+                              attributes: [
+                                ...formData.attributes,
+                                { key: "", value: "" },
+                              ],
+                            })
+                          }
+                        >
+                          + Thêm thông số
+                        </button>
+                      </div>
                     </div>
 
                     {formData.attributes.map((attr, i) => (
@@ -718,8 +1040,14 @@ export default function AdminProductsPage() {
                           </label>
                           <input
                             type="text"
-                            className="form-control form-control-sm text-danger fw-bold"
-                            value={formatMoney(v.price)}
+                            disabled={formData.isContactPrice}
+                            placeholder={formData.isContactPrice ? "Liên hệ báo giá" : "0"}
+                            className={`form-control form-control-sm ${
+                              formData.isContactPrice
+                                ? "bg-light text-muted fst-italic border-secondary"
+                                : "text-danger fw-bold"
+                            }`}
+                            value={formData.isContactPrice ? "Liên hệ báo giá" : formatMoney(v.price)}
                             onChange={(e) => {
                               const newV = [...formData.variants];
                               newV[i].price = cleanMoney(e.target.value);

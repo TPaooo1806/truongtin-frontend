@@ -192,7 +192,7 @@ export default function BannerDisplay({ position }: { position: BannerPosition }
           </div>
         )}
 
-        {/* Danh sách Hình ảnh Banner tràn viền nguyên bản */}
+        {/* Danh sách Hình ảnh Banner */}
         <div className="carousel-inner">
           {banners.map((banner, index) => (
             <div
@@ -205,14 +205,15 @@ export default function BannerDisplay({ position }: { position: BannerPosition }
                     href={banner.link}
                     target="_blank"
                     rel="noreferrer"
-                    className="d-block w-100 h-100"
+                    className="d-block w-100 h-100 position-relative"
                   >
                     <Image
                       src={banner.imageUrl}
                       alt={banner.title}
                       fill
                       priority={index === 0}
-                      className="d-block w-100 object-fit-cover"
+                      className="d-block w-100"
+                      style={{ objectFit: "cover" }}
                       unoptimized
                     />
                   </a>
@@ -222,7 +223,8 @@ export default function BannerDisplay({ position }: { position: BannerPosition }
                     alt={banner.title}
                     fill
                     priority={index === 0}
-                    className="d-block w-100 object-fit-cover"
+                    className="d-block w-100"
+                    style={{ objectFit: "cover" }}
                     unoptimized
                   />
                 )}

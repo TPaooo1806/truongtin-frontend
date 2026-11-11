@@ -165,6 +165,9 @@ setNotifications(sorted);
           <Link href="/admin/customers" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/customers') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
             <i className="bi bi-people-fill me-3 fs-5"></i> Khách hàng
           </Link>
+          <Link href="/admin/reviews" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/reviews') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+            <i className="bi bi-chat-heart-fill me-3 fs-5"></i> Đánh giá
+          </Link>
           <Link href="/admin/vouchers" className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/vouchers') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
             <i className="bi bi-ticket-perforated-fill me-3 fs-5"></i> Khuyến mãi
           </Link>
@@ -218,6 +221,7 @@ setNotifications(sorted);
             {pathname === '/admin' ? 'Bảng Điều Khiển' : 
              pathname.includes('products') ? 'Quản Lý Sản Phẩm' : 
              pathname.includes('orders') ? 'Xử Lý Đơn Hàng' :
+             pathname.includes('reviews') ? 'Quản Lý Đánh Giá' :
              pathname.includes('categories') ? 'Danh Mục Vật Tư' : 'Trang Quản Trị'}
           </h5>
           <div className="d-flex align-items-center gap-3">
@@ -441,6 +445,9 @@ setNotifications(sorted);
             <div className="text-white-50 fw-bold mb-2 ms-2 mt-4" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>KHÁCH HÀNG & ĐỐI TÁC</div>
             <Link href="/admin/customers" onClick={() => setShowMobileMenu(false)} className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/customers') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
               <i className="bi bi-people-fill me-3 fs-5"></i> Khách hàng
+            </Link>
+            <Link href="/admin/reviews" onClick={() => setShowMobileMenu(false)} className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/reviews') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
+              <i className="bi bi-chat-heart-fill me-3 fs-5"></i> Đánh giá
             </Link>
             <Link href="/admin/vouchers" onClick={() => setShowMobileMenu(false)} className={`nav-link py-2 px-3 mb-1 rounded-3 text-white d-flex align-items-center transition-all ${isActive('/admin/vouchers') ? 'bg-white bg-opacity-25 shadow-sm fw-bold' : 'opacity-75 hover-opacity-100'}`}>
               <i className="bi bi-ticket-perforated-fill me-3 fs-5"></i> Khuyến mãi

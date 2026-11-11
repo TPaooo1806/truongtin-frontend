@@ -79,9 +79,12 @@ export default function LoadMoreProductList({
 
   // VẤN ĐỀ 3: LỌC THEO HÃNG & SẮP XẾP TỨC THÌ TRÊN GIAO DIỆN
   const displayedProducts = useMemo(() => {
-    // 1. Lọc theo Brand Chip
+    // 1. Lọc theo Brand Chip (Ưu tiên trường brand chuẩn hóa từ Database, fallback theo tên sản phẩm)
     const filtered = products.filter((item) => {
       if (selectedBrand === "Tất cả") return true;
+      if (item.brand) {
+        return item.brand.trim().toLowerCase() === selectedBrand.trim().toLowerCase();
+      }
       return item.name.toLowerCase().includes(selectedBrand.toLowerCase());
     });
 

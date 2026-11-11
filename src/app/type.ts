@@ -2,6 +2,10 @@ export interface Category {
   id: number;
   name: string;
   slug: string;
+  icon?: string;
+  showOnHome?: boolean;
+  isActive?: boolean;
+  displayOrder?: number;
   _count?: {
     products: number;
   };
@@ -26,6 +30,7 @@ export interface Product {
   categoryId: number;
   name: string;
   slug: string;
+  brand?: string;
   description: string;
   unit: string;
   isVisible: boolean;

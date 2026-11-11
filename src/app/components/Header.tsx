@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import api from "@/lib/axios";
+import type { Category } from "../type";
 
 const AuthModal = dynamic(() => import('./AuthModal'), { ssr: false });
 
@@ -13,12 +14,6 @@ const AuthModal = dynamic(() => import('./AuthModal'), { ssr: false });
 interface UserData {
   name: string;
   role: string;
-}
-
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
 }
 
 export default function Header() {
@@ -229,18 +224,31 @@ export default function Header() {
     router.push(`/search?q=${encodeURIComponent(keyword)}`);
   };
 
-  // Icon sinh động cho từng danh mục
-  const getCategoryIcon = (name: string) => {
-    const n = name.toLowerCase();
-    if (n.includes("ống") || n.includes("nước")) return "bi-droplet-fill text-info";
-    if (n.includes("phụ kiện")) return "bi-wrench-adjustable text-warning";
-    if (n.includes("đèn") || n.includes("chiếu sáng") || n.includes("bóng")) return "bi-lightbulb-fill text-warning";
-    if (n.includes("điện") || n.includes("dây") || n.includes("cáp")) return "bi-lightning-charge-fill text-danger";
-    if (n.includes("keo") || n.includes("silicon") || n.includes("băng keo")) return "bi-paint-bucket text-primary";
-    if (n.includes("kim khí") || n.includes("kìm") || n.includes("cắt") || n.includes("lưới") || n.includes("kẽm")) return "bi-tools text-secondary";
-    if (n.includes("vệ sinh") || n.includes("van")) return "bi-shield-check text-success";
+  // Icon sinh động cho từng danh mục (Ưu tiên icon cấu hình từ Admin)
+  const renderCategoryIcon = (cat: Category) => {
+    if (cat.icon && cat.icon.trim()) return cat.icon;
+    const n = cat.name.toLowerCase();
+    if (n.includes("ống") || n.includes("nước")) return "bi-water text-primary";
+    if (n.includes("phụ kiện")) return "bi-intersect text-warning";
+    if (n.includes("đèn") || n.includes("chiếu sáng") || n.includes("bóng")) return "bi-lightbulb text-warning";
+    if (n.includes("điện") || n.includes("dây") || n.includes("cáp")) return "bi-lightning-charge text-danger";
+    if (n.includes("băng keo") || n.includes("keo dán")) return "bi-disc text-primary";
+    if (n.includes("silicon")) return "bi-droplet-half text-info";
+    if (n.includes("kim khí") || n.includes("kìm") || n.includes("cắt") || n.includes("lưới") || n.includes("kẽm")) return "bi-wrench-adjustable text-secondary";
+    if (n.includes("vệ sinh") || n.includes("van")) return "bi-badge-wc text-primary";
     return "bi-box-seam text-primary";
   };
+
+  // Sắp xếp danh mục: Chỉ lấy danh mục isActive, gom danh mục 0 sản phẩm xuống cuối
+  const sortedCategories = [...categories.filter((c) => c.isActive !== false)].sort((a, b) => {
+    const countA = a._count?.products ?? 0;
+    const countB = b._count?.products ?? 0;
+    if (countA > 0 && countB === 0) return -1;
+    if (countA === 0 && countB > 0) return 1;
+    const orderDiff = (a.displayOrder ?? 0) - (b.displayOrder ?? 0);
+    if (orderDiff !== 0) return orderDiff;
+    return a.name.localeCompare(b.name);
+  });
 
   return (
     <>
@@ -407,7 +415,7 @@ export default function Header() {
                       >
                         <div className="px-3 py-2 bg-light border-bottom d-flex align-items-center justify-content-between">
                           <span className="fw-bold small text-dark text-uppercase" style={{ fontSize: "0.78rem" }}>
-                            <i className="bi bi-list-task me-1 text-primary"></i> Danh mục vật tư ({categories.length})
+                            <i className="bi bi-list-task me-1 text-primary"></i> Danh mục vật tư ({sortedCategories.length})
                           </span>
                           <Link 
                             href="/san-pham" 
@@ -420,22 +428,35 @@ export default function Header() {
                         </div>
                         
                         <div className="py-1">
-                          {categories.length > 0 ? (
-                            categories.map((cat) => (
-                              <Link
-                                key={cat.id}
-                                href={`/category/${cat.slug}`}
-                                className="dropdown-category-item d-flex align-items-center justify-content-between px-3 py-2 text-dark text-decoration-none rounded-3"
-                                style={{ fontSize: "0.86rem", transition: "all 0.15s ease" }}
-                                onClick={() => setShowCategoryDropdown(false)}
-                              >
-                                <div className="d-flex align-items-center gap-2 text-truncate me-2">
-                                  <i className={`bi ${getCategoryIcon(cat.name)} fs-6`}></i>
-                                  <span className="fw-medium text-truncate">{cat.name}</span>
-                                </div>
-                                <i className="bi bi-chevron-right small text-muted opacity-50" style={{ fontSize: "0.7rem" }}></i>
-                              </Link>
-                            ))
+                          {sortedCategories.length > 0 ? (
+                            sortedCategories.map((cat) => {
+                              const isZero = (cat._count?.products ?? 0) === 0;
+                              return (
+                                <Link
+                                  key={cat.id}
+                                  href={`/category/${cat.slug}`}
+                                  className="dropdown-category-item d-flex align-items-center justify-content-between px-3 py-2 text-dark text-decoration-none rounded-3"
+                                  style={{ fontSize: "0.86rem", transition: "all 0.15s ease" }}
+                                  onClick={() => setShowCategoryDropdown(false)}
+                                >
+                                  <div className="d-flex align-items-center gap-2 text-truncate me-2">
+                                    <i className={`bi ${renderCategoryIcon(cat)} fs-6 text-primary`}></i>
+                                    <span className="fw-medium text-truncate">{cat.name}</span>
+                                  </div>
+                                  <div className="d-flex align-items-center gap-1">
+                                    {isZero && (
+                                      <span
+                                        className="badge rounded-pill bg-light text-muted border-0 opacity-75 small"
+                                        style={{ fontSize: "0.65rem", padding: "0.2em 0.5em" }}
+                                      >
+                                        Đang nhập
+                                      </span>
+                                    )}
+                                    <i className="bi bi-chevron-right small text-muted opacity-50" style={{ fontSize: "0.7rem" }}></i>
+                                  </div>
+                                </Link>
+                              );
+                            })
                           ) : (
                             <div className="p-3 text-center text-muted small">Đang nạp danh mục...</div>
                           )}
@@ -603,20 +624,33 @@ export default function Header() {
           </div>
 
           <div className="px-3 py-2 bg-light text-muted small fw-bold text-uppercase mt-2">
-            Danh mục vật tư
+            Danh mục vật tư ({sortedCategories.length})
           </div>
           <div className="mobile-menu-items p-2">
-            {categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/category/${category.slug}`}
-                className="mobile-menu-item list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                onClick={() => closeBtnRef.current?.click()}
-              >
-                {category.name}
-                <i className="bi bi-chevron-right small text-muted"></i>
-              </Link>
-            ))}
+            {sortedCategories.map((category) => {
+              const isZero = (category._count?.products ?? 0) === 0;
+              return (
+                <Link
+                  key={category.id}
+                  href={`/category/${category.slug}`}
+                  className="mobile-menu-item list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                  onClick={() => closeBtnRef.current?.click()}
+                >
+                  <div className="d-flex align-items-center gap-2 text-truncate">
+                    <i className={`bi ${renderCategoryIcon(category)} text-primary fs-6`}></i>
+                    <span>{category.name}</span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    {isZero && (
+                      <span className="badge bg-light text-muted small" style={{ fontSize: "0.68rem" }}>
+                        Đang nhập
+                      </span>
+                    )}
+                    <i className="bi bi-chevron-right small text-muted"></i>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
 
           {!user && (

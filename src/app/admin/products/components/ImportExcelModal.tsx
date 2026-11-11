@@ -120,20 +120,39 @@ export default function ImportExcelModal({ onClose, onSuccess }: ImportExcelModa
           <div className="modal-body p-4">
             {!report ? (
               <div className="row g-4">
-                {/* Bước 1: Chọn Excel */}
+                {/* Bước 1: Chọn Excel hoặc CSV */}
                 <div className="col-12">
                   <div className="p-3 border rounded-3 bg-light">
-                    <h6 className="fw-bold mb-3">Bước 1: Chọn File Excel</h6>
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <h6 className="fw-bold mb-0">Bước 1: Chọn File Excel hoặc CSV</h6>
+                      <span className="badge bg-secondary">Hỗ trợ .xlsx, .xls, .csv</span>
+                    </div>
                     <input 
                       type="file" 
-                      className="form-control" 
-                      accept=".xlsx, .xls"
+                      className="form-control mb-2" 
+                      accept=".xlsx, .xls, .csv"
                       onChange={handleExcelChange}
                       disabled={isProcessing}
                     />
-                    <small className="text-muted mt-2 d-block">
-                      Tải form mẫu tại <a href={`${process.env.NEXT_PUBLIC_API_URL || 'https://truongtin-api.onrender.com'}/api/products/template`} target="_blank" className="text-decoration-none">đây</a>.
-                    </small>
+                    <div className="small text-muted d-flex flex-wrap gap-3 align-items-center mt-2 pt-1 border-top">
+                      <span><i className="bi bi-file-earmark-arrow-down me-1"></i> Tải file mẫu chuẩn:</span>
+                      <a 
+                        href={`${process.env.NEXT_PUBLIC_API_URL || 'https://truongtin-api.onrender.com'}/api/products/template`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="btn btn-sm btn-outline-success rounded-pill px-3 py-1"
+                      >
+                        <i className="bi bi-file-earmark-excel me-1"></i> File Excel (.xlsx)
+                      </a>
+                      <a 
+                        href={`${process.env.NEXT_PUBLIC_API_URL || 'https://truongtin-api.onrender.com'}/api/products/template?format=csv`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1"
+                      >
+                        <i className="bi bi-file-text me-1"></i> File CSV (.csv UTF-8)
+                      </a>
+                    </div>
                   </div>
                 </div>
 
