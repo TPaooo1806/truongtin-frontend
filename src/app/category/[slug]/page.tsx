@@ -81,13 +81,12 @@ function ProductGridSkeleton() {
   );
 }
 
-type CategoryPageProps = {
-  params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
-};
-
 // 📦 Trang Danh mục Chính (Server Component)
-export default async function CategoryPage({ params }: CategoryPageProps) {
+export default async function CategoryPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
 
