@@ -2,8 +2,15 @@ import { Suspense } from 'react';
 import Sidebar from '../../components/Sidebar';
 import LoadMoreProductList from '../../components/LoadMoreProductList';
 
+// Interface cho sản phẩm danh mục để làm Title
+interface CategoryProductItem {
+  category?: {
+    name: string;
+  };
+}
+
 // Hàm lấy tên danh mục để làm Title
-function getCategoryTitle(slug: string, products: any[]) {
+function getCategoryTitle(slug: string, products: CategoryProductItem[]) {
   if (products.length > 0 && products[0].category) {
     return `Danh mục: ${products[0].category.name}`;
   }
@@ -74,8 +81,13 @@ function ProductGridSkeleton() {
   );
 }
 
+type CategoryPageProps = {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
 // 📦 Trang Danh mục Chính (Server Component)
-export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function CategoryPage({ params }: CategoryPageProps) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
 

@@ -79,9 +79,15 @@ function SearchSkeleton() {
   );
 }
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+type SearchPageProps = {
+  params?: Promise<Record<string, never>>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function SearchPage({ searchParams }: SearchPageProps) {
   const resolvedSearchParams = await searchParams;
-  const q = resolvedSearchParams?.q || '';
+  const rawQ = resolvedSearchParams?.q;
+  const q = typeof rawQ === 'string' ? rawQ : Array.isArray(rawQ) ? rawQ[0] || '' : '';
 
   return (
     <div className="container my-4 search-page" style={{ backgroundColor: "#f6f5f4", paddingBottom: "2.5rem" }}>
