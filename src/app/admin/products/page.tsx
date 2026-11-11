@@ -171,7 +171,7 @@ export default function AdminProductsPage() {
   const [editId, setEditId] = useState<number | null>(null);
 
   // Phân trang
-  const cardRef = useRef<HTMLDivElement>(null);
+  const tableScrollRef = useRef<HTMLDivElement>(null);
   const [pageSize, setPageSize] = useState<number>(10);
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -247,20 +247,14 @@ export default function AdminProductsPage() {
       return;
     }
     fetchData(targetPage, pageSize);
-    const scrollContainer = cardRef.current?.closest(".overflow-auto");
-    if (scrollContainer) {
-      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    tableScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newSize = Number(e.target.value);
     setPageSize(newSize);
     fetchData(1, newSize);
-    const scrollContainer = cardRef.current?.closest(".overflow-auto");
-    if (scrollContainer) {
-      scrollContainer.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    tableScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -534,142 +528,152 @@ export default function AdminProductsPage() {
   const [showImportModal, setShowImportModal] = useState(false);
 
   return (
-    <div
-      ref={cardRef}
-      className="card border-0 shadow-sm rounded-4 bg-white d-flex flex-column"
-      style={{ minHeight: "calc(100vh - 118px)" }}
-    >
-      {/* NẾU ĐANG BẬT MODAL IMPORT EXCEL NÂNG CAO */}
-      {showImportModal && (
-        <ImportExcelModal
-          onClose={() => setShowImportModal(false)}
-          onSuccess={() => {
-            fetchData(1, pageSize);
-          }}
-        />
-      )}
+    <>
+      <div className="card border-0 shadow-sm rounded-4 bg-white d-flex flex-column overflow-hidden products-admin-card m-0 p-0">
+        {/* PHẦN TRÊN: Tiêu đề & Nút thao tác (cố định) */}
+        <div className="px-4 pt-3 pb-2 flex-shrink-0">
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <h5 className="fw-bold mb-0">Hàng Hóa Trường Tín</h5>
+              <small className="text-muted">Quản lý kho và giá bán</small>
+            </div>
 
-      {/* Phần nội dung trên (Tiêu đề + Bảng) có padding riêng để thanh phân trang tràn 100% bề rộng card */}
-      <div className="p-4 pb-2 flex-grow-1 d-flex flex-column">
-      {/* ĐÃ SỬA: Cụm tiêu đề và các nút thao tác */}
-      <div className="d-flex justify-content-between mb-4 align-items-center flex-wrap gap-3">
-        <div>
-          <h5 className="fw-bold mb-0">Hàng Hóa Trường Tín</h5>
-          <small className="text-muted">Quản lý kho và giá bán</small>
-        </div>
+            <div className="d-flex flex-wrap gap-2">
+              {/* NÚT LẤY FORM MẪU (EXCEL / CSV) */}
+              <div className="dropdown">
+                <button
+                  className="btn btn-outline-success rounded-pill px-3 shadow-sm d-flex align-items-center dropdown-toggle"
+                  type="button"
+                  id="dropdownDownloadTemplate"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <i className="bi bi-file-earmark-arrow-down me-2"></i> Lấy
+                  form mẫu
+                </button>
+                <ul
+                  className="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1"
+                  aria-labelledby="dropdownDownloadTemplate"
+                >
+                  <li>
+                    <button
+                      type="button"
+                      className="dropdown-item py-2 d-flex align-items-center gap-2"
+                      onClick={() => handleDownloadTemplate("xlsx")}
+                    >
+                      <i className="bi bi-file-earmark-excel text-success fs-5"></i>
+                      <div>
+                        <div className="fw-semibold">Tải mẫu Excel (.xlsx)</div>
+                        <small className="text-muted">
+                          Có sẵn dropdown chọn Hãng & Danh mục
+                        </small>
+                      </div>
+                    </button>
+                  </li>
+                  <li>
+                    <hr className="dropdown-divider my-1" />
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      className="dropdown-item py-2 d-flex align-items-center gap-2"
+                      onClick={() => handleDownloadTemplate("csv")}
+                    >
+                      <i className="bi bi-file-text text-primary fs-5"></i>
+                      <div>
+                        <div className="fw-semibold">
+                          Tải mẫu CSV (.csv UTF-8)
+                        </div>
+                        <small className="text-muted">
+                          Nhẹ, mở tốt trên Excel & Google Sheets
+                        </small>
+                      </div>
+                    </button>
+                  </li>
+                </ul>
+              </div>
 
-        <div className="d-flex flex-wrap gap-2">
-          {/* NÚT LẤY FORM MẪU (EXCEL / CSV) */}
-          <div className="dropdown">
-            <button
-              className="btn btn-outline-success rounded-pill px-3 shadow-sm d-flex align-items-center dropdown-toggle"
-              type="button"
-              id="dropdownDownloadTemplate"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              <i className="bi bi-file-earmark-arrow-down me-2"></i> Lấy form
-              mẫu
-            </button>
-            <ul
-              className="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1"
-              aria-labelledby="dropdownDownloadTemplate"
-            >
-              <li>
-                <button
-                  type="button"
-                  className="dropdown-item py-2 d-flex align-items-center gap-2"
-                  onClick={() => handleDownloadTemplate("xlsx")}
-                >
-                  <i className="bi bi-file-earmark-excel text-success fs-5"></i>
-                  <div>
-                    <div className="fw-semibold">Tải mẫu Excel (.xlsx)</div>
-                    <small className="text-muted">
-                      Có sẵn dropdown chọn Hãng & Danh mục
-                    </small>
-                  </div>
-                </button>
-              </li>
-              <li>
-                <hr className="dropdown-divider my-1" />
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className="dropdown-item py-2 d-flex align-items-center gap-2"
-                  onClick={() => handleDownloadTemplate("csv")}
-                >
-                  <i className="bi bi-file-text text-primary fs-5"></i>
-                  <div>
-                    <div className="fw-semibold">Tải mẫu CSV (.csv UTF-8)</div>
-                    <small className="text-muted">
-                      Nhẹ, mở tốt trên Excel & Google Sheets
-                    </small>
-                  </div>
-                </button>
-              </li>
-            </ul>
+              {/* NÚT IMPORT EXCEL NÂNG CAO */}
+              <button
+                className="btn btn-success rounded-pill px-3 shadow-sm d-flex align-items-center mb-0"
+                onClick={() => setShowImportModal(true)}
+              >
+                <i className="bi bi-file-earmark-spreadsheet me-2"></i> Nhập
+                Excel (Kèm Ảnh)
+              </button>
+
+              {/* NÚT THÊM SẢN PHẨM THỦ CÔNG */}
+              <button
+                onClick={handleOpenAdd}
+                className="btn btn-primary rounded-pill px-4 shadow-sm"
+              >
+                + Thêm Sản Phẩm
+              </button>
+            </div>
           </div>
 
-          {/* NÚT IMPORT EXCEL NÂNG CAO */}
-          <button
-            className="btn btn-success rounded-pill px-3 shadow-sm d-flex align-items-center mb-0"
-            onClick={() => setShowImportModal(true)}
-          >
-            <i className="bi bi-file-earmark-spreadsheet me-2"></i> Nhập Excel
-            (Kèm Ảnh)
-          </button>
-
-          {/* NÚT THÊM SẢN PHẨM THỦ CÔNG */}
-          <button
-            onClick={handleOpenAdd}
-            className="btn btn-primary rounded-pill px-4 shadow-sm"
-          >
-            + Thêm Sản Phẩm
-          </button>
+          {/* ĐÃ THÊM: Khu vực hiển thị kết quả Import khi có lỗi */}
+          {importSummary && importSummary.errors.length > 0 && (
+            <div className="alert alert-warning mt-3 mb-0 rounded-4 shadow-sm border-warning">
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <h6 className="fw-bold mb-0 text-danger">
+                  <i className="bi bi-exclamation-triangle me-2"></i>
+                  Báo cáo Import (Thành công: {importSummary.success} | Lỗi:{" "}
+                  {importSummary.failed})
+                </h6>
+                <button
+                  className="btn-close"
+                  onClick={() => setImportSummary(null)}
+                ></button>
+              </div>
+              <ul
+                className="mb-0 text-dark"
+                style={{
+                  fontSize: "14px",
+                  maxHeight: "150px",
+                  overflowY: "auto",
+                }}
+              >
+                {importSummary.errors.map(
+                  (err: { row: number; reason: string }, idx: number) => (
+                    <li key={idx}>
+                      <strong>Dòng {err.row}:</strong> {err.reason}
+                    </li>
+                  ),
+                )}
+              </ul>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* ĐÃ THÊM: Khu vực hiển thị kết quả Import khi có lỗi */}
-      {importSummary && importSummary.errors.length > 0 && (
-        <div className="alert alert-warning mb-4 rounded-4 shadow-sm border-warning">
-          <div className="d-flex justify-content-between align-items-center mb-2">
-            <h6 className="fw-bold mb-0 text-danger">
-              <i className="bi bi-exclamation-triangle me-2"></i>
-              Báo cáo Import (Thành công: {importSummary.success} | Lỗi:{" "}
-              {importSummary.failed})
-            </h6>
-            <button
-              className="btn-close"
-              onClick={() => setImportSummary(null)}
-            ></button>
-          </div>
-          <ul
-            className="mb-0 text-dark"
-            style={{ fontSize: "14px", maxHeight: "150px", overflowY: "auto" }}
+        {/* PHẦN GIỮA: Khung bảng có thanh cuộn riêng, tách hoàn toàn khỏi thanh phân trang */}
+        <div
+          className="px-4 pb-2 flex-grow-1 d-flex flex-column"
+          style={{ minHeight: 0 }}
+        >
+          <div
+            ref={tableScrollRef}
+            className="table-responsive flex-grow-1 border rounded-3"
+            style={{ minHeight: 0, overflow: "auto" }}
           >
-            {importSummary.errors.map(
-              (err: { row: number; reason: string }, idx: number) => (
-                <li key={idx}>
-                  <strong>Dòng {err.row}:</strong> {err.reason}
-                </li>
-              ),
-            )}
-          </ul>
-        </div>
-      )}
-
-        <div className="table-responsive flex-grow-1">
-          <table className="table table-hover align-middle mb-0">
-          <thead className="table-light">
-            <tr>
-              <th>Sản phẩm</th>
-              <th>Danh mục</th>
-              <th>ĐVT</th>
-              <th>Tổng Kho</th>
-              <th className="text-end">Thao tác</th>
-            </tr>
-          </thead>
+            <table className="table table-hover align-middle mb-0">
+              <thead
+                className="table-light"
+                style={{ position: "sticky", top: 0, zIndex: 10 }}
+              >
+                <tr>
+                  <th style={{ backgroundColor: "#f8fafc" }}>Sản phẩm</th>
+                  <th style={{ backgroundColor: "#f8fafc" }}>Danh mục</th>
+                  <th style={{ backgroundColor: "#f8fafc" }}>ĐVT</th>
+                  <th style={{ backgroundColor: "#f8fafc" }}>Tổng Kho</th>
+                  <th
+                    style={{ backgroundColor: "#f8fafc" }}
+                    className="text-end"
+                  >
+                    Thao tác
+                  </th>
+                </tr>
+              </thead>
           <tbody>
             {loading ? (
               <tr>
@@ -752,11 +756,11 @@ export default function AdminProductsPage() {
               ))
             )}
           </tbody>
-        </table>
+          </table>
         </div>
       </div>
 
-      {/* THANH PHÂN TRANG CỐ ĐỊNH DƯỚI ĐÁY (STICKY BOTTOM FOOTER) */}
+      {/* PHẦN DƯỚI: Thanh phân trang siêu gọn nằm ngoài vùng bảng & ép sát đáy card (0px margin/padding đáy) */}
       {(() => {
         const totalPagesSafe = Math.max(pagination.totalPages || 1, 1);
         const totalItemsSafe = pagination.totalItems ?? products.length;
@@ -796,19 +800,14 @@ export default function AdminProductsPage() {
 
         return (
           <div
-            className="px-4 py-3 bg-white d-flex flex-wrap justify-content-between align-items-center gap-3"
+            className="bg-white d-flex flex-wrap justify-content-between align-items-center gap-2 flex-shrink-0 m-0"
             style={{
-              position: "sticky",
-              bottom: 0,
-              zIndex: 20,
+              padding: "4px 20px",
               borderTop: "1px solid #e5e7eb",
-              borderBottomLeftRadius: "1rem",
-              borderBottomRightRadius: "1rem",
-              boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.03)",
             }}
           >
             {/* Bên trái: Tổng số sản phẩm */}
-            <div style={{ fontSize: "13.5px", color: "#6b7280" }}>
+            <div style={{ fontSize: "12.5px", color: "#6b7280" }}>
               Có tổng {totalItemsSafe} sản phẩm
             </div>
 
@@ -817,7 +816,7 @@ export default function AdminProductsPage() {
               <div className="d-flex align-items-center gap-2">
                 <span
                   className="fw-bold text-nowrap"
-                  style={{ fontSize: "13.5px", color: "#1e293b" }}
+                  style={{ fontSize: "12.5px", color: "#1e293b" }}
                 >
                   Số dòng mỗi trang
                 </span>
@@ -828,11 +827,12 @@ export default function AdminProductsPage() {
                   onChange={handlePageSizeChange}
                   disabled={loading}
                   style={{
-                    width: "70px",
-                    height: "34px",
-                    borderRadius: "8px",
+                    width: "62px",
+                    height: "26px",
+                    padding: "1px 22px 1px 8px",
+                    borderRadius: "6px",
                     border: "1px solid #d1d5db",
-                    fontSize: "13.5px",
+                    fontSize: "12.5px",
                     fontWeight: 500,
                     color: "#1e293b",
                     backgroundColor: "#ffffff",
@@ -848,12 +848,12 @@ export default function AdminProductsPage() {
 
               <span
                 className="fw-bold text-nowrap"
-                style={{ fontSize: "13.5px", color: "#1e293b" }}
+                style={{ fontSize: "12.5px", color: "#1e293b" }}
               >
                 Trang {pagination.currentPage} / {totalPagesSafe}
               </span>
 
-              <div className="d-flex align-items-center" style={{ gap: "6px" }}>
+              <div className="d-flex align-items-center" style={{ gap: "4px" }}>
                 {navButtons.map((btn) => (
                   <button
                     key={btn.key}
@@ -864,14 +864,14 @@ export default function AdminProductsPage() {
                     onClick={btn.onClick}
                     className="btn p-0 d-inline-flex align-items-center justify-content-center shadow-none admin-page-btn"
                     style={{
-                      width: "32px",
-                      height: "32px",
-                      borderRadius: "8px",
+                      width: "26px",
+                      height: "26px",
+                      borderRadius: "6px",
                       backgroundColor: "#ffffff",
                       border: `1px solid ${btn.disabled ? "#f1f5f9" : "#e2e8f0"}`,
                       color: btn.disabled ? "#cbd5e1" : "#334155",
                       cursor: btn.disabled ? "not-allowed" : "pointer",
-                      fontSize: "12px",
+                      fontSize: "11px",
                       transition: "all 0.15s ease",
                     }}
                   >
@@ -880,20 +880,20 @@ export default function AdminProductsPage() {
                 ))}
               </div>
             </div>
-
-            <style jsx>{`
-              .admin-page-btn:not(:disabled):hover {
-                background-color: #f8fafc !important;
-                border-color: #cbd5e1 !important;
-                color: #0f172a !important;
-              }
-              .admin-page-select:focus {
-                border-color: #94a3b8 !important;
-              }
-            `}</style>
           </div>
         );
       })()}
+      </div>
+
+      {/* NẾU ĐANG BẬT MODAL IMPORT EXCEL NÂNG CAO */}
+      {showImportModal && (
+        <ImportExcelModal
+          onClose={() => setShowImportModal(false)}
+          onSuccess={() => {
+            fetchData(1, pageSize);
+          }}
+        />
+      )}
 
       {/* Modal */}
       {showModal && (
@@ -1466,6 +1466,26 @@ export default function AdminProductsPage() {
           </div>
         </div>
       )}
-    </div>
+
+      <style jsx>{`
+        .products-admin-card {
+          height: calc(100vh - 200px);
+          min-height: 440px;
+        }
+        @media (min-width: 768px) {
+          .products-admin-card {
+            height: calc(100vh - 124px);
+          }
+        }
+        .admin-page-btn:not(:disabled):hover {
+          background-color: #f8fafc !important;
+          border-color: #cbd5e1 !important;
+          color: #0f172a !important;
+        }
+        .admin-page-select:focus {
+          border-color: #94a3b8 !important;
+        }
+      `}</style>
+    </>
   );
 }
