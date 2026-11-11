@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { fetchNews } from "@/actions/news";
 import type { NewsItem } from "@/data/curated-news";
 
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=600&q=80";
+const LOCAL_FALLBACK = "/images/ongnuoc.png";
+
 export default function DailyNews() {
   const [newsList, setNewsList] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -158,10 +161,7 @@ export default function DailyNews() {
         {/* Lưới danh sách bài viết */}
         <div className="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-2 g-md-3">
           {visibleNews.map((news, index) => {
-            // Trích xuất hình ảnh: Ưu tiên ảnh của curated news, sau đó là ảnh trong RSS description/content
-            const imgMatch =
-              news.description?.match(/src="(.*?)"/);
-            const imageUrl = news.imageUrl || (imgMatch ? imgMatch[1] : "/no-image.png");
+            const imageUrl = news.imageUrl || DEFAULT_IMAGE;
 
             return (
               <div className="col d-flex align-items-stretch" key={index}>
@@ -177,6 +177,15 @@ export default function DailyNews() {
                         className="w-100 h-100 object-fit-cover transition-all"
                         alt={news.title}
                         loading="lazy"
+                        onError={(e) => {
+                          // Nếu ảnh bị lỗi 403 hoặc hỏng link, tự động đổi sang ảnh dự phòng sắc nét
+                          const target = e.currentTarget as HTMLImageElement;
+                          if (target.src !== DEFAULT_IMAGE && !target.src.includes(DEFAULT_IMAGE)) {
+                            target.src = DEFAULT_IMAGE;
+                          } else if (!target.src.includes("ongnuoc.png")) {
+                            target.src = LOCAL_FALLBACK;
+                          }
+                        }}
                         style={{ backgroundColor: "#f8f9fa" }}
                       />
                       {/* Badge phân loại bài viết */}

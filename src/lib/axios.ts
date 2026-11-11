@@ -10,7 +10,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Interceptor: Vẫn giữ fallback đọc token từ localStorage
+// Interceptor Request: Vẫn giữ fallback đọc token từ localStorage
 // để tương thích ngược nếu người dùng đã đăng nhập từ trước
 api.interceptors.request.use(
   (config) => {
@@ -23,6 +23,22 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor Response: Tự động phát hiện phiên đăng nhập hết hạn (401 Unauthorized)
+// và kích hoạt đồng bộ đăng xuất toàn cục (Global Auth Sync)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (typeof window !== "undefined" && error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      document.cookie = "admin_token=; path=/; max-age=0";
+      // Bắn sự kiện để Header và toàn bộ component lập tức cập nhật trạng thái "ĐĂNG NHẬP"
+      window.dispatchEvent(new Event("authUpdated"));
+    }
     return Promise.reject(error);
   }
 );

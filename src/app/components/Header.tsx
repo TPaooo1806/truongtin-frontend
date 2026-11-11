@@ -100,11 +100,37 @@ export default function Header() {
     const initAuth = async () => {
       try {
         const storedUser = localStorage.getItem("user");
-        if (storedUser) {
+        const token = localStorage.getItem("token");
+
+        if (storedUser && token) {
+          // Kiểm tra thời hạn Token chủ động an toàn cho UTF-8 & Base64Url
+          try {
+            const base64Url = token.split('.')[1];
+            if (!base64Url) throw new Error("Invalid token format");
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(decodeURIComponent(escape(window.atob(base64))));
+            if (payload.exp && payload.exp * 1000 < Date.now()) {
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              document.cookie = "admin_token=; path=/; max-age=0";
+              setUser(null);
+              return;
+            }
+          } catch {
+            // Token không phải định dạng JWT hợp lệ -> coi như hết hạn
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            document.cookie = "admin_token=; path=/; max-age=0";
+            setUser(null);
+            return;
+          }
           setUser(JSON.parse(storedUser));
+        } else {
+          setUser(null);
         }
       } catch (error) {
         console.error("Lỗi đọc dữ liệu user:", error);
+        setUser(null);
       } finally {
         setIsMounted(true);
       }
@@ -180,7 +206,9 @@ export default function Header() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    document.cookie = "admin_token=; path=/; max-age=0";
     setUser(null);
+    window.dispatchEvent(new Event("authUpdated"));
     router.push("/");
     router.refresh();
   };

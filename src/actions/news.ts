@@ -5,15 +5,27 @@ import { CURATED_NEWS, NewsItem } from '@/data/curated-news';
 
 const parser = new Parser();
 
+// Bộ ảnh dự phòng sắc nét chất lượng cao theo chủ đề vật tư / điện nước
+const FALLBACK_NEWS_IMAGES = [
+  "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1585338107529-13afc5f02586?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?auto=format&fit=crop&w=600&q=80",
+];
+
 // NHÓM 5: BỘ TỪ KHÓA LOẠI TRỪ (Negative Keywords - Bắt buộc phải chặn)
 const NEGATIVE_KEYWORDS = [
   // Chính sách & Quy hoạch cấp tỉnh/nhà nước
   'dự án nghìn tỷ', 'nghìn tỷ', 'thủ tướng', 'bộ xây dựng', 'phê duyệt quy hoạch', 
   'ngân sách tỉnh', 'ban quản lý dự án', 'cao tốc', 'giải phóng mặt bằng', 'metro',
+  'hạ tầng trọng điểm', 'đề án', 'tham vấn', 'nguồn cung vật liệu', 'thụy sĩ',
+  'insee', 'saca',
   
   // Vật liệu nặng & Công nghiệp khai khoáng
   'mỏ đá', 'khai thác cát', 'xi măng công nghiệp', 'trạm trộn bê tông', 'xỉ than', 
   'nung clinker', 'clinker', 'bauxite', 'quặng sắt', 'nhựa đường', 'khoáng sản',
+  'vật liệu không nung', 'tái chế', 'chất thải', 'chất thải xây dựng', 'chất thải rắn',
   
   // Địa phương xa (ngoài TP.HCM)
   'bắc ninh', 'quảng ngãi', 'hà nội', 'lạng sơn', 'thanh hóa', 'nghệ an', 'hải phòng', 
@@ -50,9 +62,9 @@ const POSITIVE_KEYWORDS = [
 export async function fetchNews(): Promise<NewsItem[]> {
   try {
     const urls = [
-      'https://baoxaydung.vn/rss/xay-dung/vat-lieu-xay-dung.rss',
-      'https://vnexpress.net/rss/thoi-su.rss',
       'https://vnexpress.net/rss/gia-dinh.rss',
+      'https://vnexpress.net/rss/thoi-su.rss',
+      'https://baoxaydung.vn/rss/xay-dung/vat-lieu-xay-dung.rss',
     ];
 
     let allRssItems: any[] = [];
@@ -72,7 +84,7 @@ export async function fetchNews(): Promise<NewsItem[]> {
             allRssItems = [...allRssItems, ...feed.items];
           }
         } catch {
-          // Bỏ qua lỗi parse từng nguồn riêng lẻ
+          // Bỏ qua lỗi parse từng nguồn
         }
       }
     }
@@ -90,32 +102,48 @@ export async function fetchNews(): Promise<NewsItem[]> {
         const hasPositive = POSITIVE_KEYWORDS.some((goodKw) => fullText.includes(goodKw));
         return hasPositive;
       })
-      .map((item) => ({
-        title: item.title || '',
-        link: item.link || '',
-        description: item.contentSnippet || item.description || '',
-        pubDate: item.pubDate ? new Date(item.pubDate).toLocaleDateString('vi-VN') : '',
-        category: 'Tin Thời Sự TP.HCM',
-        isCurated: false,
-      }));
+      .map((item, idx) => {
+        // Trích xuất link ảnh từ enclosure hoặc regex HTML
+        let imgUrl = item.enclosure?.url;
+        if (!imgUrl) {
+          const match = (item.description || item.content || '').match(/src=["'](.*?)["']/);
+          if (match && match[1] && match[1].startsWith('http')) {
+            imgUrl = match[1];
+          }
+        }
+        // Nếu không có ảnh hoặc ảnh tương đối, dùng ảnh Unsplash chất lượng cao
+        if (!imgUrl) {
+          imgUrl = FALLBACK_NEWS_IMAGES[idx % FALLBACK_NEWS_IMAGES.length];
+        }
 
-    // KẾT HỢP VỚI CẨM NANG CỐ ĐỊNH TRƯỜNG TÍN (CURATED KNOWLEDGE BASE)
-    // Đảm bảo loại bỏ hoàn toàn fallback lấy tin bừa và luôn có đủ 8 - 10 bài viết thực chiến
-    const combinedNews: NewsItem[] = [...validRssNews];
+        return {
+          title: item.title || '',
+          link: item.link || '',
+          description: (item.contentSnippet || item.description || '').replace(/<[^>]*>?/gm, '').trim(),
+          pubDate: item.pubDate ? new Date(item.pubDate).toLocaleDateString('vi-VN') : 'Mới cập nhật',
+          imageUrl: imgUrl,
+          category: 'Tin Thời Sự TP.HCM',
+          isCurated: false,
+        };
+      });
 
-    for (const curatedItem of CURATED_NEWS) {
+    // ƯU TIÊN HIỂN THỊ CẨM NANG CHẤT LƯỢNG CAO TRƯỜNG TÍN LÊN ĐẦU
+    // Để trang chủ luôn có sẵn 8 bài viết đẹp mắt, ảnh sắc nét 100% không bao giờ bị lỗi
+    const combinedNews: NewsItem[] = [...CURATED_NEWS];
+
+    for (const rssItem of validRssNews) {
       const isAlreadyIncluded = combinedNews.some(
-        (n) => n.title.toLowerCase() === curatedItem.title.toLowerCase()
+        (n) => n.title.toLowerCase() === rssItem.title.toLowerCase()
       );
       if (!isAlreadyIncluded) {
-        combinedNews.push(curatedItem);
+        combinedNews.push(rssItem);
       }
     }
 
     return combinedNews.slice(0, 10);
   } catch (error) {
     console.error('Lỗi nạp tin tức:', error);
-    // Nếu có lỗi mạng hoặc sập nguồn RSS, luôn trả về Cẩm nang chất lượng cao của Trường Tín
+    // Nếu có lỗi, luôn trả về Cẩm nang chất lượng cao của Trường Tín
     return CURATED_NEWS;
   }
 }
