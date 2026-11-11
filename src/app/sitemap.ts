@@ -1,5 +1,4 @@
 import { MetadataRoute } from 'next';
-import api from '@/lib/axios';
 
 // Định nghĩa base URL của trang web
 const baseUrl = 'https://diennuoctruongtin.com';
@@ -25,31 +24,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     // 2. Tự động lấy danh sách Sản phẩm từ Backend để tạo sitemap động
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://truongtin-api.onrender.com';
-    const resProducts = await fetch(`${apiUrl}/api/products?limit=1000`);
-    const productsData = await resProducts.json();
-
-    if (productsData.success && Array.isArray(productsData.data)) {
-      const productRoutes = productsData.data.map((product: any) => ({
-        url: `${baseUrl}/product/${product.slug}`,
-        lastModified: new Date(product.updatedAt || new Date()),
-        changeFrequency: 'weekly' as const,
-        priority: 0.9,
-      }));
-      dynamicRoutes = [...dynamicRoutes, ...productRoutes];
+    const resProducts = await fetch(`${apiUrl}/api/products?limit=1000`, { next: { revalidate: 3600 } });
+    if (resProducts.ok && resProducts.headers.get('content-type')?.includes('application/json')) {
+      const productsData = await resProducts.json();
+      if (productsData.success && Array.isArray(productsData.data)) {
+        const productRoutes = productsData.data.map((product: any) => ({
+          url: `${baseUrl}/product/${product.slug}`,
+          lastModified: new Date(product.updatedAt || new Date()),
+          changeFrequency: 'weekly' as const,
+          priority: 0.9,
+        }));
+        dynamicRoutes = [...dynamicRoutes, ...productRoutes];
+      }
     }
 
     // 3. Tự động lấy danh sách Danh mục (Categories)
-    const resCategories = await fetch(`${apiUrl}/api/categories`);
-    const categoriesData = await resCategories.json();
-
-    if (categoriesData.success && Array.isArray(categoriesData.data)) {
-      const categoryRoutes = categoriesData.data.map((category: any) => ({
-        url: `${baseUrl}/category/${category.slug}`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-      }));
-      dynamicRoutes = [...dynamicRoutes, ...categoryRoutes];
+    const resCategories = await fetch(`${apiUrl}/api/categories`, { next: { revalidate: 3600 } });
+    if (resCategories.ok && resCategories.headers.get('content-type')?.includes('application/json')) {
+      const categoriesData = await resCategories.json();
+      if (categoriesData.success && Array.isArray(categoriesData.data)) {
+        const categoryRoutes = categoriesData.data.map((category: any) => ({
+          url: `${baseUrl}/category/${category.slug}`,
+          lastModified: new Date(),
+          changeFrequency: 'weekly' as const,
+          priority: 0.8,
+        }));
+        dynamicRoutes = [...dynamicRoutes, ...categoryRoutes];
+      }
     }
   } catch (error) {
     console.error("Lỗi khi tạo sitemap động:", error);

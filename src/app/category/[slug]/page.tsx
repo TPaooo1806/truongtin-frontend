@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-import Sidebar from '../../components/Sidebar';
 import LoadMoreProductList from '../../components/LoadMoreProductList';
 
 // Interface cho sản phẩm danh mục để làm Title
@@ -91,18 +90,8 @@ export default async function CategoryPage({
   const slug = resolvedParams.slug;
 
   return (
-    <div className="container my-4">
-      <div className="row g-4">
-        <div className="col-lg-3 d-none d-lg-block">
-          <Sidebar />
-        </div>
-
-        <div className="col-lg-9">
-          <Suspense key={slug} fallback={<ProductGridSkeleton />}>
-            <CategoryGrid slug={slug} />
-          </Suspense>
-        </div>
-      </div>
-    </div>
+    <Suspense key={slug} fallback={<ProductGridSkeleton />}>
+      <CategoryGrid slug={slug} />
+    </Suspense>
   );
 }
