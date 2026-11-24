@@ -305,7 +305,7 @@ export default function AboutPage() {
                 </Link>
 
                 <a
-                  href="https://maps.google.com/?q=358+Nơ+Trang+Long,+Phường+13,+Bình+Thạnh,+Hồ+Chí+Minh"
+                  href="https://www.google.com/maps?cid=10458309816663639072&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAMYASAF"
                   target="_blank"
                   rel="noreferrer"
                   className="btn btn-outline-dark btn-lg px-4 py-3 fw-bold rounded-3 d-flex align-items-center gap-2 shadow-sm"
@@ -1284,7 +1284,7 @@ export default function AboutPage() {
                 </a>
 
                 <a
-                  href="https://maps.google.com/?q=358+Nơ+Trang+Long,+Phường+13,+Bình+Thạnh,+Hồ+Chí+Minh"
+                  href="https://www.google.com/maps?cid=10458309816663639072&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAMYASAF"
                   target="_blank"
                   rel="noreferrer"
                   className="btn btn-outline-light px-4 py-2 rounded-3 small fw-semibold d-flex align-items-center justify-content-center gap-2"

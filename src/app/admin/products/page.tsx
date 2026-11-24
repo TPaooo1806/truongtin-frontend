@@ -172,15 +172,21 @@ export default function AdminProductsPage() {
 
   // Phân trang
   const tableScrollRef = useRef<HTMLDivElement>(null);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const mobileScrollRef = useRef<HTMLDivElement>(null);
+  const [pageSize, setPageSize] = useState<number>(100);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
-    limit: 10,
+    limit: 100,
   });
 
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  // Tìm kiếm đa năng (Tên SP + Hãng) & Lọc Danh mục
+  const [searchInput, setSearchInput] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // ==========================================
   // ĐÃ THÊM: STATE CHO IMPORT EXCEL
@@ -211,12 +217,27 @@ export default function AdminProductsPage() {
 
   const [formData, setFormData] = useState(initialFormState);
 
-  const fetchData = async (page = 1, customLimit = pageSize) => {
+  const fetchData = async (
+    page = 1,
+    customLimit = pageSize,
+    querySearch = searchInput,
+    queryCat = selectedCategory,
+  ) => {
     try {
       setLoading(true);
+      let url = `/api/products?page=${page}&limit=${customLimit}`;
+      if (querySearch && querySearch.trim()) {
+        url += `&q=${encodeURIComponent(querySearch.trim())}`;
+      }
+      if (queryCat && queryCat !== "ALL" && queryCat !== "") {
+        url += `&categoryId=${encodeURIComponent(queryCat)}`;
+      }
+
       const [prodRes, catRes] = await Promise.all([
-        api.get(`/api/products?page=${page}&limit=${customLimit}`),
-        api.get("/api/categories"),
+        api.get(url),
+        categories.length > 0
+          ? Promise.resolve({ data: { data: categories } })
+          : api.get("/api/categories"),
       ]);
       const items = prodRes.data.data || [];
       setProducts(items);
@@ -228,13 +249,39 @@ export default function AdminProductsPage() {
           limit: customLimit,
         },
       );
-      setCategories(catRes.data.data || []);
+      if (categories.length === 0 && catRes.data?.data) {
+        setCategories(catRes.data.data);
+      }
     } catch (err: unknown) {
       console.error(err);
       toast.error("Lỗi tải dữ liệu");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchInput(value);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      fetchData(1, pageSize, value, selectedCategory);
+    }, 350);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput("");
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    fetchData(1, pageSize, "", selectedCategory);
+  };
+
+  const handleCategorySelectChange = (newCat: string) => {
+    setSelectedCategory(newCat);
+    fetchData(1, pageSize, searchInput, newCat);
+  };
+
+  const handleSearchSubmit = () => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    fetchData(1, pageSize, searchInput, selectedCategory);
   };
 
   const goToPage = (targetPage: number) => {
@@ -246,19 +293,21 @@ export default function AdminProductsPage() {
     ) {
       return;
     }
-    fetchData(targetPage, pageSize);
+    fetchData(targetPage, pageSize, searchInput, selectedCategory);
     tableScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    mobileScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newSize = Number(e.target.value);
     setPageSize(newSize);
-    fetchData(1, newSize);
+    fetchData(1, newSize, searchInput, selectedCategory);
     tableScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    mobileScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   useEffect(() => {
-    fetchData(1, 10);
+    fetchData(1, 100);
   }, []);
 
   const handleDelete = async (id: number) => {
@@ -282,7 +331,7 @@ export default function AdminProductsPage() {
         products.length === 1 && pagination.currentPage > 1
           ? pagination.currentPage - 1
           : pagination.currentPage;
-      fetchData(targetPage, pageSize);
+      fetchData(targetPage, pageSize, searchInput, selectedCategory);
     } catch (err: unknown) {
       console.error(err);
       toast.error("Lỗi xóa sản phẩm");
@@ -508,7 +557,7 @@ export default function AdminProductsPage() {
         toast.success("Thêm thành công");
       }
       setShowModal(false);
-      fetchData(pagination.currentPage);
+      fetchData(pagination.currentPage, pageSize, searchInput, selectedCategory);
     } catch (err: unknown) {
       console.error(err);
       toast.error("Lỗi lưu sản phẩm");
@@ -530,26 +579,99 @@ export default function AdminProductsPage() {
   return (
     <>
       <div className="card border-0 shadow-sm rounded-4 bg-white d-flex flex-column overflow-hidden products-admin-card m-0 p-0">
-        {/* PHẦN TRÊN: Tiêu đề & Nút thao tác (cố định) */}
-        <div className="px-4 pt-3 pb-2 flex-shrink-0">
-          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-              <h5 className="fw-bold mb-0">Hàng Hóa Trường Tín</h5>
-              <small className="text-muted">Quản lý kho và giá bán</small>
+        {/* PHẦN TRÊN: Thanh Tìm Kiếm, Lọc Danh Mục & Nút Thao Tác */}
+        <div className="px-3 px-md-4 pt-3 pb-2 flex-shrink-0">
+          <div className="d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-2">
+            {/* Hàng 1 (Mobile) / Nhóm Trái (Desktop): Ô tìm kiếm + Dropdown Danh mục (Desktop) + Nút Thêm (Mobile) */}
+            <div className="d-flex align-items-center gap-2 flex-grow-1 min-w-0">
+              {/* Ô TÌM KIẾM ĐA NĂNG (Tên SP + Thương hiệu/Hãng) */}
+              <div className="position-relative flex-grow-1 min-w-0">
+                <i
+                  className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted pointer-events-none"
+                  style={{ fontSize: "0.875rem" }}
+                ></i>
+                <input
+                  type="text"
+                  className="form-control rounded-pill ps-5 pe-4 py-1.5 border-1 shadow-none bg-light text-truncate"
+                  style={{ fontSize: "0.875rem" }}
+                  placeholder="Tìm tên sản phẩm, hãng..."
+                  value={searchInput}
+                  onChange={(e) => handleSearchInputChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSearchSubmit();
+                  }}
+                />
+                {searchInput && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0 text-muted border-0"
+                    style={{ textDecoration: "none", lineHeight: 1 }}
+                    title="Xóa tìm kiếm"
+                  >
+                    <i className="bi bi-x-circle-fill fs-6"></i>
+                  </button>
+                )}
+              </div>
+
+              {/* DROPDOWN CHỌN DANH MỤC TRÊN DESKTOP */}
+              <div className="d-none d-md-block flex-shrink-0" style={{ minWidth: "175px", maxWidth: "240px" }}>
+                <select
+                  className="form-select rounded-pill py-1.5 px-3 border-1 bg-light text-truncate"
+                  style={{ fontSize: "0.875rem" }}
+                  value={selectedCategory}
+                  onChange={(e) => handleCategorySelectChange(e.target.value)}
+                >
+                  <option value="ALL">📁 Tất cả danh mục</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* NÚT + THÊM TRÊN MOBILE (Nằm ngay cạnh ô tìm kiếm cho thao tác 1 chạm cực nhanh) */}
+              <button
+                onClick={handleOpenAdd}
+                className="btn btn-primary rounded-pill px-3 py-1.5 shadow-sm d-md-none d-flex align-items-center gap-1 text-nowrap flex-shrink-0"
+                style={{ fontSize: "0.875rem" }}
+              >
+                <i className="bi bi-plus-lg"></i>
+                <span className="fw-semibold">Thêm</span>
+              </button>
             </div>
 
-            <div className="d-flex flex-wrap gap-2">
+            {/* Hàng 2 (Mobile): Dropdown Danh Mục full-width cho Mobile */}
+            <div className="d-md-none w-100">
+              <select
+                className="form-select rounded-pill py-1.5 px-3 border-1 bg-light text-truncate w-100"
+                style={{ fontSize: "0.875rem" }}
+                value={selectedCategory}
+                onChange={(e) => handleCategorySelectChange(e.target.value)}
+              >
+                <option value="ALL">📁 Tất cả danh mục ({pagination.totalItems} SP)</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Khối Phải (Desktop): Nút Lấy Mẫu, Nhập Excel & Nút Thêm Sản Phẩm */}
+            <div className="d-none d-md-flex align-items-center gap-2 flex-shrink-0">
               {/* NÚT LẤY FORM MẪU (EXCEL / CSV) */}
               <div className="dropdown">
                 <button
-                  className="btn btn-outline-success rounded-pill px-3 shadow-sm d-flex align-items-center dropdown-toggle"
+                  className="btn btn-outline-success rounded-pill px-3 py-1.5 shadow-sm d-flex align-items-center dropdown-toggle"
                   type="button"
                   id="dropdownDownloadTemplate"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
+                  style={{ fontSize: "0.875rem" }}
                 >
-                  <i className="bi bi-file-earmark-arrow-down me-2"></i> Lấy
-                  form mẫu
+                  <i className="bi bi-file-earmark-arrow-down me-1"></i> Lấy form mẫu
                 </button>
                 <ul
                   className="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1"
@@ -595,19 +717,21 @@ export default function AdminProductsPage() {
 
               {/* NÚT IMPORT EXCEL NÂNG CAO */}
               <button
-                className="btn btn-success rounded-pill px-3 shadow-sm d-flex align-items-center mb-0"
+                className="btn btn-success rounded-pill px-3 py-1.5 shadow-sm d-inline-flex align-items-center mb-0"
                 onClick={() => setShowImportModal(true)}
+                style={{ fontSize: "0.875rem" }}
               >
-                <i className="bi bi-file-earmark-spreadsheet me-2"></i> Nhập
-                Excel (Kèm Ảnh)
+                <i className="bi bi-file-earmark-spreadsheet me-1"></i> Nhập Excel (Kèm Ảnh)
               </button>
 
-              {/* NÚT THÊM SẢN PHẨM THỦ CÔNG */}
+              {/* NÚT THÊM SẢN PHẨM TRÊN DESKTOP */}
               <button
                 onClick={handleOpenAdd}
-                className="btn btn-primary rounded-pill px-4 shadow-sm"
+                className="btn btn-primary rounded-pill px-3 py-1.5 shadow-sm d-flex align-items-center gap-1 text-nowrap"
+                style={{ fontSize: "0.875rem" }}
               >
-                + Thêm Sản Phẩm
+                <i className="bi bi-plus-lg"></i>
+                <span className="fw-semibold">Thêm Sản Phẩm</span>
               </button>
             </div>
           </div>
@@ -646,14 +770,115 @@ export default function AdminProductsPage() {
           )}
         </div>
 
-        {/* PHẦN GIỮA: Khung bảng có thanh cuộn riêng, tách hoàn toàn khỏi thanh phân trang */}
+        {/* PHẦN GIỮA: Danh sách sản phẩm (Mobile Compact List & Desktop Table) */}
         <div
-          className="px-4 pb-2 flex-grow-1 d-flex flex-column"
+          className="px-2 px-md-4 pb-2 flex-grow-1 d-flex flex-column"
           style={{ minHeight: 0 }}
         >
+          {/* 1. GIAO DIỆN COMPACT LIST CHO MOBILE (< 768px): KHÔNG CUỘN NGANG */}
+          <div
+            ref={mobileScrollRef}
+            className="d-block d-md-none flex-grow-1 border rounded-3 overflow-auto bg-white custom-scrollbar"
+            style={{ minHeight: 0 }}
+          >
+            {loading ? (
+              <div className="text-center py-5 text-muted">Đang tải sản phẩm...</div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-5 text-muted">
+                <i className="bi bi-inbox fs-1 d-block mb-1 text-secondary opacity-50"></i>
+                {searchInput || (selectedCategory && selectedCategory !== "ALL")
+                  ? "Không tìm thấy sản phẩm phù hợp"
+                  : "Chưa có sản phẩm nào"}
+              </div>
+            ) : (
+              <div className="w-100">
+                {products.map((p) => {
+                  const totalStock =
+                    p.variants?.reduce((acc, v) => acc + v.stock, 0) || 0;
+                  return (
+                    <div
+                      key={p.id}
+                      className="d-flex align-items-center gap-2 p-2 border-bottom bg-white"
+                      style={{ minHeight: "60px" }}
+                    >
+                      {/* Trái: Ảnh thumbnail bo góc 44x44 */}
+                      <Image
+                        src={
+                          p.images?.[0]?.url ||
+                          "https://placehold.co/44x44/png?text=SP"
+                        }
+                        alt={p.name}
+                        width={44}
+                        height={44}
+                        className="rounded-3 object-fit-cover border flex-shrink-0"
+                        style={{ width: "44px", height: "44px", objectFit: "cover" }}
+                        unoptimized
+                      />
+
+                      {/* Giữa (flex-1 min-w-0): Tên SP in đậm + Badge hãng, Danh mục • Kho */}
+                      <div className="flex-grow-1 min-w-0" style={{ minWidth: 0 }}>
+                        <div className="d-flex align-items-center gap-1 mb-1">
+                          <span
+                            className="fw-semibold text-dark text-truncate"
+                            style={{ fontSize: "13px", lineHeight: "1.3" }}
+                            title={p.name}
+                          >
+                            {p.name}
+                          </span>
+                          {p.brand && (
+                            <span
+                              className="badge bg-primary-subtle text-primary border flex-shrink-0"
+                              style={{ fontSize: "9px", padding: "1px 5px" }}
+                            >
+                              {p.brand}
+                            </span>
+                          )}
+                        </div>
+                        <div
+                          className="text-muted text-truncate"
+                          style={{ fontSize: "11px" }}
+                        >
+                          <span>{p.category?.name || "Vật tư"}</span>
+                          <span className="mx-1">•</span>
+                          <span>
+                            Kho: <strong className="text-dark">{totalStock}</strong>{" "}
+                            {p.unit || "Cái"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Phải (shrink-0): 2 nút Sửa và Xóa */}
+                      <div className="d-flex align-items-center gap-1 flex-shrink-0 ms-1">
+                        <button
+                          onClick={() => openEditModal(p)}
+                          className="btn btn-sm btn-light text-primary p-2 rounded-circle border-0 d-flex align-items-center justify-content-center"
+                          style={{ width: "32px", height: "32px" }}
+                          title="Sửa sản phẩm"
+                          aria-label="Sửa sản phẩm"
+                        >
+                          <i className="bi bi-pencil fs-6"></i>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(p.id)}
+                          className="btn btn-sm btn-light text-danger p-2 rounded-circle border-0 d-flex align-items-center justify-content-center"
+                          style={{ width: "32px", height: "32px" }}
+                          title="Xóa sản phẩm"
+                          aria-label="Xóa sản phẩm"
+                        >
+                          <i className="bi bi-trash fs-6"></i>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* 2. GIAO DIỆN TABLE CHO TABLET / DESKTOP (>= 768px): GIỮ NGUYÊN */}
           <div
             ref={tableScrollRef}
-            className="table-responsive flex-grow-1 border rounded-3"
+            className="table-responsive flex-grow-1 border rounded-3 d-none d-md-block"
             style={{ minHeight: 0, overflow: "auto" }}
           >
             <table className="table table-hover align-middle mb-0">
@@ -674,91 +899,94 @@ export default function AdminProductsPage() {
                   </th>
                 </tr>
               </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={5} className="text-center py-5">
-                  Đang tải...
-                </td>
-              </tr>
-            ) : products.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-center py-5 text-muted">
-                  Chưa có sản phẩm nào
-                </td>
-              </tr>
-            ) : (
-              products.map((p) => (
-                <tr key={p.id}>
-                  <td>
-                    <div className="d-flex align-items-center">
-                      <Image
-                        src={
-                          p.images?.[0]?.url ||
-                          "https://placehold.co/40x40/png?text=No+Img"
-                        }
-                        alt={p.name}
-                        width={40}
-                        height={40}
-                        className="rounded me-2 object-fit-cover border"
-                        style={{ objectFit: "cover" }}
-                        unoptimized
-                      />
-                      <div>
-                        <div className="fw-bold d-flex align-items-center gap-2">
-                          <span>{p.name}</span>
-                          {p.brand && (
-                            <span
-                              className="badge bg-primary-subtle text-primary border"
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-5">
+                      Đang tải...
+                    </td>
+                  </tr>
+                ) : products.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-5 text-muted">
+                      <i className="bi bi-inbox fs-1 d-block mb-1 text-secondary opacity-50"></i>
+                      {searchInput || (selectedCategory && selectedCategory !== "ALL")
+                        ? "Không tìm thấy sản phẩm phù hợp với bộ lọc"
+                        : "Chưa có sản phẩm nào"}
+                    </td>
+                  </tr>
+                ) : (
+                  products.map((p) => (
+                    <tr key={p.id}>
+                      <td>
+                        <div className="d-flex align-items-center">
+                          <Image
+                            src={
+                              p.images?.[0]?.url ||
+                              "https://placehold.co/40x40/png?text=No+Img"
+                            }
+                            alt={p.name}
+                            width={40}
+                            height={40}
+                            className="rounded me-2 object-fit-cover border"
+                            style={{ objectFit: "cover" }}
+                            unoptimized
+                          />
+                          <div>
+                            <div className="fw-bold d-flex align-items-center gap-2">
+                              <span>{p.name}</span>
+                              {p.brand && (
+                                <span
+                                  className="badge bg-primary-subtle text-primary border"
+                                  style={{ fontSize: "10px" }}
+                                >
+                                  {p.brand}
+                                </span>
+                              )}
+                            </div>
+                            <div
+                              className="text-muted"
                               style={{ fontSize: "10px" }}
                             >
-                              {p.brand}
-                            </span>
-                          )}
+                              {p.slug}
+                            </div>
+                          </div>
                         </div>
-                        <div
-                          className="text-muted"
-                          style={{ fontSize: "10px" }}
+                      </td>
+                      <td>
+                        <span className="badge bg-light text-dark border">
+                          {p.category?.name}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="badge bg-secondary-subtle text-secondary border">
+                          {p.unit || "Cái"}
+                        </span>
+                      </td>
+                      <td>
+                        {p.variants?.reduce((acc, v) => acc + v.stock, 0) || 0}
+                      </td>
+                      <td className="text-end">
+                        <button
+                          onClick={() => openEditModal(p)}
+                          className="btn btn-sm btn-light text-primary me-2 rounded-circle"
                         >
-                          {p.slug}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className="badge bg-light text-dark border">
-                      {p.category?.name}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="badge bg-secondary-subtle text-secondary border">
-                      {p.unit || "Cái"}
-                    </span>
-                  </td>
-                  <td>
-                    {p.variants?.reduce((acc, v) => acc + v.stock, 0) || 0}
-                  </td>
-                  <td className="text-end">
-                    <button
-                      onClick={() => openEditModal(p)}
-                      className="btn btn-sm btn-light text-primary me-2 rounded-circle"
-                    >
-                      <i className="bi bi-pencil"></i>
-                    </button>
-                    <button
-                      onClick={() => handleDelete(p.id)}
-                      className="btn btn-sm btn-light text-danger rounded-circle"
-                    >
-                      <i className="bi bi-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-          </table>
+                          <i className="bi bi-pencil"></i>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(p.id)}
+                          className="btn btn-sm btn-light text-danger rounded-circle"
+                        >
+                          <i className="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
       {/* PHẦN DƯỚI: Thanh phân trang siêu gọn nằm ngoài vùng bảng & ép sát đáy card (0px margin/padding đáy) */}
       {(() => {
@@ -800,22 +1028,26 @@ export default function AdminProductsPage() {
 
         return (
           <div
-            className="bg-white d-flex flex-wrap justify-content-between align-items-center gap-2 flex-shrink-0 m-0"
+            className="bg-white d-flex justify-content-between align-items-center flex-shrink-0 m-0"
             style={{
-              padding: "4px 20px",
+              padding: "6px 12px",
               borderTop: "1px solid #e5e7eb",
+              minHeight: "38px",
             }}
           >
-            {/* Bên trái: Tổng số sản phẩm */}
-            <div style={{ fontSize: "12.5px", color: "#6b7280" }}>
-              Có tổng {totalItemsSafe} sản phẩm
+            {/* Bên trái: Tổng số sản phẩm (Gọn trên mobile) */}
+            <div style={{ fontSize: "12px", color: "#6b7280" }}>
+              <span className="d-none d-md-inline">Có tổng {totalItemsSafe} sản phẩm</span>
+              <span className="d-md-none fw-semibold text-dark">
+                {totalItemsSafe} SP • Tr. {pagination.currentPage}/{totalPagesSafe}
+              </span>
             </div>
 
-            {/* Bên phải: Số dòng mỗi trang + Trang X / Y + 4 nút điều hướng */}
-            <div className="d-flex align-items-center flex-wrap gap-3">
-              <div className="d-flex align-items-center gap-2">
+            {/* Bên phải: Dropdown + Trang X / Y (desktop) + Nút điều hướng */}
+            <div className="d-flex align-items-center gap-2 gap-md-3">
+              <div className="d-flex align-items-center gap-1.5">
                 <span
-                  className="fw-bold text-nowrap"
+                  className="fw-bold text-nowrap d-none d-md-inline"
                   style={{ fontSize: "12.5px", color: "#1e293b" }}
                 >
                   Số dòng mỗi trang
@@ -827,57 +1059,62 @@ export default function AdminProductsPage() {
                   onChange={handlePageSizeChange}
                   disabled={loading}
                   style={{
-                    width: "62px",
-                    height: "26px",
-                    padding: "1px 22px 1px 8px",
+                    width: "65px",
+                    height: "28px",
+                    padding: "2px 18px 2px 6px",
                     borderRadius: "6px",
                     border: "1px solid #d1d5db",
-                    fontSize: "12.5px",
+                    fontSize: "12px",
                     fontWeight: 500,
                     color: "#1e293b",
                     backgroundColor: "#ffffff",
                     cursor: "pointer",
                   }}
                 >
-                  <option value={10}>10</option>
                   <option value={20}>20</option>
                   <option value={50}>50</option>
                   <option value={100}>100</option>
+                  <option value={200}>200</option>
                 </select>
               </div>
 
               <span
-                className="fw-bold text-nowrap"
+                className="fw-bold text-nowrap d-none d-md-inline"
                 style={{ fontSize: "12.5px", color: "#1e293b" }}
               >
                 Trang {pagination.currentPage} / {totalPagesSafe}
               </span>
 
-              <div className="d-flex align-items-center" style={{ gap: "4px" }}>
-                {navButtons.map((btn) => (
-                  <button
-                    key={btn.key}
-                    type="button"
-                    title={btn.title}
-                    aria-label={btn.title}
-                    disabled={btn.disabled}
-                    onClick={btn.onClick}
-                    className="btn p-0 d-inline-flex align-items-center justify-content-center shadow-none admin-page-btn"
-                    style={{
-                      width: "26px",
-                      height: "26px",
-                      borderRadius: "6px",
-                      backgroundColor: "#ffffff",
-                      border: `1px solid ${btn.disabled ? "#f1f5f9" : "#e2e8f0"}`,
-                      color: btn.disabled ? "#cbd5e1" : "#334155",
-                      cursor: btn.disabled ? "not-allowed" : "pointer",
-                      fontSize: "11px",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    <i className={`bi ${btn.icon}`}></i>
-                  </button>
-                ))}
+              <div className="d-flex align-items-center" style={{ gap: "3px" }}>
+                {navButtons.map((btn) => {
+                  const isFirstOrLast = btn.key === "first" || btn.key === "last";
+                  return (
+                    <button
+                      key={btn.key}
+                      type="button"
+                      title={btn.title}
+                      aria-label={btn.title}
+                      disabled={btn.disabled}
+                      onClick={btn.onClick}
+                      className={`btn p-0 d-inline-flex align-items-center justify-content-center shadow-none admin-page-btn ${
+                        isFirstOrLast ? "d-none d-md-inline-flex" : ""
+                      }`}
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "6px",
+                        backgroundColor: "#ffffff",
+                        border: `1px solid ${btn.disabled ? "#f1f5f9" : "#e2e8f0"}`,
+                        color: btn.disabled ? "#cbd5e1" : "#334155",
+                        cursor: btn.disabled ? "not-allowed" : "pointer",
+                        fontSize: "11px",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      <i className={`bi ${btn.icon}`}></i>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -890,7 +1127,7 @@ export default function AdminProductsPage() {
         <ImportExcelModal
           onClose={() => setShowImportModal(false)}
           onSuccess={() => {
-            fetchData(1, pageSize);
+            fetchData(1, pageSize, searchInput, selectedCategory);
           }}
         />
       )}
@@ -1469,7 +1706,7 @@ export default function AdminProductsPage() {
 
       <style jsx>{`
         .products-admin-card {
-          height: calc(100vh - 200px);
+          height: calc(100vh - 90px);
           min-height: 440px;
         }
         @media (min-width: 768px) {

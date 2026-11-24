@@ -39,15 +39,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // STATE MOBILE MENU
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-  useEffect(() => {
-  }, [router]);
+  // STATE AUTH & LOGIN ROUTE CHECK
+  const isLoginPage = pathname === '/admin/login' || pathname === '/login';
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
 
   // STATE REFRESH THÔNG BÁO
   const [isRefreshingNotif, setIsRefreshingNotif] = useState(false);
 
   // ==============================================
-  // 2. LOGIC THÔNG BÁO: Tải 1 lần duy nhất khi mở trang (KHÔNG dùng setInterval để chống đánh thức Neon DB)
-  // Có nút "Làm mới" thủ công khi Admin cần xem thông báo mới
+  // 2. LOGIC THÔNG BÁO: Tải 1 lần duy nhất sau khi đã xác thực ADMIN thành công
   // ==============================================
   const fetchNotifications = useCallback(async (showToast = false) => {
     setIsRefreshingNotif(true);
@@ -72,9 +73,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, []);
 
+  // KHÓA BẢO VỆ BẮT BUỘC ĐĂNG NHẬP (AUTH GUARD)
   useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
+    if (isLoginPage) {
+      setAuthChecking(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      if (!token || !userStr) {
+        toast.error('Vui lòng đăng nhập quyền Quản trị!');
+        const isSubdomain = typeof window !== 'undefined' && window.location.hostname.startsWith('admin.');
+        router.replace(isSubdomain ? '/login' : '/admin/login');
+        return;
+      }
+      const user = JSON.parse(userStr);
+      if (user.role !== 'ADMIN') {
+        toast.error('Tài khoản của bạn không có quyền Quản trị!');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        const isSubdomain = typeof window !== 'undefined' && window.location.hostname.startsWith('admin.');
+        router.replace(isSubdomain ? '/login' : '/admin/login');
+        return;
+      }
+      setIsAuthenticated(true);
+      fetchNotifications();
+    } catch (e) {
+      console.error(e);
+      const isSubdomain = typeof window !== 'undefined' && window.location.hostname.startsWith('admin.');
+      router.replace(isSubdomain ? '/login' : '/admin/login');
+    } finally {
+      setAuthChecking(false);
+    }
+  }, [router, isLoginPage, fetchNotifications]);
 
   // Hàm xử lý nút "ĐÃ XỬ LÝ XONG" cho Liên hệ
   const handleResolveContact = async (rawId: string) => {
@@ -131,6 +164,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (path !== '/admin' && pathname.includes(path)) return true;
     return false;
   };
+
+  // 1. NẾU LÀ TRANG LOGIN: Chỉ render trang Đăng nhập, không render Sidebar/Header và không gọi API
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
+  // 2. NẾU ĐANG KIỂM TRA PHIÊN HOẶC CHƯA XÁC THỰC: Hiện loading toàn màn hình, tuyệt đối không để lộ giao diện
+  if (authChecking || !isAuthenticated) {
+    return (
+      <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Đang kiểm tra quyền quản trị...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#eef2f5' }}>
@@ -192,8 +241,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
            <button onClick={() => { 
              localStorage.removeItem('user'); 
              localStorage.removeItem('token'); 
+             const isProd = window.location.hostname.includes('diennuoctruongtin.com');
+             const domainAttr = isProd ? '; domain=.diennuoctruongtin.com' : '';
+             document.cookie = `admin_token=; path=/${domainAttr}; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
              document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-             router.replace('/'); 
+             router.replace('/login'); 
            }} className="btn btn-light w-100 rounded-3 fw-bold text-danger shadow-sm d-flex align-items-center justify-content-center gap-2">
              <i className="bi bi-box-arrow-right fs-5"></i> Đăng xuất
            </button>
@@ -201,41 +253,49 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* CONTENT AREA */}
-      <div className="flex-grow-1 d-flex flex-column px-3 px-md-0 pe-md-3 py-3 overflow-auto" style={{ height: '100vh', minWidth: 0 }}>
+      <div className="flex-grow-1 d-flex flex-column px-2 px-md-0 pe-md-3 pt-2 pt-md-3 pb-2 pb-md-3 overflow-auto" style={{ height: '100vh', minWidth: 0 }}>
         
-        {/* Thanh Navbar phụ chỉ xuất hiện trên điện thoại (d-md-none) */}
-        <div className="d-md-none w-100 bg-dark text-white p-3 d-flex justify-content-between align-items-center shadow-sm rounded-4 mb-3">
-          <span className="fs-5 fw-bold">Admin Trường Tín</span>
-          <button 
-            className="btn btn-outline-light border-0" 
-            type="button" 
-            onClick={() => setShowMobileMenu(true)}
-          >
-            {/* Icon 3 gạch */}
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-              <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
-            </svg>
-          </button>
-        </div>
+        {/* HEADER CỐ ĐỊNH DUY NHẤT (GỘP 1 HÀNG CHO CẢ MOBILE & DESKTOP) */}
+        <header 
+          className="bg-white shadow-sm d-flex justify-content-between align-items-center px-3 px-md-4 rounded-4 mb-2 mb-md-3 sticky-top" 
+          style={{ 
+            top: 0, 
+            zIndex: 1030, 
+            minHeight: '56px',
+            border: '1px solid rgba(0,0,0,0.04)' 
+          }}
+        >
+          {/* BÊN TRÁI: Nút Hamburger Mobile + Tiêu đề trang */}
+          <div className="d-flex align-items-center gap-2 min-w-0 overflow-hidden">
+            <button 
+              className="btn btn-light d-md-none p-1 d-flex align-items-center justify-content-center rounded-3 border-0 flex-shrink-0" 
+              type="button"
+              style={{ width: '38px', height: '38px' }}
+              onClick={() => setShowMobileMenu(true)}
+              aria-label="Mở menu quản trị"
+            >
+              <i className="bi bi-list fs-4 text-dark"></i>
+            </button>
+            <h5 className="mb-0 text-dark fw-bold text-truncate" style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.25rem)' }}>
+              {pathname === '/admin' ? 'Bảng Điều Khiển' : 
+               pathname.includes('products') ? 'Quản Lý Sản Phẩm' : 
+               pathname.includes('orders') ? 'Xử Lý Đơn Hàng' :
+               pathname.includes('reviews') ? 'Quản Lý Đánh Giá' :
+               pathname.includes('categories') ? 'Danh Mục Vật Tư' :
+               pathname.includes('banners') ? 'Quản Lý Banner' : 'Trang Quản Trị'}
+            </h5>
+          </div>
 
-        {/* HEADER */}
-        <header className="bg-white p-3 shadow-sm d-flex justify-content-between align-items-center px-4 rounded-4 mb-3" style={{ border: '1px solid rgba(0,0,0,0.02)' }}>
-          <h5 className="mb-0 text-dark fw-bold">
-            {pathname === '/admin' ? 'Bảng Điều Khiển' : 
-             pathname.includes('products') ? 'Quản Lý Sản Phẩm' : 
-             pathname.includes('orders') ? 'Xử Lý Đơn Hàng' :
-             pathname.includes('reviews') ? 'Quản Lý Đánh Giá' :
-             pathname.includes('categories') ? 'Danh Mục Vật Tư' :
-             pathname.includes('banners') ? 'Quản Lý Banner' : 'Trang Quản Trị'}
-          </h5>
-          <div className="d-flex align-items-center gap-3">
+          {/* BÊN PHẢI: Chuông thông báo + Avatar Sếp Bảo */}
+          <div className="d-flex align-items-center gap-2 gap-md-3 flex-shrink-0">
             
             {/* NÚT CHUÔNG THÔNG BÁO VÀ DROPDOWN */}
             <div className="position-relative" ref={notificationRef}>
               <button 
                 className="btn btn-light rounded-circle shadow-sm position-relative d-flex align-items-center justify-content-center" 
-                style={{ width: '40px', height: '40px' }}
+                style={{ width: '38px', height: '38px' }}
                 onClick={() => setShowNotifications(!showNotifications)}
+                aria-label="Thông báo"
               >
                 <i className="bi bi-bell-fill text-secondary fs-5"></i>
                 {notifications.some(n => !n.isRead) && (
@@ -249,7 +309,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </button>
 
               {showNotifications && (
-                <div className="position-absolute bg-white shadow-lg rounded-4 border mt-2 py-0" style={{ right: 0, top: '100%', width: '360px', zIndex: 1050, overflow: 'hidden' }}>
+                <div className="position-absolute bg-white shadow-lg rounded-4 border mt-2 py-0" style={{ right: 0, top: '100%', width: 'min(360px, calc(100vw - 32px))', zIndex: 1050, overflow: 'hidden' }}>
                   <div className="d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
                     <h6 className="mb-0 fw-bold text-dark">Thông báo mới</h6>
                     <button
@@ -309,10 +369,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               )}
             </div>
 
-            <div className="dropdown border-start ps-3 ms-2">
-              <button className="btn btn-white fw-bold text-primary d-flex align-items-center gap-2" type="button">
-                <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: '32px', height: '32px' }}>B</div>
-                Sếp Bảo
+            {/* AVATAR: Ẩn chữ Sếp Bảo trên Mobile */}
+            <div className="dropdown border-start ps-2 ps-md-3 ms-1 ms-md-2">
+              <button className="btn btn-white fw-bold text-primary d-flex align-items-center gap-2 p-0 p-md-1" type="button">
+                <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm flex-shrink-0" style={{ width: '32px', height: '32px' }}>B</div>
+                <span className="d-none d-md-inline text-nowrap">Sếp Bảo</span>
               </button>
             </div>
           </div>
@@ -488,8 +549,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                setShowMobileMenu(false);
                localStorage.removeItem('user'); 
                localStorage.removeItem('token'); 
+               const isProd = window.location.hostname.includes('diennuoctruongtin.com');
+               const domainAttr = isProd ? '; domain=.diennuoctruongtin.com' : '';
+               document.cookie = `admin_token=; path=/${domainAttr}; expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
                document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-               router.replace('/'); 
+               router.replace('/login'); 
              }} className="btn btn-light w-100 rounded-3 fw-bold text-danger shadow-sm d-flex align-items-center justify-content-center gap-2">
                <i className="bi bi-box-arrow-right fs-5"></i> Đăng xuất
              </button>

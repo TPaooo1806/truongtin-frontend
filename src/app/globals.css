@@ -514,3 +514,14 @@ header.sticky-top {
   display: inline-block;
   animation: spin 0.8s linear infinite;
 }
+
+/* Khóa lỗi iOS Safari Auto-Zoom khi focus vào form trên thiết bị di động (< 768px) */
+@media (max-width: 767.98px) {
+  input,
+  select,
+  textarea,
+  .form-control,
+  .form-select {
+    font-size: 16px !important;
+  }
+}

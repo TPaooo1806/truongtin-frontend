@@ -82,47 +82,45 @@ function HomeLoading() {
 // --- Main Page (Server Component) ---
 export default function HomePage() {
   return (
-    <div className="bg-white min-vh-100">
-      <main className="container my-4 px-2 px-md-3">
-        {/* SECTION 1: BANNER CHÍNH QUẢNG CÁO FULL-WIDTH 100% */}
-        <section className="mb-4">
-          <div className="w-100">
-            <BannerDisplay position="HOME_MAIN" />
-          </div>
-        </section>
+    <div className="w-100">
+      {/* SECTION 1: BANNER CHÍNH QUẢNG CÁO FULL-WIDTH 100% */}
+      <section className="mb-4">
+        <div className="w-100">
+          <BannerDisplay position="HOME_MAIN" />
+        </div>
+      </section>
 
-        {/* SECTION: USP TRUST STRIP */}
-        <section className="mb-5">
-          <div className="row g-2 g-md-3">
-            {[
-              { icon: "bi-shield-check", title: "Chính hãng 100%", desc: "Cam kết hàng chính hãng", color: "#0078D4" },
-              { icon: "bi-truck", title: "Giao nhanh 2H", desc: "Nội thành TP.HCM", color: "#0063B1" },
-              { icon: "bi-tags", title: "Giá sỉ tốt nhất", desc: "Chiết khấu cao cho thầu", color: "#2e7d32" },
-              { icon: "bi-arrow-repeat", title: "Đổi trả 7 ngày", desc: "Đổi trả nhanh chóng", color: "#e65100" },
-            ].map((item, idx) => (
-              <div className="col-6 col-md-3" key={idx}>
-                <div className="bg-white rounded-3 p-3 d-flex align-items-center gap-2 gap-md-3 shadow-sm border h-100" style={{ transition: "transform 0.2s" }}>
-                  <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "42px", height: "42px", backgroundColor: item.color + "15", color: item.color }}>
-                    <i className={`bi ${item.icon} fs-5`}></i>
-                  </div>
-                  <div>
-                    <div className="fw-bold text-dark" style={{ fontSize: "clamp(0.7rem, 1.5vw, 0.85rem)" }}>{item.title}</div>
-                    <div className="text-muted d-none d-md-block" style={{ fontSize: "0.72rem" }}>{item.desc}</div>
-                  </div>
+      {/* SECTION: USP TRUST STRIP */}
+      <section className="mb-5">
+        <div className="row g-2 g-md-3">
+          {[
+            { icon: "bi-shield-check", title: "Chính hãng 100%", desc: "Cam kết hàng chính hãng", color: "#0078D4" },
+            { icon: "bi-truck", title: "Giao nhanh 2H", desc: "Nội thành TP.HCM", color: "#0063B1" },
+            { icon: "bi-tags", title: "Giá sỉ tốt nhất", desc: "Chiết khấu cao cho thầu", color: "#2e7d32" },
+            { icon: "bi-arrow-repeat", title: "Đổi trả 7 ngày", desc: "Đổi trả nhanh chóng", color: "#e65100" },
+          ].map((item, idx) => (
+            <div className="col-6 col-md-3" key={idx}>
+              <div className="bg-white rounded-3 p-3 d-flex align-items-center gap-2 gap-md-3 shadow-sm border h-100" style={{ transition: "transform 0.2s" }}>
+                <div className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: "42px", height: "42px", backgroundColor: item.color + "15", color: item.color }}>
+                  <i className={`bi ${item.icon} fs-5`}></i>
+                </div>
+                <div>
+                  <div className="fw-bold text-dark" style={{ fontSize: "clamp(0.7rem, 1.5vw, 0.85rem)" }}>{item.title}</div>
+                  <div className="text-muted d-none d-md-block" style={{ fontSize: "0.72rem" }}>{item.desc}</div>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
+            </div>
+          ))}
+        </div>
+      </section>
 
-        {/* Dynamic Content with Suspense */}
-        <Suspense fallback={<HomeLoading />}>
-          <HomeContent />
-        </Suspense>
+      {/* Dynamic Content with Suspense */}
+      <Suspense fallback={<HomeLoading />}>
+        <HomeContent />
+      </Suspense>
 
-        {/* SECTION 5: TIN TỨC TỰ ĐỘNG TỪ RSS */}
-        <DailyNews />
-      </main>
+      {/* SECTION 5: TIN TỨC TỰ ĐỘNG TỪ RSS */}
+      <DailyNews />
     </div>
   );
 }
