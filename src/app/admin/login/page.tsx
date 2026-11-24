@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import api from '@/lib/axios';
 import toast from 'react-hot-toast';
 import { AxiosError } from 'axios';
@@ -149,13 +150,21 @@ export default function AdminLoginPage() {
             background: 'linear-gradient(135deg, #0078D4 0%, #005a9e 100%)',
           }}
         >
+          {/* Logo Trường Tín chính thức */}
           <div
-            className="d-inline-flex align-items-center justify-content-center bg-white text-primary rounded-circle mb-2 shadow-sm"
-            style={{ width: '56px', height: '56px' }}
+            className="d-inline-flex align-items-center justify-content-center bg-white rounded-3 px-3 py-2 mb-2 shadow-sm"
+            style={{ maxWidth: '220px' }}
           >
-            <i className="bi bi-shield-lock-fill fs-2"></i>
+            <Image
+              src="/Main_logo.png"
+              alt="Logo Trường Tín"
+              width={180}
+              height={46}
+              style={{ objectFit: 'contain', width: 'auto', height: '40px' }}
+              priority
+            />
           </div>
-          <h4 className="fw-bold mb-1 tracking-wide">TRƯỜNG TÍN ADMIN</h4>
+          <h4 className="fw-bold mb-1 tracking-wide">CỔNG QUẢN TRỊ VIÊN</h4>
           <p className="mb-0 text-white-50" style={{ fontSize: '13px' }}>
             Hệ Thống Quản Trị Cửa Hàng
           </p>

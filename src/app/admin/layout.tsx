@@ -84,14 +84,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const token = localStorage.getItem('token');
       const userStr = localStorage.getItem('user');
       if (!token || !userStr) {
-        toast.error('Vui lòng đăng nhập quyền Quản trị!');
+        // Âm thầm chuyển hướng về trang đăng nhập, không bật toast lỗi làm phiền
         const isSubdomain = typeof window !== 'undefined' && window.location.hostname.startsWith('admin.');
         router.replace(isSubdomain ? '/login' : '/admin/login');
         return;
       }
       const user = JSON.parse(userStr);
       if (user.role !== 'ADMIN') {
-        toast.error('Tài khoản của bạn không có quyền Quản trị!');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         const isSubdomain = typeof window !== 'undefined' && window.location.hostname.startsWith('admin.');
