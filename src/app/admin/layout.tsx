@@ -285,88 +285,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </h5>
           </div>
 
-          {/* BÊN PHẢI: Chuông thông báo + Avatar Sếp Bảo */}
-          <div className="d-flex align-items-center gap-2 gap-md-3 flex-shrink-0">
+          {/* BÊN PHẢI: Chuông thông báo + Avatar Sếp Bảo (ĐẶT POSITION RELATIVE VÀ REF TẠI ĐÂY ĐỂ POPUP CĂN CHUẨN KHÔNG LỆCH) */}
+          <div className="d-flex align-items-center gap-2 gap-md-3 flex-shrink-0 position-relative" ref={notificationRef}>
             
-            {/* NÚT CHUÔNG THÔNG BÁO VÀ DROPDOWN */}
-            <div className="position-relative" ref={notificationRef}>
-              <button 
-                className="btn btn-light rounded-circle shadow-sm position-relative d-flex align-items-center justify-content-center" 
-                style={{ width: '38px', height: '38px' }}
-                onClick={() => setShowNotifications(!showNotifications)}
-                aria-label="Thông báo"
-              >
-                <i className="bi bi-bell-fill text-secondary fs-5"></i>
-                {notifications.some(n => !n.isRead) && (
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm border border-light" style={{ fontSize: '0.65rem' }}>
-                    {(() => {
-                      const unreadCount = notifications.filter(n => !n.isRead).length;
-                      return unreadCount > 9 ? '9+' : unreadCount;
-                    })()}
-                  </span>
-                )}
-              </button>
-
-              {showNotifications && (
-                <div className="position-absolute bg-white shadow-lg rounded-4 border mt-2 py-0" style={{ right: 0, top: '100%', width: 'min(360px, calc(100vw - 32px))', zIndex: 1050, overflow: 'hidden' }}>
-                  <div className="d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
-                    <h6 className="mb-0 fw-bold text-dark">Thông báo mới</h6>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-primary py-1 px-2 rounded-pill d-flex align-items-center gap-1"
-                      style={{ fontSize: '0.75rem' }}
-                      disabled={isRefreshingNotif}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        fetchNotifications(true);
-                      }}
-                      title="Làm mới thông báo"
-                    >
-                      <i className={`bi bi-arrow-clockwise ${isRefreshingNotif ? 'spin-icon' : ''}`}></i>
-                      {isRefreshingNotif ? 'Đang tải...' : 'Làm mới'}
-                    </button>
-                  </div>
-
-                  <div className="custom-scrollbar" style={{ maxHeight: '380px', overflowY: 'auto' }}>
-                    {notifications.length === 0 ? (
-                      <div className="p-5 text-center text-muted">
-                        <i className="bi bi-bell-slash fs-1 d-block mb-2 opacity-50"></i>
-                        <small>Bạn không có thông báo nào mới.</small>
-                      </div>
-                    ) : (
-                      notifications.map((notif) => (
-                        <div 
-                          key={notif.id} 
-                          className="d-flex gap-3 align-items-start p-3 border-bottom position-relative cursor-pointer"
-                          style={{ cursor: 'pointer', transition: 'background 0.2s' }}
-                          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                          onClick={() => handleOpenNotification(notif)}
-                        >
-                          <div 
-                            className={`rounded-circle d-flex align-items-center justify-content-center flex-shrink-0
-                              ${notif.type === 'ORDER' ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'}
-                            `} 
-                            style={{ width: '40px', height: '40px' }}
-                          >
-                            <i className={`bi fs-5 ${notif.type === 'ORDER' ? 'bi-cart-check-fill' : 'bi-envelope-paper-fill'}`}></i>
-                          </div>
-                          
-                          <div>
-                            <h6 className="mb-1 fw-bold fs-6" style={{ color: '#333' }}>{notif.title}</h6>
-                            <p className="mb-1 text-secondary" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>{notif.message}</p>
-                            <small className="text-muted" style={{ fontSize: '0.75rem' }}>
-                              <i className="bi bi-clock me-1"></i>
-                              {new Date(notif.time).toLocaleString('vi-VN')}
-                            </small>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
+            {/* NÚT CHUÔNG THÔNG BÁO */}
+            <button 
+              className="btn btn-light rounded-circle shadow-sm position-relative d-flex align-items-center justify-content-center" 
+              style={{ width: '38px', height: '38px' }}
+              onClick={() => setShowNotifications(!showNotifications)}
+              aria-label="Thông báo"
+            >
+              <i className="bi bi-bell-fill text-secondary fs-5"></i>
+              {notifications.some(n => !n.isRead) && (
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm border border-light" style={{ fontSize: '0.65rem' }}>
+                  {(() => {
+                    const unreadCount = notifications.filter(n => !n.isRead).length;
+                    return unreadCount > 9 ? '9+' : unreadCount;
+                  })()}
+                </span>
               )}
-            </div>
+            </button>
 
             {/* AVATAR: Ẩn chữ Sếp Bảo trên Mobile */}
             <div className="dropdown border-start ps-2 ps-md-3 ms-1 ms-md-2">
@@ -375,11 +313,82 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <span className="d-none d-md-inline text-nowrap">Sếp Bảo</span>
               </button>
             </div>
+
+            {/* DROPDOWN POPUP THÔNG BÁO: CĂN CHUẨN KHÔNG BỊ TRÀN SANG TRÁI TRÊN CẢ MOBILE VÀ DESKTOP */}
+            {showNotifications && (
+              <div 
+                className="position-absolute bg-white shadow-lg rounded-4 border notif-popup-dropdown" 
+                style={{ 
+                  right: 0, 
+                  top: 'calc(100% + 8px)', 
+                  width: 'min(360px, calc(100vw - 28px))', 
+                  maxWidth: 'calc(100vw - 28px)',
+                  zIndex: 1050, 
+                  overflow: 'hidden' 
+                }}
+              >
+                <div className="d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
+                  <h6 className="mb-0 fw-bold text-dark text-nowrap">Thông báo mới</h6>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-primary py-1 px-2 rounded-pill d-flex align-items-center gap-1"
+                    style={{ fontSize: '0.75rem' }}
+                    disabled={isRefreshingNotif}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fetchNotifications(true);
+                    }}
+                    title="Làm mới thông báo"
+                  >
+                    <i className={`bi bi-arrow-clockwise ${isRefreshingNotif ? 'spin-icon' : ''}`}></i>
+                    {isRefreshingNotif ? 'Đang tải...' : 'Làm mới'}
+                  </button>
+                </div>
+
+                <div className="custom-scrollbar" style={{ maxHeight: '380px', overflowY: 'auto' }}>
+                  {notifications.length === 0 ? (
+                    <div className="p-4 p-md-5 text-center text-muted">
+                      <i className="bi bi-bell-slash fs-1 d-block mb-2 opacity-50"></i>
+                      <small>Bạn không có thông báo nào mới.</small>
+                    </div>
+                  ) : (
+                    notifications.map((notif) => (
+                      <div 
+                        key={notif.id} 
+                        className="d-flex gap-3 align-items-start p-3 border-bottom position-relative cursor-pointer"
+                        style={{ cursor: 'pointer', transition: 'background 0.2s' }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        onClick={() => handleOpenNotification(notif)}
+                      >
+                        <div 
+                          className={`rounded-circle d-flex align-items-center justify-content-center flex-shrink-0
+                            ${notif.type === 'ORDER' ? 'bg-success bg-opacity-10 text-success' : 'bg-primary bg-opacity-10 text-primary'}
+                          `} 
+                          style={{ width: '40px', height: '40px' }}
+                        >
+                          <i className={`bi fs-5 ${notif.type === 'ORDER' ? 'bi-cart-check-fill' : 'bi-envelope-paper-fill'}`}></i>
+                        </div>
+                        
+                        <div>
+                          <h6 className="mb-1 fw-bold fs-6" style={{ color: '#333' }}>{notif.title}</h6>
+                          <p className="mb-1 text-secondary" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>{notif.message}</p>
+                          <small className="text-muted" style={{ fontSize: '0.75rem' }}>
+                            <i className="bi bi-clock me-1"></i>
+                            {new Date(notif.time).toLocaleString('vi-VN')}
+                          </small>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
-        {/* NỘI DUNG CHÍNH */}
-        <main className="flex-grow-1 position-relative" style={{ minWidth: 0 }}>
+        {/* NỘI DUNG CHÍNH (KHÓA TRIỆT ĐỂ LỖI CUỘN NGANG) */}
+        <main className="flex-grow-1 position-relative overflow-x-hidden w-100 max-w-100" style={{ minWidth: 0, maxWidth: '100%' }}>
           {children}
         </main>
       </div>

@@ -62,31 +62,33 @@ export default function AdminCustomersPage() {
   };
 
   return (
-    <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div className="card border-0 shadow-sm rounded-4 p-3 p-md-4 bg-white">
+      {/* HEADER & FILTER */}
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center mb-3 mb-md-4 gap-2">
         <div>
-          <h5 className="fw-bold text-dark mb-1">Tệp Khách Hàng</h5>
-          <span className="text-muted small">Quản lý thông tin và lịch sử mua hàng</span>
+          <h5 className="fw-bold text-dark mb-0" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>Tệp Khách Hàng</h5>
+          <span className="text-muted small d-none d-md-block">Quản lý thông tin và lịch sử mua hàng</span>
         </div>
         
         <div className="d-flex align-items-center gap-2">
           <select 
-            className="form-select form-select-sm border-secondary shadow-sm" 
-            style={{ minWidth: '150px' }}
+            className="form-select form-select-sm border-secondary shadow-sm rounded-pill py-1.5 px-3 flex-grow-1 flex-md-grow-0" 
+            style={{ minWidth: '150px', fontSize: '13px' }}
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
-            <option value="ALL">Tất cả khách hàng</option>
-            <option value="RETAIL">Khách Lẻ</option>
-            <option value="CONTRACTOR">Khách Thầu</option>
+            <option value="ALL">👥 Tất cả khách hàng</option>
+            <option value="RETAIL">🛒 Khách Lẻ</option>
+            <option value="CONTRACTOR">👷 Khách Thầu</option>
           </select>
-          <button className="btn btn-outline-success btn-sm rounded-3 px-3 shadow-sm fw-bold text-nowrap">
-            <i className="bi bi-file-earmark-excel me-1"></i> Xuất Excel
+          <button className="btn btn-outline-success btn-sm rounded-pill px-3 py-1.5 shadow-sm fw-bold text-nowrap flex-shrink-0" style={{ fontSize: '13px' }}>
+            <i className="bi bi-file-earmark-excel me-1"></i> <span className="d-none d-md-inline">Xuất Excel</span><span className="d-md-none">Xuất</span>
           </button>
         </div>
       </div>
 
-      <div className="table-responsive">
+      {/* 1. BẢNG DÀNH CHO DESKTOP (≥ 768px): GIỮ NGUYÊN BẢNG HIỆN TẠI */}
+      <div className="table-responsive d-none d-md-block">
         <table className="table table-hover align-middle mb-0">
           <thead className="table-light">
             <tr>
@@ -149,6 +151,63 @@ export default function AdminCustomersPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* 2. COMPACT LIST DÀNH CHO MOBILE (< 768px): KHÔNG CUỘN NGANG */}
+      <div className="d-block d-md-none">
+        {loading ? (
+          <div className="text-center py-5 text-muted">Đang tải khách hàng...</div>
+        ) : filteredCustomers.length === 0 ? (
+          <div className="text-center py-5 text-muted">Không có khách hàng nào.</div>
+        ) : (
+          <div className="d-flex flex-column gap-2">
+            {filteredCustomers.map((cus) => (
+              <div key={cus.id} className="border rounded-3 p-2.5 bg-white shadow-sm">
+                {/* Hàng 1: Avatar + Tên + Phân Loại Dropdown */}
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <div 
+                    className="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm flex-shrink-0"
+                    style={{ width: '38px', height: '38px', background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', fontSize: '14px' }}
+                  >
+                    {getInitial(cus.name)}
+                  </div>
+                  <div className="flex-grow-1 min-w-0">
+                    <div className="fw-bold text-dark text-truncate" style={{ fontSize: '14px' }}>
+                      {cus.name}
+                    </div>
+                    <div className="text-muted small" style={{ fontSize: '12px' }}>
+                      <i className="bi bi-telephone-fill me-1 text-muted"></i>{cus.phone}
+                    </div>
+                  </div>
+                  <select 
+                    className={`form-select form-select-sm flex-shrink-0 ${cus.customerType === 'CONTRACTOR' ? 'border-warning text-warning fw-bold' : 'border-primary text-primary'}`}
+                    value={cus.customerType}
+                    onChange={(e) => handleUpdateType(cus.id, e.target.value)}
+                    style={{ width: '105px', fontSize: '12px', padding: '2px 20px 2px 6px' }}
+                  >
+                    <option value="RETAIL" className="text-dark">Khách Lẻ</option>
+                    <option value="CONTRACTOR" className="text-dark">Khách Thầu</option>
+                  </select>
+                </div>
+
+                {/* Hàng 2: Chi tiêu & Số đơn & Ngày tham gia */}
+                <div className="d-flex justify-content-between align-items-center pt-2 border-top" style={{ fontSize: '12px' }}>
+                  <div>
+                    <span className="text-muted me-1">Chi tiêu:</span>
+                    <span className={`fw-bold ${cus.spent > 10000000 ? 'text-success' : 'text-dark'}`}>
+                      {cus.spent.toLocaleString()}đ
+                    </span>
+                    {cus.spent > 10000000 && <i className="bi bi-star-fill text-warning ms-1" title="VIP"></i>}
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="badge bg-light text-dark border px-2 py-0.5">{cus.ordersCount} Đơn</span>
+                    <span className="text-muted">{formatDate(cus.joined)}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

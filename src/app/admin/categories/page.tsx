@@ -229,25 +229,28 @@ export default function AdminCategoriesPage() {
   return (
     <div className="card border-0 shadow-sm rounded-4 p-4 bg-white position-relative">
       {/* HEADER & NÚT THÊM */}
-      <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div className="d-flex justify-content-between align-items-center gap-2 mb-3 mb-md-4">
         <div>
-          <h5 className="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-            <i className="bi bi-folder2-open text-primary fs-4"></i> Quản Lý Danh Mục Hàng Hoá
+          <h5 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>
+            <i className="bi bi-folder2-open text-primary fs-4"></i> Danh Mục Hàng Hoá
           </h5>
-          <span className="text-muted small">
+          <span className="text-muted small d-none d-md-block">
             Quản trị phân loại, icon Bootstrap nhận diện và kiểm soát hiển thị toàn hệ thống
           </span>
         </div>
         <button
           onClick={openCreateModal}
-          className="btn btn-primary rounded-pill px-4 shadow-sm fw-bold d-flex align-items-center gap-2"
+          className="btn btn-primary rounded-pill px-3 px-md-4 py-1.5 shadow-sm fw-bold d-flex align-items-center gap-1 text-nowrap flex-shrink-0"
+          style={{ fontSize: '0.875rem' }}
         >
-          <i className="bi bi-plus-lg"></i> Thêm Danh Mục Mới
+          <i className="bi bi-plus-lg"></i>
+          <span className="d-none d-md-inline">Thêm Danh Mục Mới</span>
+          <span className="d-md-none">Thêm</span>
         </button>
       </div>
 
-      {/* BẢNG DANH MỤC */}
-      <div className="table-responsive">
+      {/* 1. BẢNG DANH MỤC CHO DESKTOP (≥ 768px): GIỮ NGUYÊN BẢNG */}
+      <div className="table-responsive d-none d-md-block">
         <table className="table table-hover align-middle mb-0">
           <thead className="table-light">
             <tr>
@@ -445,6 +448,102 @@ export default function AdminCategoriesPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* 2. COMPACT LIST CHO MOBILE (< 768px): KHÔNG CUỘN NGANG */}
+      <div className="d-block d-md-none border rounded-3 overflow-hidden bg-white mb-3">
+        {loading ? (
+          <div className="text-center py-5 text-muted">
+            <span className="spinner-border spinner-border-sm me-2 text-primary"></span> Đang nạp danh mục...
+          </div>
+        ) : categories.length === 0 ? (
+          <div className="text-center py-5 text-muted">
+            Chưa có danh mục nào trong hệ thống.
+          </div>
+        ) : (
+          categories.map((cat) => {
+            const productCount = cat._count?.products || 0;
+            const isZeroProduct = productCount === 0;
+
+            return (
+              <div 
+                key={cat.id}
+                className="d-flex align-items-center gap-2 p-2 border-bottom bg-white"
+              >
+                {/* Trái: Icon tròn danh mục */}
+                <div
+                  className="rounded-circle d-flex align-items-center justify-content-center shadow-sm flex-shrink-0"
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    backgroundColor: cat.isActive !== false ? '#EBF5FF' : '#F1F5F9',
+                    color: cat.isActive !== false ? '#0078D4' : '#64748B',
+                  }}
+                >
+                  <i className={`bi ${cat.icon || 'bi-tag'} fs-5`}></i>
+                </div>
+
+                {/* Giữa: Tên danh mục + Badge số SP + Trạng thái */}
+                <div className="flex-grow-1 min-w-0">
+                  <div className="d-flex align-items-center gap-1.5 mb-1">
+                    <span className="fw-semibold text-dark text-truncate" style={{ fontSize: '13.5px' }}>
+                      {cat.name}
+                    </span>
+                    <span 
+                      className={`badge rounded-pill flex-shrink-0 ${isZeroProduct ? 'bg-warning-subtle text-warning-emphasis' : 'bg-primary-subtle text-primary'}`}
+                      style={{ fontSize: '10px' }}
+                    >
+                      {productCount} SP
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="form-check form-switch m-0 d-flex align-items-center">
+                      <input
+                        className="form-check-input shadow-none cursor-pointer"
+                        type="checkbox"
+                        role="switch"
+                        checked={cat.isActive !== false}
+                        onChange={(e) => handleQuickUpdate(cat.id, 'isActive', e.target.checked)}
+                        style={{ cursor: 'pointer', transform: 'scale(0.85)' }}
+                      />
+                      <span className={`ms-1.5 small ${cat.isActive !== false ? 'text-success fw-medium' : 'text-muted'}`} style={{ fontSize: '11px' }}>
+                        {cat.isActive !== false ? 'Bật' : 'Ẩn'}
+                      </span>
+                    </div>
+                    {cat.showOnHome && (
+                      <span className="badge bg-light text-secondary border" style={{ fontSize: '10px' }}>
+                        Trang chủ
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Phải: Nút Sửa & Xóa */}
+                <div className="d-flex align-items-center gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => openEditModal(cat)}
+                    className="btn btn-sm btn-light text-primary rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center"
+                    style={{ width: '32px', height: '32px' }}
+                    title="Sửa danh mục"
+                  >
+                    <i className="bi bi-pencil-square"></i>
+                  </button>
+
+                  <button
+                    onClick={() => handleDelete(cat)}
+                    className={`btn btn-sm rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center ${
+                      isZeroProduct ? 'btn-light text-danger' : 'btn-light text-secondary opacity-50'
+                    }`}
+                    style={{ width: '32px', height: '32px' }}
+                    title={isZeroProduct ? 'Xóa danh mục' : `Đang có ${productCount} SP`}
+                  >
+                    <i className="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* PHÂN TRANG */}

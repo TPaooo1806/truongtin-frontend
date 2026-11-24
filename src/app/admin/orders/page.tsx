@@ -61,6 +61,22 @@ export default function AdminOrdersPage() {
   const [filterPaymentStatus, setFilterPaymentStatus] = useState<string>("ALL"); 
   const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>("ALL");
   const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
+
+  // Đếm số lượng bộ lọc đang được kích hoạt (khác ALL hoặc có từ khóa)
+  const activeFiltersCount = 
+    (filterStatus !== "ALL" ? 1 : 0) +
+    (filterPaymentStatus !== "ALL" ? 1 : 0) +
+    (filterPaymentMethod !== "ALL" ? 1 : 0) +
+    (searchKeyword.trim() ? 1 : 0);
+
+  const resetFilters = () => {
+    setFilterStatus("ALL");
+    setFilterPaymentStatus("ALL");
+    setFilterPaymentMethod("ALL");
+    setSearchKeyword("");
+    fetchOrders(1);
+  };
 
   // --- 2. HÀM LẤY DỮ LIỆU ---
   const fetchOrders = async (page: number = 1) => {
@@ -296,19 +312,19 @@ export default function AdminOrdersPage() {
     return <div className="text-center p-5 fw-bold">Đang tải đơn hàng...</div>;
 
   return (
-    <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <div className="card border-0 shadow-sm rounded-4 p-3 p-md-4 bg-white">
       {/* HEADER */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-3 mb-md-4">
         <div>
-          <h5 className="fw-bold text-dark mb-1">Quản lý Đơn Hàng (Admin)</h5>
-          <span className="text-muted small">
+          <h5 className="fw-bold text-dark mb-0" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)' }}>Quản Lý Đơn Hàng</h5>
+          <span className="text-muted small d-none d-md-block">
             Xem chi tiết và xác nhận trừ kho
           </span>
         </div>
       </div>
 
-      {/* FILTER BAR LỊCH SỬ ĐƠN HÀNG */}
-      <div className="row g-2 mb-4 bg-light p-3 rounded-3 mx-0 border">
+      {/* 1. BỘ LỌC CHO DESKTOP (≥ 768px): GIỮ NGUYÊN */}
+      <div className="row g-2 mb-4 bg-light p-3 rounded-3 mx-0 border d-none d-md-flex">
         <div className="col-12 col-md-3">
           <input 
             type="text" 
@@ -355,8 +371,98 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {/* TABLE */}
-      <div className="table-responsive">
+      {/* 2. BỘ LỌC CHO MOBILE (< 768px): GỌI GỌN 1 HÀNG + TOGGLE NÂNG CAO */}
+      <div className="d-block d-md-none mb-3">
+        <div className="d-flex align-items-center gap-2">
+          <div className="position-relative flex-grow-1">
+            <i className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+            <input 
+              type="text" 
+              className="form-control rounded-pill ps-5 pe-3 py-1.5 shadow-none bg-light" 
+              style={{ fontSize: '14px' }}
+              placeholder="Tìm mã đơn, SĐT, Tên KH..." 
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && fetchOrders(1)}
+            />
+          </div>
+          <button 
+            type="button"
+            className={`btn rounded-pill px-3 py-1.5 d-flex align-items-center gap-1 flex-shrink-0 ${showMobileFilters || activeFiltersCount > 0 ? 'btn-primary' : 'btn-outline-secondary'}`}
+            style={{ fontSize: '13px' }}
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+          >
+            <i className="bi bi-funnel"></i>
+            <span>Lọc</span>
+            {activeFiltersCount > 0 && (
+              <span className="badge bg-white text-primary rounded-circle ms-1 p-1" style={{ fontSize: '10px', minWidth: '16px' }}>
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Khung xổ ra bộ lọc nâng cao khi ấn nút Lọc trên mobile */}
+        {showMobileFilters && (
+          <div className="p-3 bg-light rounded-3 mt-2 border shadow-sm">
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <span className="fw-bold small text-secondary">Tùy Chọn Lọc Nâng Cao</span>
+              {activeFiltersCount > 0 && (
+                <button type="button" className="btn btn-link btn-sm p-0 text-danger text-decoration-none" style={{ fontSize: '12px' }} onClick={resetFilters}>
+                  Xóa bộ lọc
+                </button>
+              )}
+            </div>
+            <div className="d-flex flex-column gap-2">
+              <div>
+                <label className="form-label text-muted mb-1" style={{ fontSize: '11px' }}>Trạng Thái Đơn</label>
+                <select className="form-select form-select-sm" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                  <option value="ALL">Mọi trạng thái</option>
+                  <option value="PENDING_COD">Chờ duyệt COD</option>
+                  <option value="PENDING_PAYOS">Chờ duyệt PayOS</option>
+                  <option value="PAID_PENDING_CONFIRM">Đã TT (Chờ duyệt)</option>
+                  <option value="PAID_AND_CONFIRMED">Đã duyệt & Trừ kho</option>
+                  <option value="PROCESSING">Đang soạn hàng</option>
+                  <option value="SHIPPING">Đang giao hàng</option>
+                  <option value="DELIVERED">Đã giao hàng</option>
+                  <option value="RETURNED">Đã hoàn trả</option>
+                  <option value="CANCELLED">Đã hủy</option>
+                </select>
+              </div>
+              <div>
+                <label className="form-label text-muted mb-1" style={{ fontSize: '11px' }}>Trạng Thái Thanh Toán</label>
+                <select className="form-select form-select-sm" value={filterPaymentStatus} onChange={(e) => setFilterPaymentStatus(e.target.value)}>
+                  <option value="ALL">Tất cả thanh toán</option>
+                  <option value="UNPAID">Chưa thanh toán</option>
+                  <option value="PAID">Đã thanh toán</option>
+                  <option value="CANCELLED">Đã hủy / Hết hạn</option>
+                </select>
+              </div>
+              <div>
+                <label className="form-label text-muted mb-1" style={{ fontSize: '11px' }}>Phương Thức</label>
+                <select className="form-select form-select-sm" value={filterPaymentMethod} onChange={(e) => setFilterPaymentMethod(e.target.value)}>
+                  <option value="ALL">Tất cả phương thức</option>
+                  <option value="COD">Tiền mặt (COD)</option>
+                  <option value="PAYOS">Chuyển khoản (PayOS)</option>
+                </select>
+              </div>
+              <button 
+                type="button" 
+                className="btn btn-primary btn-sm rounded-pill mt-2 fw-semibold"
+                onClick={() => {
+                  fetchOrders(1);
+                  setShowMobileFilters(false);
+                }}
+              >
+                Áp Dụng Bộ Lọc
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 3. BẢNG DÀNH CHO DESKTOP (≥ 768px): GIỮ NGUYÊN BẢNG HIỆN TẠI */}
+      <div className="table-responsive d-none d-md-block">
         <table className="table table-hover align-middle mb-0">
           <thead className="table-light">
             <tr>
@@ -391,6 +497,7 @@ export default function AdminOrdersPage() {
                   <button
                     className="btn btn-sm btn-light text-primary rounded-circle shadow-sm me-2"
                     onClick={() => setSelectedOrder(order)}
+                    title="Xem chi tiết"
                   >
                     <i className="bi bi-eye-fill"></i>
                   </button>
@@ -403,6 +510,7 @@ export default function AdminOrdersPage() {
                           onClick={() =>
                             handleApprove(order.id, order.orderCode)
                           }
+                          title="Duyệt đơn"
                         >
                           <i className="bi bi-check-lg text-white"></i>
                         </button>
@@ -412,6 +520,7 @@ export default function AdminOrdersPage() {
                           onClick={() =>
                             handleCancel(order.id, order.orderCode)
                           }
+                          title="Hủy đơn"
                         >
                           <i className="bi bi-x-lg text-white"></i>
                         </button>
@@ -425,6 +534,89 @@ export default function AdminOrdersPage() {
         {orders.length === 0 && (
           <div className="text-center p-4 text-muted">
             Không có đơn hàng nào.
+          </div>
+        )}
+      </div>
+
+      {/* 4. COMPACT LIST DÀNH CHO MOBILE (< 768px): KHÔNG CUỘN NGANG */}
+      <div className="d-block d-md-none">
+        {orders.length === 0 ? (
+          <div className="text-center py-5 text-muted">
+            <i className="bi bi-inbox fs-1 d-block mb-1 text-secondary opacity-50"></i>
+            Không tìm thấy đơn hàng nào.
+          </div>
+        ) : (
+          <div className="d-flex flex-column gap-2">
+            {orders.map((order) => (
+              <div 
+                key={order.id} 
+                className="border rounded-3 p-3 bg-white shadow-sm"
+              >
+                {/* Dòng 1: Mã đơn & Trạng thái */}
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <span className="fw-bold text-primary" style={{ fontSize: '14px' }}>
+                    #{order.orderCode}
+                  </span>
+                  <div>{getStatusBadge(order.status)}</div>
+                </div>
+
+                {/* Dòng 2: Tên khách hàng & Ngày đặt */}
+                <div className="fw-bold text-dark text-truncate" style={{ fontSize: '14px' }}>
+                  {order.customerName}
+                </div>
+                <div className="text-muted mb-2" style={{ fontSize: '12px' }}>
+                  <i className="bi bi-telephone me-1"></i>{order.phone} • {new Date(order.createdAt).toLocaleDateString("vi-VN")}
+                </div>
+
+                {/* Dòng 3: Tổng tiền & Nút thao tác */}
+                <div className="d-flex justify-content-between align-items-center pt-2 border-top">
+                  <div>
+                    <div className="fw-bold text-danger fs-6">
+                      {order.total.toLocaleString()}đ
+                    </div>
+                    <div className="mt-0.5">{getPaymentStatusBadge(order.paymentStatus)}</div>
+                  </div>
+
+                  <div className="d-flex align-items-center gap-1.5">
+                    <button
+                      className="btn btn-sm btn-light text-primary rounded-circle shadow-sm"
+                      onClick={() => setSelectedOrder(order)}
+                      style={{ width: '34px', height: '34px' }}
+                      title="Xem chi tiết"
+                    >
+                      <i className="bi bi-eye-fill"></i>
+                    </button>
+
+                    {order.status !== "PAID_AND_CONFIRMED" &&
+                      order.status !== "CANCELLED" && (
+                        <>
+                          <button
+                            className="btn btn-sm btn-success rounded-circle shadow-sm ms-1"
+                            onClick={() =>
+                              handleApprove(order.id, order.orderCode)
+                            }
+                            style={{ width: '34px', height: '34px' }}
+                            title="Duyệt đơn"
+                          >
+                            <i className="bi bi-check-lg text-white"></i>
+                          </button>
+
+                          <button
+                            className="btn btn-sm btn-danger rounded-circle shadow-sm ms-1"
+                            onClick={() =>
+                              handleCancel(order.id, order.orderCode)
+                            }
+                            style={{ width: '34px', height: '34px' }}
+                            title="Hủy đơn"
+                          >
+                            <i className="bi bi-x-lg text-white"></i>
+                          </button>
+                        </>
+                      )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

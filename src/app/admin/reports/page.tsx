@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, Filler
 } from 'chart.js';
-import { Bar, Line } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, Filler);
 
@@ -74,18 +74,59 @@ export default function AdminReportsPage() {
       data: dashboardData?.revenueChart?.data || [],
       borderColor: '#3b82f6',
       backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      borderWidth: 3,
+      borderWidth: 2.5,
       fill: true,
-      tension: 0.4,
+      tension: 0.35,
       pointBackgroundColor: '#fff',
       pointBorderColor: '#3b82f6',
       pointBorderWidth: 2,
+      pointRadius: 3,
+      pointHoverRadius: 5,
     }],
   };
 
+  const revenueChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            const val = context.parsed.y || 0;
+            return ` Doanh thu: ${val.toLocaleString('vi-VN')} đ`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: {
+          font: { size: 11 },
+          maxRotation: 45,
+          minRotation: 0,
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: { color: '#f1f5f9' },
+        ticks: {
+          font: { size: 11 },
+          callback: function(value: any) {
+            const num = Number(value);
+            if (num >= 1000000000) return (num / 1000000000).toFixed(1).replace('.0','') + ' tỷ';
+            if (num >= 1000000) return (num / 1000000).toFixed(1).replace('.0','') + ' tr';
+            if (num >= 1000) return (num / 1000).toFixed(0) + 'k';
+            return num;
+          }
+        }
+      }
+    }
+  };
 
   return (
-    <div className="row g-4 position-relative">
+    <div className="w-100 max-w-100 overflow-x-hidden p-2 p-md-3 position-relative">
       
       {/* THANH LOADING MƯỢT MÀ KHI CHUYỂN FILTER */}
       {loading && (
@@ -96,107 +137,132 @@ export default function AdminReportsPage() {
         </div>
       )}
 
-      {/* HEADER & FILTER */}
-      <div className="col-12 d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-        <div>
-          <h5 className="fw-bold text-dark mb-1">Tổng Quan Hiệu Quả Kinh Doanh</h5>
-          <span className="text-muted small">Dữ liệu thực tế từ hệ thống Trường Tín</span>
+      {/* HEADER & FILTER: CÂN ĐỐI 2 ĐẦU, SỬA LỖI ĐÈ CHỮ Ở NÚT CHỌN THỜI GIAN */}
+      <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div className="min-w-0">
+          <h5 className="fw-bold text-dark mb-0" style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.25rem)' }}>Hiệu Quả Kinh Doanh</h5>
+          <span className="text-muted small d-none d-md-block">Dữ liệu thực tế từ hệ thống Trường Tín</span>
         </div>
-        <select 
-          className="form-select w-auto rounded-pill border shadow-sm fw-bold text-primary px-4"
-          value={timeRange}
-          onChange={handleRangeChange}
-          disabled={loading} // Tránh Admin bấm loạn xạ lúc đang load
-        >
-          <option value="today">Hôm nay</option>
-          <option value="thisWeek">7 ngày qua</option>
-          <option value="thisMonth">30 ngày qua</option>
-          <option value="lastMonth">Tháng trước</option>
-          <option value="thisYear">Năm nay</option>
-        </select>
+        
+        {/* DROPDOWN CHỌN THỜI GIAN: TÁCH BẠCH CHỮ VÀ ICON MŨI TÊN, KHÔNG ĐÈ LÊN NHAU */}
+        <div className="position-relative flex-shrink-0">
+          <select 
+            className="form-select bg-white border border-slate-200 rounded-pill fw-semibold text-primary shadow-sm"
+            style={{ 
+              fontSize: '13px',
+              appearance: 'none',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              paddingLeft: '14px',
+              paddingRight: '32px',
+              paddingTop: '6px',
+              paddingBottom: '6px',
+              borderColor: '#e2e8f0',
+              cursor: 'pointer'
+            }}
+            value={timeRange}
+            onChange={handleRangeChange}
+            disabled={loading}
+          >
+            <option value="today">Hôm nay</option>
+            <option value="thisWeek">7 ngày qua</option>
+            <option value="thisMonth">30 ngày qua</option>
+            <option value="lastMonth">Tháng trước</option>
+            <option value="thisYear">Năm nay</option>
+          </select>
+          <div className="position-absolute end-0 top-50 translate-middle-y pe-2 pointer-events-none d-flex align-items-center" style={{ right: '8px', pointerEvents: 'none' }}>
+            <i className="bi bi-chevron-down text-primary" style={{ fontSize: '11px' }}></i>
+          </div>
+        </div>
       </div>
 
-      {/* KHU VỰC DATA (Sẽ hơi mờ nếu đang loading) */}
-      <div className={`row g-4 transition-all ${loading ? 'opacity-50' : 'opacity-100'}`}>
+      {/* KHU VỰC DATA */}
+      <div className={`row g-2 g-md-3 transition-all ${loading ? 'opacity-50' : 'opacity-100'}`}>
         
         {dashboardData && (
           <>
-            {/* 4 THẺ TỔNG QUAN (Thay thế 2 thẻ cũ theo yêu cầu) */}
-            <div className="col-12 col-md-3">
-              <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden" style={{ borderLeft: '5px solid #10b981' }}>
-                <div className="card-body p-4 position-relative">
-                  <div className="d-flex align-items-center mb-3">
-                    <div className="bg-success bg-opacity-10 text-success p-3 rounded-circle me-3">
-                      <i className="bi bi-cash-stack fs-4"></i>
+            {/* 4 THẺ TỔNG QUAN (XẾP DỌC 2 DÒNG, KHÔNG CẮT CHỮ TRÊN MOBILE) */}
+            <div className="col-6 col-md-3 min-w-0">
+              <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden w-100" style={{ borderLeft: '4px solid #10b981' }}>
+                <div className="card-body p-2.5 p-md-3">
+                  {/* Dòng 1: Icon w-7 h-7 + Nhãn rút gọn */}
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '28px', height: '28px' }}>
+                      <i className="bi bi-cash-stack" style={{ fontSize: '14px' }}></i>
                     </div>
-                    <h6 className="text-muted fw-bold mb-0 text-uppercase">Doanh Thu (Đã Duyệt)</h6>
+                    <span className="text-muted fw-bold text-uppercase text-truncate" style={{ fontSize: '11px', letterSpacing: '0.3px' }}>Doanh thu</span>
                   </div>
-                  <h3 className="fw-bold text-dark mb-0">{formatMoney(dashboardData.summary.approvedRevenue)}</h3>
-                  <div className="position-absolute" style={{ bottom: '-15px', right: '-15px', opacity: 0.05 }}>
-                    <i className="bi bi-cash-stack" style={{ fontSize: '100px' }}></i>
+                  {/* Dòng 2: Số liệu lớn, in đậm */}
+                  <div className="mt-2">
+                    <h4 className="fw-bold text-dark mb-0 text-truncate" style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.35rem)' }} title={formatMoney(dashboardData.summary.approvedRevenue)}>
+                      {formatMoney(dashboardData.summary.approvedRevenue)}
+                    </h4>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="col-12 col-md-3">
-              <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden" style={{ borderLeft: '5px solid #3b82f6' }}>
-                <div className="card-body p-4 position-relative">
-                  <div className="d-flex align-items-center mb-3">
-                    <div className="bg-primary bg-opacity-10 text-primary p-3 rounded-circle me-3">
-                      <i className="bi bi-cart-check fs-4"></i>
+            <div className="col-6 col-md-3 min-w-0">
+              <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden w-100" style={{ borderLeft: '4px solid #3b82f6' }}>
+                <div className="card-body p-2.5 p-md-3">
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '28px', height: '28px' }}>
+                      <i className="bi bi-cart-check" style={{ fontSize: '14px' }}></i>
                     </div>
-                    <h6 className="text-muted fw-bold mb-0 text-uppercase">Tổng Đơn Hàng</h6>
+                    <span className="text-muted fw-bold text-uppercase text-truncate" style={{ fontSize: '11px', letterSpacing: '0.3px' }}>Tổng đơn</span>
                   </div>
-                  <h3 className="fw-bold text-dark mb-0">{dashboardData.summary.totalOrdersCount} <span className="fs-6 text-muted fw-normal">đơn</span></h3>
-                  <div className="position-absolute" style={{ bottom: '-15px', right: '-15px', opacity: 0.05 }}>
-                    <i className="bi bi-cart-check" style={{ fontSize: '100px' }}></i>
+                  <div className="mt-2">
+                    <h4 className="fw-bold text-dark mb-0 text-truncate" style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.35rem)' }}>
+                      {dashboardData.summary.totalOrdersCount} <span className="fs-6 text-muted fw-normal">đơn</span>
+                    </h4>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="col-12 col-md-3">
-              <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden" style={{ borderLeft: '5px solid #f59e0b' }}>
-                <div className="card-body p-4 position-relative">
-                  <div className="d-flex align-items-center mb-3">
-                    <div className="bg-warning bg-opacity-10 text-warning p-3 rounded-circle me-3">
-                      <i className="bi bi-hourglass-split fs-4"></i>
+            <div className="col-6 col-md-3 min-w-0">
+              <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden w-100" style={{ borderLeft: '4px solid #f59e0b' }}>
+                <div className="card-body p-2.5 p-md-3">
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '28px', height: '28px' }}>
+                      <i className="bi bi-hourglass-split" style={{ fontSize: '14px' }}></i>
                     </div>
-                    <h6 className="text-muted fw-bold mb-0 text-uppercase">Đơn Chờ Xử Lý</h6>
+                    <span className="text-muted fw-bold text-uppercase text-truncate" style={{ fontSize: '11px', letterSpacing: '0.3px' }}>Đơn chờ</span>
                   </div>
-                  <h3 className="fw-bold text-dark mb-0">{dashboardData.summary.pendingOrdersCount} <span className="fs-6 text-muted fw-normal">đơn</span></h3>
-                  <div className="position-absolute" style={{ bottom: '-15px', right: '-15px', opacity: 0.05 }}>
-                    <i className="bi bi-hourglass-split" style={{ fontSize: '100px' }}></i>
+                  <div className="mt-2">
+                    <h4 className="fw-bold text-dark mb-0 text-truncate" style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.35rem)' }}>
+                      {dashboardData.summary.pendingOrdersCount} <span className="fs-6 text-muted fw-normal">đơn</span>
+                    </h4>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="col-12 col-md-3">
-              <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden" style={{ borderLeft: '5px solid #0dcaf0' }}>
-                <div className="card-body p-4 position-relative">
-                  <div className="d-flex align-items-center mb-3">
-                    <div className="bg-info bg-opacity-10 text-info p-3 rounded-circle me-3">
-                      <i className="bi bi-box-seam fs-4"></i>
+            <div className="col-6 col-md-3 min-w-0">
+              <div className="card border-0 shadow-sm rounded-4 bg-white h-100 overflow-hidden w-100" style={{ borderLeft: '4px solid #0dcaf0' }}>
+                <div className="card-body p-2.5 p-md-3">
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="bg-info bg-opacity-10 text-info rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '28px', height: '28px' }}>
+                      <i className="bi bi-box-seam" style={{ fontSize: '14px' }}></i>
                     </div>
-                    <h6 className="text-muted fw-bold mb-0 text-uppercase">Tổng Sản Phẩm</h6>
+                    <span className="text-muted fw-bold text-uppercase text-truncate" style={{ fontSize: '11px', letterSpacing: '0.3px' }}>Tổng SP</span>
                   </div>
-                  <h3 className="fw-bold text-dark mb-0">{dashboardData.summary.totalProductsCount} <span className="fs-6 text-muted fw-normal">SP</span></h3>
-                  <div className="position-absolute" style={{ bottom: '-15px', right: '-15px', opacity: 0.05 }}>
-                    <i className="bi bi-box-seam" style={{ fontSize: '100px' }}></i>
+                  <div className="mt-2">
+                    <h4 className="fw-bold text-dark mb-0 text-truncate" style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.35rem)' }}>
+                      {dashboardData.summary.totalProductsCount} <span className="fs-6 text-muted fw-normal">SP</span>
+                    </h4>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* KHU VỰC BIỂU ĐỒ */}
-            <div className="col-12 col-lg-8 mt-4">
-              <div className="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
-                <h6 className="fw-bold text-dark mb-4">Biểu Đồ Doanh Thu Thực Tế</h6>
-                <div style={{ height: '300px' }}>
+            <div className="col-12 col-lg-8 mt-3 mt-md-4 min-w-0">
+              <div className="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 overflow-hidden w-100">
+                <h6 className="fw-bold text-dark mb-3 mb-md-4">Biểu Đồ Doanh Thu Thực Tế</h6>
+                <div style={{ height: '280px', position: 'relative' }} className="w-100 min-w-0 overflow-hidden">
                   {dashboardData.revenueChart.labels.length > 0 ? (
-                    <Line data={revenueChartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
+                    <Line data={revenueChartData} options={revenueChartOptions} />
                   ) : (
                     <div className="h-100 d-flex flex-column align-items-center justify-content-center text-muted">
                        <i className="bi bi-graph-down text-secondary opacity-50 mb-2" style={{ fontSize: '3rem' }}></i>
@@ -207,18 +273,18 @@ export default function AdminReportsPage() {
               </div>
             </div>
 
-            <div className="col-12 col-lg-4 mt-4">
-              <div className="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
-                <h6 className="fw-bold text-dark mb-4"><i className="bi bi-star-fill me-2 text-warning"></i>Top 5 Bán Chạy</h6>
-                <div className="d-flex flex-column gap-3" style={{ overflowY: 'auto' }}>
+            <div className="col-12 col-lg-4 mt-3 mt-md-4 min-w-0">
+              <div className="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white h-100 overflow-hidden w-100">
+                <h6 className="fw-bold text-dark mb-3 mb-md-4"><i className="bi bi-star-fill me-2 text-warning"></i>Top 5 Bán Chạy</h6>
+                <div className="d-flex flex-column gap-2 gap-md-3" style={{ overflowY: 'auto' }}>
                   {dashboardData.topProducts.labels.length > 0 ? (
                     dashboardData.topProducts.labels.map((label, idx) => (
-                      <div key={idx} className="d-flex align-items-center p-3 rounded-3 bg-light border">
-                        <div className="bg-white rounded-circle d-flex justify-content-center align-items-center fw-bold shadow-sm me-3 text-primary" style={{ width: '40px', height: '40px', fontSize: '1.1rem' }}>
+                      <div key={idx} className="d-flex align-items-center p-2.5 p-md-3 rounded-3 bg-light border min-w-0">
+                        <div className="bg-white rounded-circle d-flex justify-content-center align-items-center fw-bold shadow-sm me-2 me-md-3 text-primary flex-shrink-0" style={{ width: '36px', height: '36px', fontSize: '1rem' }}>
                           {idx + 1}
                         </div>
-                        <div className="flex-grow-1">
-                          <h6 className="mb-1 fw-bold text-dark" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        <div className="flex-grow-1 min-w-0">
+                          <h6 className="mb-1 fw-bold text-dark text-truncate" style={{ fontSize: '13px' }}>
                             {label}
                           </h6>
                           <div className="small text-danger fw-bold"><i className="bi bi-cart-check me-1"></i>Đã bán: {dashboardData.topProducts.data[idx]}</div>
@@ -236,11 +302,14 @@ export default function AdminReportsPage() {
             </div>
 
             {/* CẢNH BÁO TỒN KHO */}
-            <div className="col-12 mt-4">
-              <div className="card border-0 shadow-sm p-4 rounded-4 bg-white border-top border-danger border-4">
-                {/* ĐÃ SỬA: Thay số 10 thành 5 cho chuẩn logic */}
-                <h6 className="fw-bold text-danger mb-4"><i className="bi bi-exclamation-triangle-fill me-2"></i>Sản phẩm sắp hết hàng (Tồn kho ≤ 5)</h6>
-                <div className="table-responsive">
+            <div className="col-12 mt-3 mt-md-4 min-w-0">
+              <div className="card border-0 shadow-sm p-3 p-md-4 rounded-4 bg-white border-top border-danger border-4 overflow-hidden w-100">
+                <h6 className="fw-bold text-danger mb-3 mb-md-4" style={{ fontSize: '14px' }}>
+                  <i className="bi bi-exclamation-triangle-fill me-2"></i>Sản phẩm sắp hết hàng (Tồn kho ≤ 5)
+                </h6>
+                
+                {/* 1. BẢNG DÀNH CHO DESKTOP (≥ 768px) */}
+                <div className="table-responsive d-none d-md-block">
                   <table className="table table-hover align-middle mb-0">
                     <thead className="table-light">
                       <tr>
@@ -267,6 +336,31 @@ export default function AdminReportsPage() {
                       )}
                     </tbody>
                   </table>
+                </div>
+
+                {/* 2. COMPACT LIST DÀNH CHO MOBILE (< 768px): KHÔNG CUỘN NGANG */}
+                <div className="d-block d-md-none border rounded-3 overflow-hidden bg-white">
+                  {dashboardData.lowStock.length === 0 ? (
+                    <div className="text-center py-4 text-success fw-bold small">
+                      <i className="bi bi-check-circle-fill me-1"></i> Kho hàng đang đầy đủ
+                    </div>
+                  ) : (
+                    dashboardData.lowStock.map((item: { name: string; category: string; stock: number }, idx: number) => (
+                      <div key={idx} className="d-flex align-items-center justify-content-between p-2.5 border-bottom bg-white">
+                        <div className="flex-grow-1 min-w-0 me-2">
+                          <div className="fw-semibold text-dark text-truncate" style={{ fontSize: '13px' }}>
+                            {item.name}
+                          </div>
+                          <div className="text-muted" style={{ fontSize: '11px' }}>
+                            {item.category}
+                          </div>
+                        </div>
+                        <span className={`badge flex-shrink-0 ${item.stock <= 5 ? 'bg-danger' : 'bg-warning text-dark'}`} style={{ fontSize: '11px' }}>
+                          Còn {item.stock}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

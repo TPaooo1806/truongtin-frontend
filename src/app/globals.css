@@ -525,3 +525,22 @@ header.sticky-top {
     font-size: 16px !important;
   }
 }
+
+/* Sửa lỗi popup thông báo bị lệch trên Mobile */
+.notif-popup-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(360px, calc(100vw - 28px));
+  max-width: calc(100vw - 28px);
+  z-index: 1050;
+  overflow: hidden;
+}
+
+@media (max-width: 767.98px) {
+  .notif-popup-dropdown {
+    right: -6px !important;
+    width: min(350px, calc(100vw - 24px)) !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+}

@@ -83,7 +83,7 @@ export default function AdminBannersPage() {
   // HÀM NÉN ẢNH CLIENT-SIDE (HTML5 Canvas -> .webp 85%)
   const compressImage = async (
     file: File,
-    targetPosition: string
+    targetPosition: string,
   ): Promise<{
     compressedFile: File;
     previewUrl: string;
@@ -145,7 +145,7 @@ export default function AdminBannersPage() {
               const previewUrl = URL.createObjectURL(blob);
               const reductionPercent = Math.max(
                 0,
-                Math.round(((file.size - blob.size) / file.size) * 100)
+                Math.round(((file.size - blob.size) / file.size) * 100),
               );
 
               resolve({
@@ -163,7 +163,7 @@ export default function AdminBannersPage() {
               });
             },
             "image/webp",
-            0.85
+            0.85,
           );
         };
         img.onerror = () => reject(new Error("Không thể đọc file hình ảnh"));
@@ -184,7 +184,7 @@ export default function AdminBannersPage() {
       // BƯỚC 1: Nén ảnh Client-side sang định dạng .webp chất lượng 85%
       const { compressedFile, previewUrl, meta } = await compressImage(
         file,
-        formData.position
+        formData.position,
       );
 
       // Hiển thị Live Preview ngay lập tức 0ms
@@ -194,7 +194,7 @@ export default function AdminBannersPage() {
       const origMB = (meta.originalSize / 1024 / 1024).toFixed(1);
       const compKB = (meta.compressedSize / 1024).toFixed(0);
       toast.success(
-        `Đã nén tối ưu: ${origMB}MB ➔ ${compKB}KB WebP (tiết kiệm ${meta.reductionPercent}%)!`
+        `Đã nén tối ưu: ${origMB}MB ➔ ${compKB}KB WebP (tiết kiệm ${meta.reductionPercent}%)!`,
       );
 
       // BƯỚC 2: Upload file WebP đã nén lên Cloudinary
@@ -292,12 +292,12 @@ export default function AdminBannersPage() {
       });
       if (res.data.success) {
         toast.success(
-          !currentStatus ? "Đã BẬT hiển thị banner" : "Đã TẮT hiển thị banner"
+          !currentStatus ? "Đã BẬT hiển thị banner" : "Đã TẮT hiển thị banner",
         );
         setBanners((prev) =>
           prev.map((b) =>
-            b.id === id ? { ...b, isActive: !currentStatus } : b
-          )
+            b.id === id ? { ...b, isActive: !currentStatus } : b,
+          ),
         );
       }
     } catch (error) {
@@ -339,14 +339,6 @@ export default function AdminBannersPage() {
     <div className="container-fluid p-0">
       {/* HEADER QUẢN LÝ */}
       <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <div>
-          <h4 className="fw-bold mb-1 d-flex align-items-center gap-2">
-            <i className="bi bi-images text-primary fs-3"></i> Quản Lý Banner Quảng Cáo
-          </h4>
-          <p className="text-muted mb-0 small">
-            Quản trị banner chính và banner phụ, tự động nén WebP và mô phỏng Live Preview Desktop
-          </p>
-        </div>
         <button
           className="btn btn-primary rounded-pill px-4 shadow-sm fw-bold d-flex align-items-center gap-2"
           onClick={openCreateModal}
@@ -365,8 +357,13 @@ export default function AdminBannersPage() {
         </div>
       ) : banners.length === 0 ? (
         <div className="text-center py-5 bg-white rounded-4 shadow-sm border">
-          <i className="bi bi-image text-muted" style={{ fontSize: "3rem" }}></i>
-          <p className="mt-3 text-muted mb-0">Chưa có banner nào trong hệ thống.</p>
+          <i
+            className="bi bi-image text-muted"
+            style={{ fontSize: "3rem" }}
+          ></i>
+          <p className="mt-3 text-muted mb-0">
+            Chưa có banner nào trong hệ thống.
+          </p>
         </div>
       ) : (
         <div className="row g-4">
@@ -420,8 +417,10 @@ export default function AdminBannersPage() {
                       style={{ fontSize: "11px" }}
                     >
                       {banner.position === "HOME_MAIN" && "Trang chủ (Chính)"}
-                      {banner.position === "HOME_SUB_LEFT" && "Giữa trang (Trái)"}
-                      {banner.position === "HOME_SUB_RIGHT" && "Giữa trang (Phải)"}
+                      {banner.position === "HOME_SUB_LEFT" &&
+                        "Giữa trang (Trái)"}
+                      {banner.position === "HOME_SUB_RIGHT" &&
+                        "Giữa trang (Phải)"}
                     </span>
                   </div>
 
@@ -454,7 +453,9 @@ export default function AdminBannersPage() {
                         role="switch"
                         id={`switch-${banner.id}`}
                         checked={banner.isActive}
-                        onChange={() => handleToggleActive(banner.id, banner.isActive)}
+                        onChange={() =>
+                          handleToggleActive(banner.id, banner.isActive)
+                        }
                         style={{ cursor: "pointer" }}
                       />
                       <label
@@ -499,7 +500,11 @@ export default function AdminBannersPage() {
       {showModal && (
         <div
           className="modal d-block"
-          style={{ background: "rgba(0,0,0,0.55)", zIndex: 1050, backdropFilter: "blur(4px)" }}
+          style={{
+            background: "rgba(0,0,0,0.55)",
+            zIndex: 1050,
+            backdropFilter: "blur(4px)",
+          }}
         >
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
@@ -513,7 +518,9 @@ export default function AdminBannersPage() {
                       <i className="bi bi-aspect-ratio fs-5"></i>
                     </div>
                     <h5 className="modal-title fw-bold text-dark mb-0">
-                      {modalMode === "create" ? "Thêm Banner Quảng Cáo Mới" : "Chỉnh Sửa Banner"}
+                      {modalMode === "create"
+                        ? "Thêm Banner Quảng Cáo Mới"
+                        : "Chỉnh Sửa Banner"}
                     </h5>
                   </div>
                   <button
@@ -536,20 +543,30 @@ export default function AdminBannersPage() {
                           className="form-select rounded-3 shadow-none border-2"
                           value={formData.position}
                           onChange={(e) =>
-                            setFormData({ ...formData, position: e.target.value })
+                            setFormData({
+                              ...formData,
+                              position: e.target.value,
+                            })
                           }
                           required
                         >
-                          <option value="HOME_MAIN">Trang chủ (Banner Chính to)</option>
-                          <option value="HOME_SUB_LEFT">Banner giữa trang (Trái)</option>
-                          <option value="HOME_SUB_RIGHT">Banner giữa trang (Phải)</option>
+                          <option value="HOME_MAIN">
+                            Trang chủ (Banner Chính to)
+                          </option>
+                          <option value="HOME_SUB_LEFT">
+                            Banner giữa trang (Trái)
+                          </option>
+                          <option value="HOME_SUB_RIGHT">
+                            Banner giữa trang (Phải)
+                          </option>
                         </select>
                       </div>
 
                       {/* Tên Banner */}
                       <div className="mb-3">
                         <label className="form-label fw-bold small text-dark mb-1">
-                          Tên Banner (Tiêu đề) <span className="text-danger">*</span>
+                          Tên Banner (Tiêu đề){" "}
+                          <span className="text-danger">*</span>
                         </label>
                         <input
                           type="text"
@@ -577,7 +594,10 @@ export default function AdminBannersPage() {
                             setFormData({ ...formData, link: e.target.value })
                           }
                         />
-                        <div className="form-text small" style={{ fontSize: "11px" }}>
+                        <div
+                          className="form-text small"
+                          style={{ fontSize: "11px" }}
+                        >
                           Đường dẫn trang khi người mua click vào banner.
                         </div>
                       </div>
@@ -586,31 +606,58 @@ export default function AdminBannersPage() {
                       {formData.position === "HOME_MAIN" ? (
                         <div
                           className="rounded-3 p-3 border mb-3"
-                          style={{ backgroundColor: "#F0F7FF", borderColor: "#BFDBFE" }}
+                          style={{
+                            backgroundColor: "#F0F7FF",
+                            borderColor: "#BFDBFE",
+                          }}
                         >
                           <div className="d-flex align-items-center gap-2 mb-1 text-primary fw-bold small">
                             <i className="bi bi-lightbulb-fill text-warning fs-5"></i>
                             Gợi ý Banner Chính (HOME_MAIN)
                           </div>
-                          <div className="text-dark small" style={{ fontSize: "12px", lineHeight: "1.4" }}>
-                            &bull; <strong>Tỷ lệ khuyến nghị:</strong> Chuẩn 16:9 đồng bộ<br />
-                            &bull; <strong>Chuẩn nét nhất:</strong> 1920x1080px hoặc 1280x720px<br />
-                            &bull; <strong>Đồng bộ 1:1:</strong> Khung xem trước bên phải khớp đúng tỷ lệ hiển thị ngoài Trang chủ.
+                          <div
+                            className="text-dark small"
+                            style={{ fontSize: "12px", lineHeight: "1.4" }}
+                          >
+                            &bull; <strong>Tỷ lệ khuyến nghị:</strong> Chuẩn
+                            16:9 đồng bộ
+                            <br />
+                            &bull; <strong>Chuẩn nét nhất:</strong> 1920x1080px
+                            hoặc 1280x720px
+                            <br />
+                            &bull; <strong>Đồng bộ 1:1:</strong> Khung xem trước
+                            bên phải khớp đúng tỷ lệ hiển thị ngoài Trang chủ.
                           </div>
                         </div>
                       ) : (
                         <div
                           className="rounded-3 p-3 border mb-3"
-                          style={{ backgroundColor: "#F0FDF4", borderColor: "#BBF7D0" }}
+                          style={{
+                            backgroundColor: "#F0FDF4",
+                            borderColor: "#BBF7D0",
+                          }}
                         >
                           <div className="d-flex align-items-center gap-2 mb-1 text-success fw-bold small">
                             <i className="bi bi-lightbulb-fill text-warning fs-5"></i>
-                            Gợi ý Banner Giữa Trang ({formData.position === "HOME_SUB_LEFT" ? "Trái" : "Phải"})
+                            Gợi ý Banner Giữa Trang (
+                            {formData.position === "HOME_SUB_LEFT"
+                              ? "Trái"
+                              : "Phải"}
+                            )
                           </div>
-                          <div className="text-dark small" style={{ fontSize: "12px", lineHeight: "1.4" }}>
-                            &bull; <strong>Tỷ lệ khuyến nghị:</strong> 16:9 hoặc 2:1<br />
-                            &bull; <strong>Chuẩn nét nhất:</strong> 800x450px hoặc 800x400px<br />
-                            &bull; <strong>Hiển thị:</strong> Cặp đôi song song làm nổi bật thương hiệu CADIVI, Bình Minh, Panasonic.
+                          <div
+                            className="text-dark small"
+                            style={{ fontSize: "12px", lineHeight: "1.4" }}
+                          >
+                            &bull; <strong>Tỷ lệ khuyến nghị:</strong> 16:9 hoặc
+                            2:1
+                            <br />
+                            &bull; <strong>Chuẩn nét nhất:</strong> 800x450px
+                            hoặc 800x400px
+                            <br />
+                            &bull; <strong>Hiển thị:</strong> Cặp đôi song song
+                            làm nổi bật thương hiệu CADIVI, Bình Minh,
+                            Panasonic.
                           </div>
                         </div>
                       )}
@@ -620,7 +667,8 @@ export default function AdminBannersPage() {
                     <div className="col-12 col-md-6">
                       <label className="form-label fw-bold small text-dark mb-1 d-flex justify-content-between align-items-center">
                         <span>
-                          <i className="bi bi-laptop me-1 text-primary"></i> Mô Phỏng Hiển Thị Desktop
+                          <i className="bi bi-laptop me-1 text-primary"></i> Mô
+                          Phỏng Hiển Thị Desktop
                         </span>
                         {imageMeta && (
                           <span
@@ -648,18 +696,32 @@ export default function AdminBannersPage() {
                           <div className="d-flex gap-1">
                             <span
                               className="rounded-circle d-inline-block"
-                              style={{ width: "8px", height: "8px", backgroundColor: "#ff5f56" }}
+                              style={{
+                                width: "8px",
+                                height: "8px",
+                                backgroundColor: "#ff5f56",
+                              }}
                             ></span>
                             <span
                               className="rounded-circle d-inline-block"
-                              style={{ width: "8px", height: "8px", backgroundColor: "#ffbd2e" }}
+                              style={{
+                                width: "8px",
+                                height: "8px",
+                                backgroundColor: "#ffbd2e",
+                              }}
                             ></span>
                             <span
                               className="rounded-circle d-inline-block"
-                              style={{ width: "8px", height: "8px", backgroundColor: "#27c93f" }}
+                              style={{
+                                width: "8px",
+                                height: "8px",
+                                backgroundColor: "#27c93f",
+                              }}
                             ></span>
                           </div>
-                          <span className="text-muted font-monospace">truongtin.vn &bull; Desktop Preview</span>
+                          <span className="text-muted font-monospace">
+                            truongtin.vn &bull; Desktop Preview
+                          </span>
                           <span className="opacity-0">...</span>
                         </div>
 
@@ -688,9 +750,16 @@ export default function AdminBannersPage() {
                               <button
                                 type="button"
                                 className="btn btn-sm btn-dark bg-opacity-75 position-absolute top-0 end-0 m-2 rounded-circle shadow-sm border-0"
-                                style={{ zIndex: 5, width: "30px", height: "30px" }}
+                                style={{
+                                  zIndex: 5,
+                                  width: "30px",
+                                  height: "30px",
+                                }}
                                 onClick={() => {
-                                  setFormData((prev) => ({ ...prev, imageUrl: "" }));
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    imageUrl: "",
+                                  }));
                                   setPreviewBlobUrl("");
                                   setImageMeta(null);
                                 }}
@@ -704,8 +773,13 @@ export default function AdminBannersPage() {
                               {isUploading ? (
                                 <>
                                   <div className="spinner-border spinner-border-sm text-primary mb-2"></div>
-                                  <div className="small fw-bold">Đang nén & tải ảnh lên...</div>
-                                  <div className="text-muted" style={{ fontSize: "11px" }}>
+                                  <div className="small fw-bold">
+                                    Đang nén & tải ảnh lên...
+                                  </div>
+                                  <div
+                                    className="text-muted"
+                                    style={{ fontSize: "11px" }}
+                                  >
                                     Tự động chuyển định dạng WebP 85%
                                   </div>
                                 </>
@@ -715,7 +789,10 @@ export default function AdminBannersPage() {
                                   <div className="small fw-bold text-dark mt-2">
                                     Chưa có hình ảnh banner
                                   </div>
-                                  <div className="text-muted" style={{ fontSize: "11.5px" }}>
+                                  <div
+                                    className="text-muted"
+                                    style={{ fontSize: "11.5px" }}
+                                  >
                                     Nhấp vào nút bên dưới để chọn ảnh từ máy
                                   </div>
                                 </>
@@ -732,12 +809,18 @@ export default function AdminBannersPage() {
                           >
                             <span className="text-muted">
                               <i className="bi bi-arrows-fullscreen me-1"></i>
-                              <strong>{imageMeta.width}x{imageMeta.height}px</strong>
+                              <strong>
+                                {imageMeta.width}x{imageMeta.height}px
+                              </strong>
                             </span>
                             <span className="text-success fw-bold">
                               <i className="bi bi-speedometer2 me-1"></i>
-                              {(imageMeta.originalSize / 1024 / 1024).toFixed(1)}MB ➔{" "}
-                              {(imageMeta.compressedSize / 1024).toFixed(0)}KB WebP
+                              {(imageMeta.originalSize / 1024 / 1024).toFixed(
+                                1,
+                              )}
+                              MB ➔{" "}
+                              {(imageMeta.compressedSize / 1024).toFixed(0)}KB
+                              WebP
                             </span>
                           </div>
                         )}
@@ -752,7 +835,9 @@ export default function AdminBannersPage() {
                           disabled={isUploading}
                         >
                           <i className="bi bi-upload"></i>
-                          {activePreviewUrl ? "Chọn Đổi Ảnh Khác" : "Tải Lên & Nén Ảnh Tự Động"}
+                          {activePreviewUrl
+                            ? "Chọn Đổi Ảnh Khác"
+                            : "Tải Lên & Nén Ảnh Tự Động"}
                         </button>
                         <input
                           ref={fileInputRef}
@@ -766,7 +851,8 @@ export default function AdminBannersPage() {
                           className="text-muted text-center mt-1"
                           style={{ fontSize: "11px" }}
                         >
-                          Hỗ trợ JPG, PNG, WEBP. Ảnh tự động nén dưới 300KB chuẩn nét không làm lag trang.
+                          Hỗ trợ JPG, PNG, WEBP. Ảnh tự động nén dưới 300KB
+                          chuẩn nét không làm lag trang.
                         </div>
                       </div>
                     </div>
@@ -784,11 +870,16 @@ export default function AdminBannersPage() {
                   <button
                     type="submit"
                     className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold"
-                    disabled={isUploading || !formData.imageUrl || !formData.title.trim()}
+                    disabled={
+                      isUploading ||
+                      !formData.imageUrl ||
+                      !formData.title.trim()
+                    }
                   >
                     {isUploading ? (
                       <>
-                        <span className="spinner-border spinner-border-sm me-2"></span> Đang tải...
+                        <span className="spinner-border spinner-border-sm me-2"></span>{" "}
+                        Đang tải...
                       </>
                     ) : modalMode === "create" ? (
                       "Lưu Banner"
