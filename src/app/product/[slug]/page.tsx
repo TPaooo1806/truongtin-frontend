@@ -8,7 +8,7 @@ async function getProductData(slug: string) {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL || "https://truongtin-api.onrender.com"}/api/products/${slug}`,
       {
-        next: { revalidate: 60 }, // Cache lại 60 giây để web chạy cực nhanh, không lo nghẽn Database
+        next: { revalidate: 3600 }, // Cache lại 1 tiếng để web chạy cực nhanh, không lo nghẽn Database
       },
     );
     if (!res.ok) return null;

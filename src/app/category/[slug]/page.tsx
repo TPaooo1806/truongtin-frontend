@@ -20,7 +20,7 @@ async function fetchCategoryProducts(slug: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://truongtin-api.onrender.com";
   try {
     const res = await fetch(`${apiUrl}/api/products?category=${slug}&page=1&limit=12`, {
-      next: { revalidate: 60 } // Caching 60s
+      next: { revalidate: 3600 } // Caching 1h chống bot đánh thức database
     });
     if (!res.ok) {
       return { products: [], totalPages: 1, totalItems: 0 };

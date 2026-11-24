@@ -7,7 +7,7 @@ async function fetchSearchResults(query: string) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://truongtin-api.onrender.com";
   try {
     const res = await fetch(`${apiUrl}/api/products?q=${encodeURIComponent(query)}&page=1&limit=12`, {
-      next: { revalidate: 60 }
+      next: { revalidate: 3600 }
     });
     
     if (!res.ok) return { products: [], totalPages: 1, totalItems: 0 };

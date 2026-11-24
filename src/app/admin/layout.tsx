@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -42,36 +42,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
   }, [router]);
 
-  // ==============================================
-  // 2. LOGIC POLLING: Lấy thông báo mỗi 15 giây (với leak protection)
-  // ==============================================
-  useEffect(() => {
-    let mounted = true;
+  // STATE REFRESH THÔNG BÁO
+  const [isRefreshingNotif, setIsRefreshingNotif] = useState(false);
 
-    const fetchNotifications = async () => {
-      try {
-        const res = await api.get('/api/admin/notifications'); 
-        if (mounted && res.data.success) {
-          const sorted = [...res.data.data].sort(
-  (a, b) =>
-    new Date(b.time).getTime() -
-    new Date(a.time).getTime()
-);
-
-setNotifications(sorted);
+  // ==============================================
+  // 2. LOGIC THÔNG BÁO: Tải 1 lần duy nhất khi mở trang (KHÔNG dùng setInterval để chống đánh thức Neon DB)
+  // Có nút "Làm mới" thủ công khi Admin cần xem thông báo mới
+  // ==============================================
+  const fetchNotifications = useCallback(async (showToast = false) => {
+    setIsRefreshingNotif(true);
+    try {
+      const res = await api.get('/api/admin/notifications'); 
+      if (res.data.success) {
+        const sorted = [...res.data.data].sort(
+          (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
+        );
+        setNotifications(sorted);
+        if (showToast) {
+          toast.success("Đã làm mới thông báo!");
         }
-      } catch (error) {
-        console.error("Lỗi lấy thông báo:", error);
       }
-    };
-
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 15000);
-    return () => {
-      mounted = false;
-      clearInterval(interval);
-    };
+    } catch (error) {
+      console.error("Lỗi lấy thông báo:", error);
+      if (showToast) {
+        toast.error("Không thể lấy thông báo!");
+      }
+    } finally {
+      setIsRefreshingNotif(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   // Hàm xử lý nút "ĐÃ XỬ LÝ XONG" cho Liên hệ
   const handleResolveContact = async (rawId: string) => {
@@ -249,6 +252,20 @@ setNotifications(sorted);
                 <div className="position-absolute bg-white shadow-lg rounded-4 border mt-2 py-0" style={{ right: 0, top: '100%', width: '360px', zIndex: 1050, overflow: 'hidden' }}>
                   <div className="d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
                     <h6 className="mb-0 fw-bold text-dark">Thông báo mới</h6>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-primary py-1 px-2 rounded-pill d-flex align-items-center gap-1"
+                      style={{ fontSize: '0.75rem' }}
+                      disabled={isRefreshingNotif}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fetchNotifications(true);
+                      }}
+                      title="Làm mới thông báo"
+                    >
+                      <i className={`bi bi-arrow-clockwise ${isRefreshingNotif ? 'spin-icon' : ''}`}></i>
+                      {isRefreshingNotif ? 'Đang tải...' : 'Làm mới'}
+                    </button>
                   </div>
 
                   <div className="custom-scrollbar" style={{ maxHeight: '380px', overflowY: 'auto' }}>

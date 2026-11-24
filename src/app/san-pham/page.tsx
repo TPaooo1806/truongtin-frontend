@@ -6,7 +6,7 @@ async function fetchInitialProducts() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://truongtin-api.onrender.com";
   try {
     const res = await fetch(`${apiUrl}/api/products?page=1&limit=12`, {
-      next: { revalidate: 60 } // Caching 60s để Server SSR siêu nhanh
+      next: { revalidate: 3600 } // Caching 1h để Server SSR siêu nhanh, tiết kiệm compute
     });
     if (!res.ok) {
       return { products: [], totalPages: 1, totalItems: 0 };

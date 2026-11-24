@@ -504,3 +504,13 @@ header.sticky-top {
     height: 220px;
   }
 }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-icon {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}

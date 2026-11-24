@@ -12,7 +12,7 @@ async function HomeContent() {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://truongtin-api.onrender.com";
     const res = await fetch(`${apiUrl}/api/home-data`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 3600 },
     });
     
     if (res.ok) {
